@@ -197,17 +197,69 @@ zusammengeführt.
 />
 ```
 
+## Typisierte Single- und Range-APIs
+
+Für neuen Code stehen `SingleCalendar` und `RangeCalendar` mit schmalen
+Value- und Callback-Typen bereit. `CustomCalendar` bleibt als vollständig
+kompatibler Einstieg für dynamische Modi und `switchMode` erhalten.
+
+```tsx
+import {
+    RangeCalendar,
+    SingleCalendar,
+    type RangeCalendarValue,
+    type SingleCalendarValue,
+} from '@rentnerkev/calendar'
+
+const [appointment, setAppointment] = useState<SingleCalendarValue>()
+const [period, setPeriod] = useState<RangeCalendarValue>()
+
+<SingleCalendar value={appointment} onChange={setAppointment} enableTime />
+<RangeCalendar value={period} onChange={setPeriod} />
+```
+
+`parseCalendarValue` normalisiert einzelne Werte und Ranges. Dabei werden
+ungültige Range-Grenzen zu `null`, während ein ungültiger Einzelwert
+`undefined` ergibt. `serializeCalendarValue` erzeugt standardmäßig vollständige
+UTC-ISO-Zeitstempel. Mit `{ format: 'date' }` entstehen lokale
+Kalenderdatumswerte im Format `YYYY-MM-DD`.
+
+```ts
+const value = parseCalendarValue('21.09.2026 14:30')
+const timestamp = serializeCalendarValue(value)
+const dateOnly = serializeCalendarValue(value, { format: 'date' })
+
+const range = parseCalendarValue(['2026-09-21', null])
+if (isCalendarRange(range)) {
+    const [from, to] = serializeCalendarValue(range)
+}
+```
+
+`parseCalendarISODate` interpretiert `YYYY-MM-DD` bewusst als lokales
+Kalenderdatum und verhindert dadurch Verschiebungen auf den Vortag.
+`parseCalendarISOString` verarbeitet vollständige ISO-Zeitpunkte mit `Z` oder
+Offset. Die Gegenstücke heißen `serializeCalendarISODate` und
+`serializeCalendarISOString`. Ungültige Werte führen zu `undefined` und werfen
+keinen `RangeError`.
+
 ## Hilfsfunktionen
 
 Die Library exportiert nützliche Funktionen zur Arbeit mit Daten und zur Formatierung:
 
-| Funktion                              | Beschreibung                                                                                                                  |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `formatCalendarValue(value, locale?)` | Formatiert `Date` oder `Range` auf Deutsch oder Englisch zu einem lesbaren String.                                            |
-| `isSameDay(d1, d2)`                   | Prüft, ob zwei Daten der gleiche Kalendertag sind.                                                                            |
-| `isToday(date)`                       | Prüft, ob das übergebene Datum der heutige Tag ist.                                                                           |
-| `formatMonthName(date, locale?)`      | Gibt Monat und Jahr des Datums auf Deutsch oder Englisch formatiert zurück (z.B. "Januar 2024").                              |
-| `getGermanHolidayName(date)`          | Prüft, ob ein Datum ein deutscher Feiertag ist, und gibt dessen Namen als String (z.B. "Silvester") zurück, andernfalls null. |
+| Funktion                                  | Beschreibung                                                                                                                  |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `formatCalendarValue(value, locale?)`     | Formatiert `Date` oder `Range` auf Deutsch oder Englisch zu einem lesbaren String.                                            |
+| `parseCalendarValue(value)`               | Normalisiert Single-/Range-Eingaben und lehnt unmögliche Datumswerte ab.                                                      |
+| `serializeCalendarValue(value, options?)` | Serialisiert Werte als ISO-Zeitpunkt oder lokales ISO-Kalenderdatum.                                                          |
+| `isCalendarRange(value)`                  | Prüft typsicher auf eine gültige Calendar-Range.                                                                              |
+| `parseCalendarISODate(value)`             | Liest ein striktes lokales `YYYY-MM-DD`-Kalenderdatum.                                                                        |
+| `serializeCalendarISODate(value)`         | Schreibt ein Datum ohne UTC-Verschiebung als `YYYY-MM-DD`.                                                                    |
+| `parseCalendarISOString(value)`           | Liest einen vollständigen ISO-Zeitpunkt mit Zone oder Offset.                                                                 |
+| `serializeCalendarISOString(value)`       | Schreibt einen gültigen Zeitpunkt sicher mit `Date#toISOString()`.                                                            |
+| `isSameDay(d1, d2)`                       | Prüft, ob zwei Daten der gleiche Kalendertag sind.                                                                            |
+| `isToday(date)`                           | Prüft, ob das übergebene Datum der heutige Tag ist.                                                                           |
+| `formatMonthName(date, locale?)`          | Gibt Monat und Jahr des Datums auf Deutsch oder Englisch formatiert zurück (z.B. "Januar 2024").                              |
+| `getGermanHolidayName(date)`              | Prüft, ob ein Datum ein deutscher Feiertag ist, und gibt dessen Namen als String (z.B. "Silvester") zurück, andernfalls null. |
 
 ## Props (Typen)
 

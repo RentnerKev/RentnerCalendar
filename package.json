@@ -64,6 +64,18 @@
             "import": "./dist/Calendar.js",
             "types": "./dist/Calendar.d.ts"
         },
+        "./single-calendar": {
+            "import": "./dist/SingleCalendar.js",
+            "types": "./dist/SingleCalendar.d.ts"
+        },
+        "./range-calendar": {
+            "import": "./dist/RangeCalendar.js",
+            "types": "./dist/RangeCalendar.d.ts"
+        },
+        "./value": {
+            "import": "./dist/Tools/CalendarValue.js",
+            "types": "./dist/Tools/CalendarValue.d.ts"
+        },
         "./format": {
             "import": "./dist/Tools/FormatFunctions.js",
             "types": "./dist/Tools/FormatFunctions.d.ts"
