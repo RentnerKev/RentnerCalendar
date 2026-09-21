@@ -1,12 +1,9 @@
 import type { CSSProperties } from 'react'
 import type { CalendarValue } from '../types.js'
+import { parseCalendarDate, parseCalendarValue } from './CalendarValue.js'
 
 export function toSafeDate(input: unknown): Date | null {
-    if (!input) return null
-    if (input instanceof Date) return isNaN(input.getTime()) ? null : input
-    if (typeof input !== 'string' && typeof input !== 'number') return null
-    const parsed = new Date(input)
-    return isNaN(parsed.getTime()) ? null : parsed
+    return parseCalendarDate(input) ?? null
 }
 
 export function isSameDay(d1: unknown, d2?: unknown) {
@@ -22,43 +19,11 @@ export function isSameDay(d1: unknown, d2?: unknown) {
 }
 
 export function parseToDate(input: unknown): Date | null {
-    if (!input) return null
-    if (input instanceof Date) return isNaN(input.getTime()) ? null : input
-
-    if (typeof input === 'string') {
-        const deMatch = input.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/)
-        if (deMatch) {
-            const day = parseInt(deMatch[1], 10)
-            const month = parseInt(deMatch[2], 10) - 1
-            const year = parseInt(deMatch[3], 10)
-
-            const timeMatch = input.match(/\s(\d{1,2}):(\d{1,2})/)
-            if (timeMatch) {
-                return new Date(
-                    year,
-                    month,
-                    day,
-                    parseInt(timeMatch[1], 10),
-                    parseInt(timeMatch[2], 10),
-                )
-            }
-            return new Date(year, month, day)
-        }
-    }
-
-    if (typeof input !== 'string' && typeof input !== 'number') return null
-
-    const parsed = new Date(input)
-    return isNaN(parsed.getTime()) ? null : parsed
+    return parseCalendarDate(input) ?? null
 }
 
 export function normalizeValue(val: unknown): CalendarValue {
-    if (val === undefined || val === null) return undefined
-    if (Array.isArray(val)) {
-        return [parseToDate(val[0]), parseToDate(val[1])]
-    }
-    const parsed = parseToDate(val)
-    return parsed ? parsed : undefined
+    return parseCalendarValue(val)
 }
 
 export function getTooltipStyle(

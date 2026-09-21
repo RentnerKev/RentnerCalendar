@@ -1,14 +1,21 @@
 import type { AriaAttributes, ReactNode, Ref } from 'react'
 import type { CalendarLocale, CalendarMessages } from './messages.js'
 
-export type CalendarValue = Date | [Date | null, Date | null] | undefined
+export type CalendarRange = [Date | null, Date | null]
+export type SingleCalendarValue = Date | undefined
+export type RangeCalendarValue = CalendarRange | undefined
+export type CalendarValue = SingleCalendarValue | RangeCalendarValue
+
+export type CalendarDateInput = Date | string | number | null
+export type SingleCalendarInputValue = CalendarDateInput | undefined
+export type RangeCalendarInputValue =
+    | readonly [CalendarDateInput, CalendarDateInput]
+    | null
+    | undefined
 
 export type CalendarInputValue =
-    | CalendarValue
-    | string
-    | number
-    | [string | number | Date | null, string | number | Date | null]
-    | null
+    | SingleCalendarInputValue
+    | RangeCalendarInputValue
 
 export interface CalendarCustomDesign {
     primaryColor?: string
@@ -92,6 +99,27 @@ export interface CalendarProps extends AriaAttributes {
     locale?: CalendarLocale
     messages?: Partial<CalendarMessages>
 }
+
+export type CalendarSharedProps = Omit<
+    CalendarProps,
+    'value' | 'onChange' | 'enableRange' | 'switchMode'
+>
+
+export type SingleCalendarProps = CalendarSharedProps & {
+    mode?: 'single'
+    value?: SingleCalendarInputValue
+    onChange?: (value: SingleCalendarValue) => void
+}
+
+export type RangeCalendarProps = CalendarSharedProps & {
+    mode?: 'range'
+    value?: RangeCalendarInputValue
+    onChange?: (value: RangeCalendarValue) => void
+}
+
+export type CalendarModeProps =
+    | (SingleCalendarProps & { mode: 'single' })
+    | (RangeCalendarProps & { mode: 'range' })
 
 export interface CalendarHeaderProps {
     currentDate: Date
