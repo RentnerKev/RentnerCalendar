@@ -8,6 +8,10 @@ import CalendarHeader from './Components/CalendarHeader.js'
 import CalendarGrid from './Components/CalendarGrid.js'
 import CalendarTimeInput from './Components/CalendarTimeInput.js'
 import useCalendarLogic from './Hooks/useCalendarLogic.js'
+import {
+    commitCalendarSelection,
+    shouldCloseCalendarAfterSelection,
+} from './Tools/CalendarCommit.js'
 import { formatCalendarValue } from './Tools/FormatFunctions.js'
 import { AlertCircle, CalendarDays, X } from 'lucide-react'
 import {
@@ -231,23 +235,21 @@ export function CustomCalendar({
 
     function handleTempChange(newVal: CalendarValue, source?: 'date' | 'time') {
         setTempValue(newVal)
-        if (!backdrop && !button) {
-            onChange?.(newVal)
-        }
+        commitCalendarSelection(newVal, onChange, {
+            backdrop,
+            button,
+            closeOnSelect,
+        })
 
-        if (closeOnSelect && source === 'date') {
-            if (
-                isRangeMode &&
-                Array.isArray(newVal) &&
-                newVal[0] &&
-                newVal[1]
-            ) {
-                closeCalendar()
-                onChange?.(newVal)
-            } else if (!isRangeMode && newVal && !Array.isArray(newVal)) {
-                closeCalendar()
-                onChange?.(newVal)
-            }
+        if (
+            shouldCloseCalendarAfterSelection(newVal, {
+                button,
+                closeOnSelect,
+                isRangeMode,
+                source,
+            })
+        ) {
+            closeCalendar()
         }
     }
 
