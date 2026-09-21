@@ -1,8 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CustomTooltip } from './Internal/Tooltip.js'
 import { defaultCalendarDesign } from './types.js'
-import type { CSSProperties, InvalidEvent, MouseEvent } from 'react'
+import type {
+    CSSProperties,
+    InvalidEvent,
+    MouseEvent,
+    MutableRefObject,
+    Ref,
+} from 'react'
 import type { CalendarProps, CalendarValue } from './types.js'
 import { resolveCalendarMessages } from './messages.js'
 import CalendarHeader from './Components/CalendarHeader.js'
@@ -14,6 +20,10 @@ import {
     shouldCloseCalendarAfterSelection,
 } from './Tools/CalendarCommit.js'
 import { formatCalendarValue } from './Tools/FormatFunctions.js'
+import {
+    mergeAriaIds,
+    resolveCalendarFieldError,
+} from './Tools/CalendarField.js'
 import { AlertCircle, CalendarDays, X } from 'lucide-react'
 import {
     extractRadius,
@@ -22,6 +32,14 @@ import {
 } from './Tools/InternalOnlyFunctions.js'
 
 const calendarPopoverMinWidth = 340
+
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
+    if (typeof ref === 'function') {
+        ref(value)
+    } else if (ref) {
+        ;(ref as MutableRefObject<T | null>).current = value
+    }
+}
 
 function hasCalendarValue(value?: CalendarValue) {
     if (!value) {
@@ -62,10 +80,25 @@ export function CustomCalendar({
     showHolidays = false,
     locale = 'de',
     messages: messageOverrides,
+    label,
+    description,
+    error: externalError,
+    disabled = false,
+    readOnly = false,
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+    triggerRef: forwardedTriggerRef,
+    ...ariaProps
 }: CalendarProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [isRangeMode, setIsRangeMode] = useState(enableRange)
     const [isTouched, setIsTouched] = useState(false)
+    const generatedId = useId()
+    const fieldId = id ?? generatedId
+    const labelId = `${fieldId}-label`
+    const descriptionId = `${fieldId}-description`
+    const errorId = `${fieldId}-error`
 
     const normalizedValue = useMemo(() => normalizeValue(rawValue), [rawValue])
     const messages = useMemo(
@@ -101,16 +134,33 @@ export function CustomCalendar({
         setTempValue(normalizedValue)
     }
 
+    if ((disabled || readOnly) && isOpen) {
+        setIsOpen(false)
+    }
+
     const triggerRef = useRef<HTMLDivElement>(null)
     const validationInputRef = useRef<HTMLInputElement>(null)
     const cd = { ...defaultCalendarDesign, ...customDesign }
 
     const resolvedRadius = extractRadius(className) ?? '0.75rem'
-    const error =
+    const internalError =
         required && !hasCalendarValue(normalizedValue)
             ? messages.required
             : null
-    const hasError = isTouched && error !== null
+    const error = resolveCalendarFieldError(externalError, internalError)
+    const hasError =
+        externalError !== undefined
+            ? externalError !== null && externalError.length > 0
+            : isTouched && internalError !== null
+    const labelledBy = mergeAriaIds(
+        ariaLabelledBy,
+        label != null ? labelId : undefined,
+    )
+    const describedBy = mergeAriaIds(
+        ariaDescribedBy,
+        description != null ? descriptionId : undefined,
+        hasError ? errorId : undefined,
+    )
 
     const inputStyle: CSSProperties = {
         borderWidth: '1px',
@@ -139,6 +189,8 @@ export function CustomCalendar({
         hasError ? '' : cd.primaryColorFocusWithin,
         hasError ? '' : cd.primaryFocusBorder,
         hasError ? '' : cd.primaryRing,
+        disabled ? 'cursor-not-allowed opacity-60' : '',
+        readOnly ? 'cursor-default' : '',
         !className.includes('h-') ? 'h-[2.75rem]' : '',
         !className.includes('rounded') ? 'rounded-[0.75rem]' : '',
         className,
@@ -185,7 +237,7 @@ export function CustomCalendar({
     }, [])
 
     useEffect(() => {
-        if (!isOpen) return
+        if (!isOpen || disabled || readOnly) return
 
         const previousOverflow = document.body.style.overflow
         document.body.style.overflow = 'hidden'
@@ -193,7 +245,7 @@ export function CustomCalendar({
         return () => {
             document.body.style.overflow = previousOverflow
         }
-    }, [isOpen])
+    }, [disabled, isOpen, readOnly])
 
     function closeCalendar() {
         setTempValue(normalizedValue)
@@ -201,6 +253,10 @@ export function CustomCalendar({
     }
 
     function toggleCalendar() {
+        if (disabled || readOnly) {
+            return
+        }
+
         const nextState = !isOpen
 
         if (!nextState) {
@@ -242,6 +298,10 @@ export function CustomCalendar({
     }
 
     function handleTempChange(newVal: CalendarValue, source?: 'date' | 'time') {
+        if (disabled || readOnly) {
+            return
+        }
+
         setTempValue(newVal)
         commitCalendarSelection(newVal, onChange, {
             backdrop,
@@ -273,12 +333,20 @@ export function CustomCalendar({
     )
 
     function handleApply() {
+        if (disabled || readOnly) {
+            return
+        }
+
         onChange?.(tempValue)
         closeCalendar()
     }
 
     function handleClear(e: MouseEvent) {
         e.stopPropagation()
+        if (disabled || readOnly) {
+            return
+        }
+
         setTempValue(undefined)
         onChange?.(undefined)
     }
@@ -286,7 +354,16 @@ export function CustomCalendar({
     function handleInvalid(event: InvalidEvent<HTMLInputElement>) {
         event.preventDefault()
         setIsTouched(true)
+        triggerRef.current?.focus()
     }
+
+    const setTriggerRef = useCallback(
+        (element: HTMLDivElement | null) => {
+            triggerRef.current = element
+            assignRef(forwardedTriggerRef, element)
+        },
+        [forwardedTriggerRef],
+    )
 
     const displayValue = normalizedValue
         ? formatCalendarValue(normalizedValue, locale)
@@ -316,6 +393,7 @@ export function CustomCalendar({
                             type="button"
                             onClick={() => setIsRangeMode(false)}
                             aria-label={messages.day}
+                            disabled={disabled || readOnly}
                             className={`flex-1 cursor-pointer py-1.5 text-sm font-medium rounded-md transition-all ${!isRangeMode ? `${cd.primaryBg} text-white shadow-sm` : `${cd.textMuted} ${cd.hoverText} hover:bg-white/5`}`}
                         >
                             {messages.day}
@@ -324,6 +402,7 @@ export function CustomCalendar({
                             type="button"
                             onClick={() => setIsRangeMode(true)}
                             aria-label={messages.range}
+                            disabled={disabled || readOnly}
                             className={`flex-1 cursor-pointer py-1.5 text-sm font-medium rounded-md transition-all ${isRangeMode ? `${cd.primaryBg} text-white shadow-sm` : `${cd.textMuted} ${cd.hoverText} hover:bg-white/5`}`}
                         >
                             {messages.range}
@@ -339,6 +418,8 @@ export function CustomCalendar({
                     fastEdit={fastEdit}
                     customDesign={cd}
                     messages={messages}
+                    disabled={disabled}
+                    readOnly={readOnly}
                 />
 
                 <CalendarGrid
@@ -354,6 +435,8 @@ export function CustomCalendar({
                     showHolidays={showHolidays}
                     locale={locale}
                     messages={messages}
+                    disabled={disabled}
+                    readOnly={readOnly}
                 />
 
                 {enableTime && (
@@ -365,6 +448,8 @@ export function CustomCalendar({
                         minTime={minTime}
                         maxTime={maxTime}
                         messages={messages}
+                        disabled={disabled}
+                        readOnly={readOnly}
                     />
                 )}
 
@@ -372,6 +457,7 @@ export function CustomCalendar({
                     <button
                         type="button"
                         onClick={handleApply}
+                        disabled={disabled || readOnly}
                         className={`w-full cursor-pointer mt-4 py-2 rounded-lg text-white font-medium transition-colors ${cd.primaryBg} ${cd.primaryHover}`}
                     >
                         {messages.apply}
@@ -382,62 +468,120 @@ export function CustomCalendar({
     ) : null
 
     return (
-        <div
-            id={id}
-            ref={triggerRef}
-            className={inputClasses}
-            style={inputStyle}
-            onClick={toggleCalendar}
-            tabIndex={0}
-            aria-invalid={hasError}
-            aria-label={isOpen ? messages.closeCalendar : messages.openCalendar}
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    toggleCalendar()
+        <div className="w-full">
+            {label != null && (
+                <div id={labelId} className="mb-1 text-sm font-medium">
+                    {label}
+                </div>
+            )}
+            <div
+                id={fieldId}
+                ref={setTriggerRef}
+                className={inputClasses}
+                style={inputStyle}
+                onClick={toggleCalendar}
+                tabIndex={disabled ? -1 : 0}
+                {...ariaProps}
+                aria-invalid={
+                    hasError || ariaProps['aria-invalid'] || undefined
                 }
-            }}
-        >
-            <input
-                ref={validationInputRef}
-                name={name}
-                value={displayValue}
-                onChange={() => undefined}
-                onInvalid={handleInvalid}
-                required={required}
-                tabIndex={-1}
-                aria-hidden="true"
-                className="pointer-events-none absolute h-px w-px opacity-0"
-            />
-            {hasError ? (
-                <CustomTooltip content={error || ''} side="bottom">
-                    <AlertCircle className="h-5 w-5 text-red-500" />
-                </CustomTooltip>
-            ) : (
-                icon !== false &&
-                (icon || <CalendarDays className={`w-5 h-5 ${cd.textMuted}`} />)
-            )}
-            <span
-                className={`flex-1 truncate ${displayValue ? cd.textColor : cd.textMuted}`}
+                aria-required={
+                    disabled
+                        ? undefined
+                        : externalError === undefined
+                          ? required || ariaProps['aria-required'] || undefined
+                          : ariaProps['aria-required']
+                }
+                aria-errormessage={
+                    hasError ? errorId : ariaProps['aria-errormessage']
+                }
+                aria-label={
+                    ariaLabel ??
+                    (labelledBy
+                        ? undefined
+                        : isOpen
+                          ? messages.closeCalendar
+                          : messages.openCalendar)
+                }
+                aria-labelledby={labelledBy}
+                aria-describedby={describedBy}
+                aria-disabled={
+                    disabled || ariaProps['aria-disabled'] || undefined
+                }
+                aria-readonly={
+                    readOnly || ariaProps['aria-readonly'] || undefined
+                }
+                aria-expanded={isOpen}
+                aria-haspopup={ariaProps['aria-haspopup'] ?? 'dialog'}
+                role="button"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        toggleCalendar()
+                    }
+                }}
             >
-                {displayValue || resolvedPlaceholder}
-            </span>
-
-            {isDeletable && displayValue && (
-                <button
-                    type="button"
-                    onClick={handleClear}
-                    aria-label={messages.clear}
-                    style={{ borderRadius: resolvedRadius }}
-                    className="p-1 bg-red-500/50 hover:bg-red-500/40 transition-colors group/delete"
+                <input
+                    ref={validationInputRef}
+                    name={name}
+                    value={displayValue}
+                    onChange={() => undefined}
+                    onInvalid={handleInvalid}
+                    required={
+                        required && !disabled && externalError === undefined
+                    }
+                    disabled={disabled}
+                    readOnly={readOnly}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute h-px w-px opacity-0"
+                />
+                {hasError ? (
+                    <CustomTooltip content={error || ''} side="bottom">
+                        <AlertCircle className="h-5 w-5 text-red-500" />
+                    </CustomTooltip>
+                ) : (
+                    icon !== false &&
+                    (icon || (
+                        <CalendarDays className={`w-5 h-5 ${cd.textMuted}`} />
+                    ))
+                )}
+                <span
+                    className={`flex-1 truncate ${displayValue ? cd.textColor : cd.textMuted}`}
                 >
-                    <X className="w-4 h-4" />
-                </button>
-            )}
+                    {displayValue || resolvedPlaceholder}
+                </span>
 
-            {isOpen &&
-                typeof document !== 'undefined' &&
-                createPortal(popoverContent, document.body)}
+                {isDeletable && displayValue && (
+                    <button
+                        type="button"
+                        onClick={handleClear}
+                        aria-label={messages.clear}
+                        disabled={disabled || readOnly}
+                        style={{ borderRadius: resolvedRadius }}
+                        className="p-1 bg-red-500/50 hover:bg-red-500/40 transition-colors group/delete"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                )}
+
+                {isOpen &&
+                    typeof document !== 'undefined' &&
+                    createPortal(popoverContent, document.body)}
+            </div>
+            {description != null && (
+                <div
+                    id={descriptionId}
+                    className="mt-1 text-xs text-muted-foreground"
+                >
+                    {description}
+                </div>
+            )}
+            {hasError && error && (
+                <span id={errorId} className="sr-only">
+                    {error}
+                </span>
+            )}
         </div>
     )
 }

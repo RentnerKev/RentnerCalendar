@@ -173,6 +173,30 @@ Anzeigen bleiben damit unverändert. Einzelne Meldungen können über `messages`
 `CalendarMessages`, `calendarMessageCatalog` und `resolveCalendarMessages`
 werden aus dem Paketeinstieg exportiert.
 
+### Gemeinsamer Feldvertrag
+
+`label` und `description` werden mit stabilen IDs gerendert und automatisch
+über `aria-labelledby` beziehungsweise `aria-describedby` mit dem sichtbaren
+Trigger verknüpft. Ein gesetztes `error` überschreibt die interne
+Pflichtfeldmeldung; `error={null}` unterdrückt sie. `disabled` entfernt den
+versteckten Formularwert aus Validierung und Submit, während `readOnly` den
+Wert beibehält, aber Öffnen und Änderungen verhindert.
+Weitere React-`aria-*`-Attribute werden direkt an den sichtbaren Trigger
+weitergegeben; zustandsabhängige Werte werden dabei mit dem Feldzustand
+zusammengeführt.
+
+```tsx
+<CustomCalendar
+    id="appointment"
+    name="appointment"
+    label="Termin"
+    description="Wähle einen verfügbaren Termin."
+    error={serverError ?? undefined}
+    aria-label="Termin auswählen"
+    triggerRef={triggerRef}
+/>
+```
+
 ## Hilfsfunktionen
 
 Die Library exportiert nützliche Funktionen zur Arbeit mit Daten und zur Formatierung:
@@ -189,34 +213,43 @@ Die Library exportiert nützliche Funktionen zur Arbeit mit Daten und zur Format
 
 ### `CustomCalendar`
 
-| Prop            | Typ                               | Standard         | Beschreibung                                                                                                      |
-| --------------- | --------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `id`            | `string`                          | `undefined`      | ID für den sichtbaren Trigger, nützlich für Labels und Formularfelder.                                            |
-| `name`          | `string`                          | `undefined`      | Name für Formular-Submit und native Pflichtfeld-Validierung.                                                      |
-| `value`         | `CalendarInputValue`              | `undefined`      | Das aktuell ausgewählte Datum oder die Range. Unterstützt `Date`, `string` (ISO/Deutsch), `number` (Timestamp).   |
-| `onChange`      | `(value: CalendarValue) => void`  | -                | Callback bei Änderung des Wertes.                                                                                 |
-| `required`      | `boolean`                         | `false`          | Aktiviert Pflichtfeld-Validierung. Ohne Auswahl wird der Trigger beim Submit rot und zeigt den Fehler im Tooltip. |
-| `enableTime`    | `boolean`                         | `false`          | Aktiviert die Zeitauswahl unter dem Kalendergrid.                                                                 |
-| `enableRange`   | `boolean`                         | `false`          | Aktiviert die Auswahl eines Zeitraums (Start- und Enddatum).                                                      |
-| `customDesign`  | `CalendarCustomDesign`            | `defaultDesign`  | Objekt zur individuellen Gestaltung des Designs.                                                                  |
-| `placeholder`   | `string`                          | "Klicke hier..." | Platzhalter-Text im Input-Feld.                                                                                   |
-| `button`        | `boolean`                         | `false`          | Zeigt einen "Anwenden"-Button im Popover an.                                                                      |
-| `backdrop`      | `boolean`                         | `true`           | Schließt das Popover beim Klick außerhalb (Overlay).                                                              |
-| `icon`          | `ReactNode \| boolean`            | `CalendarDays`   | Icon links im Input. Kann ein React-Element sein oder `false`, um das Icon komplett auszublenden.                 |
-| `className`     | `string`                          | `""`             | Zusätzliche CSS-Klassen für den äußeren Container. Bestimmt auch den Radius des Popovers.                         |
-| `closeOnSelect` | `boolean`                         | `false`          | Schließt das Popover automatisch, sobald ein Datum (oder eine vollständige Range) gewählt wurde.                  |
-| `minDate`       | `CalendarInputValue`              | `undefined`      | Begrenzt die Auswahl auf Daten ab (inklusive) diesem Datum.                                                       |
-| `maxDate`       | `CalendarInputValue`              | `undefined`      | Begrenzt die Auswahl auf Daten bis (inklusive) diesem Datum.                                                      |
-| `minTime`       | `string`                          | `undefined`      | Früheste wählbare Uhrzeit im Format "HH:mm".                                                                      |
-| `maxTime`       | `string`                          | `undefined`      | Späteste wählbare Uhrzeit im Format "HH:mm".                                                                      |
-| `fastEdit`      | `boolean`                         | `true`           | Zeigt im Header schnelle Monat- und Jahr-Selects für größere Datumssprünge.                                       |
-| `weekStartsOn`  | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7` | `1`              | Definiert den Start der Woche (1 = Montag, 7 = Sonntag).                                                          |
-| `visibleDays`   | `number`                          | `7`              | Anzahl der sichtbaren Tage pro Woche im Grid.                                                                     |
-| `showHolidays`  | `boolean`                         | `false`          | Markiert deutsche gesetzliche Feiertage mit einem Punkt und Tooltip.                                              |
-| `locale`        | `'de' \| 'en'`                    | `'de'`           | Sprache für UI-, Validierungs- und ARIA-Texte sowie die Datumsformatierung.                                       |
-| `messages`      | `Partial<CalendarMessages>`       | `undefined`      | Überschreibt einzelne Texte des gewählten Sprachkatalogs.                                                         |
-| `switchMode`    | `boolean`                         | `false`          | Erlaubt es dem Nutzer, im Interface zwischen Einzeldatum- und Zeitraums-Modus zu wechseln.                        |
-| `isDeletatable` | `boolean`                         | `false`          | Fügt einen Button hinzu, um den ausgewählten Wert zu löschen (null).                                              |
+| Prop               | Typ                               | Standard         | Beschreibung                                                                                                      |
+| ------------------ | --------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `id`               | `string`                          | `undefined`      | ID für den sichtbaren Trigger, nützlich für Labels und Formularfelder.                                            |
+| `name`             | `string`                          | `undefined`      | Name für Formular-Submit und native Pflichtfeld-Validierung.                                                      |
+| `value`            | `CalendarInputValue`              | `undefined`      | Das aktuell ausgewählte Datum oder die Range. Unterstützt `Date`, `string` (ISO/Deutsch), `number` (Timestamp).   |
+| `onChange`         | `(value: CalendarValue) => void`  | -                | Callback bei Änderung des Wertes.                                                                                 |
+| `required`         | `boolean`                         | `false`          | Aktiviert Pflichtfeld-Validierung. Ohne Auswahl wird der Trigger beim Submit rot und zeigt den Fehler im Tooltip. |
+| `label`            | `ReactNode`                       | `undefined`      | Sichtbare Feldbezeichnung mit stabiler ID und automatischer `aria-labelledby`-Verknüpfung.                        |
+| `description`      | `ReactNode`                       | `undefined`      | Hilfetext mit stabiler ID, der in `aria-describedby` einfließt.                                                   |
+| `error`            | `string \| null`                  | `undefined`      | Externer Fehler. Überschreibt die interne Validierung; `null` unterdrückt diese.                                  |
+| `disabled`         | `boolean`                         | `false`          | Deaktiviert Interaktion und verstecktes Formularfeld; der Wert wird nicht validiert oder submitted.               |
+| `readOnly`         | `boolean`                         | `false`          | Verhindert Öffnen und Änderungen, der Formularwert bleibt erhalten.                                               |
+| `triggerRef`       | `Ref<HTMLDivElement>`             | `undefined`      | Ref auf den sichtbaren Trigger, der bei nativem Invalid-Submit fokussiert wird.                                   |
+| `aria-label`       | `string`                          | `undefined`      | Zusätzliche oder alternative zugängliche Beschriftung des Triggers.                                               |
+| `aria-labelledby`  | `string`                          | `undefined`      | Zusätzliche Beschriftungs-IDs; sie werden mit der Label-ID zusammengeführt.                                       |
+| `aria-describedby` | `string`                          | `undefined`      | Zusätzliche Beschreibungs-IDs; sie werden mit Beschreibung und Fehler zusammengeführt.                            |
+| `enableTime`       | `boolean`                         | `false`          | Aktiviert die Zeitauswahl unter dem Kalendergrid.                                                                 |
+| `enableRange`      | `boolean`                         | `false`          | Aktiviert die Auswahl eines Zeitraums (Start- und Enddatum).                                                      |
+| `customDesign`     | `CalendarCustomDesign`            | `defaultDesign`  | Objekt zur individuellen Gestaltung des Designs.                                                                  |
+| `placeholder`      | `string`                          | "Klicke hier..." | Platzhalter-Text im Input-Feld.                                                                                   |
+| `button`           | `boolean`                         | `false`          | Zeigt einen "Anwenden"-Button im Popover an.                                                                      |
+| `backdrop`         | `boolean`                         | `true`           | Schließt das Popover beim Klick außerhalb (Overlay).                                                              |
+| `icon`             | `ReactNode \| boolean`            | `CalendarDays`   | Icon links im Input. Kann ein React-Element sein oder `false`, um das Icon komplett auszublenden.                 |
+| `className`        | `string`                          | `""`             | Zusätzliche CSS-Klassen für den äußeren Container. Bestimmt auch den Radius des Popovers.                         |
+| `closeOnSelect`    | `boolean`                         | `false`          | Schließt das Popover automatisch, sobald ein Datum (oder eine vollständige Range) gewählt wurde.                  |
+| `minDate`          | `CalendarInputValue`              | `undefined`      | Begrenzt die Auswahl auf Daten ab (inklusive) diesem Datum.                                                       |
+| `maxDate`          | `CalendarInputValue`              | `undefined`      | Begrenzt die Auswahl auf Daten bis (inklusive) diesem Datum.                                                      |
+| `minTime`          | `string`                          | `undefined`      | Früheste wählbare Uhrzeit im Format "HH:mm".                                                                      |
+| `maxTime`          | `string`                          | `undefined`      | Späteste wählbare Uhrzeit im Format "HH:mm".                                                                      |
+| `fastEdit`         | `boolean`                         | `true`           | Zeigt im Header schnelle Monat- und Jahr-Selects für größere Datumssprünge.                                       |
+| `weekStartsOn`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7` | `1`              | Definiert den Start der Woche (1 = Montag, 7 = Sonntag).                                                          |
+| `visibleDays`      | `number`                          | `7`              | Anzahl der sichtbaren Tage pro Woche im Grid.                                                                     |
+| `showHolidays`     | `boolean`                         | `false`          | Markiert deutsche gesetzliche Feiertage mit einem Punkt und Tooltip.                                              |
+| `locale`           | `'de' \| 'en'`                    | `'de'`           | Sprache für UI-, Validierungs- und ARIA-Texte sowie die Datumsformatierung.                                       |
+| `messages`         | `Partial<CalendarMessages>`       | `undefined`      | Überschreibt einzelne Texte des gewählten Sprachkatalogs.                                                         |
+| `switchMode`       | `boolean`                         | `false`          | Erlaubt es dem Nutzer, im Interface zwischen Einzeldatum- und Zeitraums-Modus zu wechseln.                        |
+| `isDeletatable`    | `boolean`                         | `false`          | Fügt einen Button hinzu, um den ausgewählten Wert zu löschen (null).                                              |
 
 ## CSS-Konfiguration
 

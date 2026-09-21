@@ -21,9 +21,12 @@ export default function CalendarGrid({
     showHolidays = false,
     locale = 'de',
     messages: providedMessages,
+    disabled = false,
+    readOnly = false,
 }: CalendarGridProps) {
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const messages = providedMessages ?? resolveCalendarMessages(locale)
+    const isInteractionDisabled = disabled || readOnly
 
     const allDays = messages.weekdays
     const weekDays = []
@@ -76,7 +79,8 @@ export default function CalendarGrid({
                         ? new Date(dayObj.date).setHours(23, 59, 59, 999) >
                           new Date(maxDate).setHours(23, 59, 59, 999)
                         : false
-                    const isDisabled = isBeforeMin || isAfterMax
+                    const isDisabled =
+                        isBeforeMin || isAfterMax || isInteractionDisabled
 
                     if (enableRange && Array.isArray(selectedDate)) {
                         const [start, end] = selectedDate

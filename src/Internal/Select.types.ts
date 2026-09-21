@@ -22,4 +22,6 @@ export interface CustomSelectProps {
     minSelection?: number
     maxSelection?: number
     messages?: CalendarMessages
+    disabled?: boolean
+    readOnly?: boolean
 }

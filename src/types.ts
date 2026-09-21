@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { AriaAttributes, ReactNode, Ref } from 'react'
 import type { CalendarLocale, CalendarMessages } from './messages.js'
 
 export type CalendarValue = Date | [Date | null, Date | null] | undefined
@@ -58,12 +58,18 @@ export const defaultCalendarDesign: Required<CalendarCustomDesign> = {
     hoverTextMuted: 'hover:text-gray-500',
 }
 
-export interface CalendarProps {
+export interface CalendarProps extends AriaAttributes {
     id?: string
     name?: string
     value?: CalendarInputValue
     onChange?: (value: CalendarValue) => void
+    label?: ReactNode
+    description?: ReactNode
+    error?: string | null
     required?: boolean
+    disabled?: boolean
+    readOnly?: boolean
+    triggerRef?: Ref<HTMLDivElement>
     className?: string
     enableTime?: boolean
     enableRange?: boolean
@@ -95,6 +101,8 @@ export interface CalendarHeaderProps {
     fastEdit?: boolean
     customDesign?: CalendarCustomDesign
     messages?: CalendarMessages
+    disabled?: boolean
+    readOnly?: boolean
 }
 
 export interface CalendarGridProps {
@@ -110,6 +118,8 @@ export interface CalendarGridProps {
     showHolidays?: boolean
     locale?: CalendarLocale
     messages?: CalendarMessages
+    disabled?: boolean
+    readOnly?: boolean
 }
 
 export interface CalendarTimeInputProps {
@@ -120,4 +130,6 @@ export interface CalendarTimeInputProps {
     minTime?: string
     maxTime?: string
     messages?: CalendarMessages
+    disabled?: boolean
+    readOnly?: boolean
 }

@@ -16,6 +16,8 @@ interface FastEditSelectProps {
     className?: string
     onChange: (value: string) => void
     messages: CalendarMessages
+    disabled?: boolean
+    readOnly?: boolean
 }
 
 function FastEditSelect({
@@ -24,6 +26,8 @@ function FastEditSelect({
     className = '',
     onChange,
     messages,
+    disabled = false,
+    readOnly = false,
 }: FastEditSelectProps) {
     return (
         <div className={className}>
@@ -32,6 +36,8 @@ function FastEditSelect({
                 onValueChange={onChange}
                 options={options}
                 messages={messages}
+                disabled={disabled}
+                readOnly={readOnly}
                 className="h-9 w-full !min-w-0 rounded-lg !py-2 !pl-3 !pr-8"
             />
         </div>
@@ -57,6 +63,8 @@ export default function CalendarHeader({
     fastEdit = true,
     customDesign = defaultCalendarDesign,
     messages: providedMessages,
+    disabled = false,
+    readOnly = false,
 }: CalendarHeaderProps) {
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const messages = providedMessages ?? resolveCalendarMessages()
@@ -85,6 +93,7 @@ export default function CalendarHeader({
                 aria-label={messages.previousMonth}
                 className={`p-2 rounded-xl cursor-pointer transition-all ${cd.hoverBackground} ${cd.hoverText} active:scale-95`}
                 type="button"
+                disabled={disabled || readOnly}
             >
                 <ChevronLeft className={`w-5 h-5 ${cd.textMuted}`} />
             </button>
@@ -96,6 +105,8 @@ export default function CalendarHeader({
                         onChange={handleMonthChange}
                         options={monthOptions}
                         messages={messages}
+                        disabled={disabled}
+                        readOnly={readOnly}
                         className="min-w-0 flex-[1.4_1_0]"
                     />
                     <FastEditSelect
@@ -103,6 +114,8 @@ export default function CalendarHeader({
                         onChange={handleYearChange}
                         options={yearOptions}
                         messages={messages}
+                        disabled={disabled}
+                        readOnly={readOnly}
                         className="min-w-0 flex-[0.8_1_0]"
                     />
                 </div>
@@ -119,6 +132,7 @@ export default function CalendarHeader({
                 aria-label={messages.nextMonth}
                 className={`p-2 rounded-xl cursor-pointer transition-all ${cd.hoverBackground} ${cd.hoverText} active:scale-95`}
                 type="button"
+                disabled={disabled || readOnly}
             >
                 <ChevronRight className={`w-5 h-5 ${cd.textMuted}`} />
             </button>

@@ -21,8 +21,11 @@ export function CustomSelect({
     minSelection,
     maxSelection,
     messages: providedMessages,
+    disabled = false,
+    readOnly = false,
 }: CustomSelectProps) {
     const messages = providedMessages ?? resolveCalendarMessages()
+    const isInteractionDisabled = disabled || readOnly
     const [open, setOpen] = useState(false)
     const [searchValue, setSearchValue] = useState('')
     const [isTouched, setIsTouched] = useState(false)
@@ -91,6 +94,10 @@ export function CustomSelect({
     }, [options, selectedValues])
 
     function handleValueChange(nextValue: string) {
+        if (isInteractionDisabled) {
+            return
+        }
+
         if (multiple) {
             let nextArray = selectedValues.includes(nextValue)
                 ? selectedValues.filter((v) => v !== nextValue)
@@ -156,6 +163,7 @@ export function CustomSelect({
 
     return (
         <SelectPrimitive.Root
+            disabled={isInteractionDisabled}
             open={open}
             onOpenChange={(nextOpen) => {
                 if (multiple && !nextOpen && shouldKeepOpen.current) {
@@ -180,7 +188,8 @@ export function CustomSelect({
                     value={value}
                     onChange={() => undefined}
                     onInvalid={handleInvalid}
-                    required={required}
+                    required={required && !disabled}
+                    disabled={disabled}
                     tabIndex={-1}
                     aria-hidden="true"
                     className="pointer-events-none absolute left-0 top-1/2 h-px w-px -translate-y-1/2 opacity-0"
@@ -200,6 +209,8 @@ export function CustomSelect({
                 )}
                 <SelectPrimitive.Trigger
                     id={id}
+                    disabled={isInteractionDisabled}
+                    aria-readonly={readOnly || undefined}
                     aria-invalid={hasError}
                     className={`bg-input-dark border text-[11px] text-gray-300 rounded-lg ${
                         hasLeftIcon ? 'pl-8' : 'pl-3'
@@ -270,6 +281,7 @@ export function CustomSelect({
                             ref={searchInputRef}
                             aria-label={messages.searchOptions}
                             value={searchValue}
+                            disabled={isInteractionDisabled}
                             onChange={(event) =>
                                 setSearchValue(event.target.value)
                             }

@@ -12,6 +12,8 @@ function SingleTimeInput({
     cd,
     minTime,
     maxTime,
+    disabled = false,
+    readOnly = false,
 }: {
     date: Date | null
     label?: string
@@ -19,6 +21,8 @@ function SingleTimeInput({
     cd: Required<CalendarCustomDesign>
     minTime?: string
     maxTime?: string
+    disabled?: boolean
+    readOnly?: boolean
 }) {
     const [timeStr, setTimeStr] = useState(() => formatTimeToString(date))
     const [prevDate, setPrevDate] = useState(date)
@@ -31,6 +35,10 @@ function SingleTimeInput({
     }
 
     function updateDate(newTimeStr: string) {
+        if (disabled || readOnly) {
+            return
+        }
+
         let h = parseInt(newTimeStr.slice(0, 2), 10)
         let m = parseInt(newTimeStr.slice(2, 4), 10)
 
@@ -62,7 +70,7 @@ function SingleTimeInput({
     }
 
     function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
-        if (cursorPos === null) return
+        if (disabled || readOnly || cursorPos === null) return
 
         if (e.key === 'ArrowLeft') {
             e.preventDefault()
@@ -120,13 +128,15 @@ function SingleTimeInput({
             )}
             <div
                 ref={containerRef}
-                tabIndex={0}
+                tabIndex={disabled || readOnly ? -1 : 0}
                 onKeyDown={handleKeyDown}
                 onFocus={() => {
-                    if (cursorPos === null) setCursorPos(0)
+                    if (!disabled && !readOnly && cursorPos === null) {
+                        setCursorPos(0)
+                    }
                 }}
                 onBlur={() => setCursorPos(null)}
-                className={`relative flex items-center justify-center bg-transparent border ${cd.borderColor} rounded-lg px-3 py-1.5 ${cd.primaryFocusBorder} ${cd.primaryRing} transition-all shadow-sm cursor-text outline-none`}
+                className={`relative flex items-center justify-center bg-transparent border ${cd.borderColor} rounded-lg px-3 py-1.5 ${cd.primaryFocusBorder} ${cd.primaryRing} transition-all shadow-sm ${disabled || readOnly ? 'cursor-not-allowed opacity-60' : 'cursor-text'} outline-none`}
             >
                 <div
                     className={`flex items-center ${cd.textColor} text-[15px] font-medium gap-0.5`}
@@ -136,12 +146,16 @@ function SingleTimeInput({
                         isActive={cursorPos === 0}
                         onClick={() => setCursorPos(0)}
                         cd={cd}
+                        disabled={disabled}
+                        readOnly={readOnly}
                     />
                     <Digit
                         char={timeStr[1]}
                         isActive={cursorPos === 1}
                         onClick={() => setCursorPos(1)}
                         cd={cd}
+                        disabled={disabled}
+                        readOnly={readOnly}
                     />
                     <span
                         className={`mx-0.5 pb-0.5 ${cd.textMutedDark} font-bold`}
@@ -153,12 +167,16 @@ function SingleTimeInput({
                         isActive={cursorPos === 2}
                         onClick={() => setCursorPos(2)}
                         cd={cd}
+                        disabled={disabled}
+                        readOnly={readOnly}
                     />
                     <Digit
                         char={timeStr[3]}
                         isActive={cursorPos === 3}
                         onClick={() => setCursorPos(3)}
                         cd={cd}
+                        disabled={disabled}
+                        readOnly={readOnly}
                     />
                 </div>
             </div>
@@ -171,19 +189,23 @@ function Digit({
     isActive,
     onClick,
     cd,
+    disabled = false,
+    readOnly = false,
 }: {
     char: string
     isActive: boolean
     onClick: () => void
     cd: Required<CalendarCustomDesign>
+    disabled?: boolean
+    readOnly?: boolean
 }) {
     return (
         <span
             onClick={(e) => {
                 e.stopPropagation()
-                onClick()
+                if (!disabled && !readOnly) onClick()
             }}
-            className={`w-3 text-center border-b-[1.5px] cursor-pointer transition-colors ${isActive ? `${cd.primaryBorder} ${cd.primaryColor}` : cd.borderTransparent}`}
+            className={`w-3 text-center border-b-[1.5px] ${disabled || readOnly ? 'cursor-not-allowed' : 'cursor-pointer'} transition-colors ${isActive ? `${cd.primaryBorder} ${cd.primaryColor}` : cd.borderTransparent}`}
         >
             {char}
         </span>
@@ -198,11 +220,17 @@ export default function CalendarTimeInput({
     minTime,
     maxTime,
     messages: providedMessages,
+    disabled = false,
+    readOnly = false,
 }: CalendarTimeInputProps) {
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const messages = providedMessages ?? resolveCalendarMessages()
 
     const handleUpdate = (index: number, newDate: Date) => {
+        if (disabled || readOnly) {
+            return
+        }
+
         if (enableRange && Array.isArray(value)) {
             const newValue = [...value] as [Date | null, Date | null]
             newValue[index] = newDate
@@ -225,6 +253,8 @@ export default function CalendarTimeInput({
                         cd={cd}
                         minTime={minTime}
                         maxTime={maxTime}
+                        disabled={disabled}
+                        readOnly={readOnly}
                     />
                     <SingleTimeInput
                         date={value[1]}
@@ -233,6 +263,8 @@ export default function CalendarTimeInput({
                         cd={cd}
                         minTime={minTime}
                         maxTime={maxTime}
+                        disabled={disabled}
+                        readOnly={readOnly}
                     />
                 </>
             ) : (
@@ -243,6 +275,8 @@ export default function CalendarTimeInput({
                     cd={cd}
                     minTime={minTime}
                     maxTime={maxTime}
+                    disabled={disabled}
+                    readOnly={readOnly}
                 />
             )}
         </div>
