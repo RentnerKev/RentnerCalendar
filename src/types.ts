@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { CalendarLocale, CalendarMessages } from './messages.js'
 
 export type CalendarValue = Date | [Date | null, Date | null] | undefined
 
@@ -82,6 +83,8 @@ export interface CalendarProps {
     weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7
     visibleDays?: number
     showHolidays?: boolean
+    locale?: CalendarLocale
+    messages?: Partial<CalendarMessages>
 }
 
 export interface CalendarHeaderProps {
@@ -91,6 +94,7 @@ export interface CalendarHeaderProps {
     onViewDateChange: (date: Date) => void
     fastEdit?: boolean
     customDesign?: CalendarCustomDesign
+    messages?: CalendarMessages
 }
 
 export interface CalendarGridProps {
@@ -104,6 +108,8 @@ export interface CalendarGridProps {
     weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7
     visibleDays?: number
     showHolidays?: boolean
+    locale?: CalendarLocale
+    messages?: CalendarMessages
 }
 
 export interface CalendarTimeInputProps {
@@ -113,4 +119,5 @@ export interface CalendarTimeInputProps {
     customDesign?: CalendarCustomDesign
     minTime?: string
     maxTime?: string
+    messages?: CalendarMessages
 }

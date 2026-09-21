@@ -1,5 +1,6 @@
 import { defaultCalendarDesign } from '../types.js'
 import type { CalendarGridProps } from '../types.js'
+import { resolveCalendarMessages } from '../messages.js'
 import {
     getGermanHolidayName,
     getTooltipStyle,
@@ -18,10 +19,13 @@ export default function CalendarGrid({
     visibleDays = 7,
     weekStartsOn = 1,
     showHolidays = false,
+    locale = 'de',
+    messages: providedMessages,
 }: CalendarGridProps) {
     const cd = { ...defaultCalendarDesign, ...customDesign }
+    const messages = providedMessages ?? resolveCalendarMessages(locale)
 
-    const allDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+    const allDays = messages.weekdays
     const weekDays = []
     for (let i = 0; i < visibleDays; i++) {
         weekDays.push(allDays[(weekStartsOn - 1 + i) % 7])
@@ -56,8 +60,13 @@ export default function CalendarGrid({
                     let isSelected = false
                     let isInRange = false
 
-                    const holidayName = showHolidays
+                    const germanHolidayName = showHolidays
                         ? getGermanHolidayName(dayObj.date)
+                        : null
+                    const holidayName = germanHolidayName
+                        ? (messages.holidayNames[
+                              germanHolidayName as keyof typeof messages.holidayNames
+                          ] ?? germanHolidayName)
                         : null
                     const isBeforeMin = minDate
                         ? new Date(dayObj.date).setHours(0, 0, 0, 0) <
@@ -137,6 +146,12 @@ export default function CalendarGrid({
                                     className={buttonClass.trim()}
                                     type="button"
                                     disabled={isDisabled}
+                                    aria-label={messages.selectDate(
+                                        dayObj.date.toLocaleDateString(
+                                            locale === 'en' ? 'en-US' : 'de-DE',
+                                            { dateStyle: 'full' },
+                                        ),
+                                    )}
                                 >
                                     {dayObj.date.getDate()}
                                     <span
@@ -156,6 +171,12 @@ export default function CalendarGrid({
                             className={buttonClass.trim()}
                             type="button"
                             disabled={isDisabled}
+                            aria-label={messages.selectDate(
+                                dayObj.date.toLocaleDateString(
+                                    locale === 'en' ? 'en-US' : 'de-DE',
+                                    { dateStyle: 'full' },
+                                ),
+                            )}
                         >
                             {dayObj.date.getDate()}
                         </button>

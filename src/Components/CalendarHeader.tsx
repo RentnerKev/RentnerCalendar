@@ -2,7 +2,8 @@ import { CustomSelect } from '../Internal/Select.js'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { defaultCalendarDesign } from '../types.js'
 import type { CalendarHeaderProps } from '../types.js'
-import { formatMonthName } from '../Tools/FormatFunctions.js'
+import { resolveCalendarMessages } from '../messages.js'
+import type { CalendarMessages } from '../messages.js'
 
 interface FastEditOption {
     value: string
@@ -14,6 +15,7 @@ interface FastEditSelectProps {
     options: FastEditOption[]
     className?: string
     onChange: (value: string) => void
+    messages: CalendarMessages
 }
 
 function FastEditSelect({
@@ -21,6 +23,7 @@ function FastEditSelect({
     options,
     className = '',
     onChange,
+    messages,
 }: FastEditSelectProps) {
     return (
         <div className={className}>
@@ -28,21 +31,12 @@ function FastEditSelect({
                 value={value}
                 onValueChange={onChange}
                 options={options}
+                messages={messages}
                 className="h-9 w-full !min-w-0 rounded-lg !py-2 !pl-3 !pr-8"
             />
         </div>
     )
 }
-
-const monthOptions: FastEditOption[] = Array.from(
-    { length: 12 },
-    (_, month) => ({
-        value: month.toString(),
-        label: new Intl.DateTimeFormat('de-DE', { month: 'long' }).format(
-            new Date(2024, month, 1),
-        ),
-    }),
-)
 
 function getYearOptions(currentYear: number): FastEditOption[] {
     const startYear = currentYear - 50
@@ -62,10 +56,18 @@ export default function CalendarHeader({
     onViewDateChange,
     fastEdit = true,
     customDesign = defaultCalendarDesign,
+    messages: providedMessages,
 }: CalendarHeaderProps) {
     const cd = { ...defaultCalendarDesign, ...customDesign }
+    const messages = providedMessages ?? resolveCalendarMessages()
     const currentMonth = currentDate.getMonth()
     const currentYear = currentDate.getFullYear()
+    const monthOptions: FastEditOption[] = messages.months.map(
+        (label, month) => ({
+            value: month.toString(),
+            label,
+        }),
+    )
     const yearOptions = getYearOptions(currentYear)
 
     function handleMonthChange(value: string) {
@@ -80,6 +82,7 @@ export default function CalendarHeader({
         <div className="flex items-center justify-between mb-4 px-1">
             <button
                 onClick={onPrevMonth}
+                aria-label={messages.previousMonth}
                 className={`p-2 rounded-xl cursor-pointer transition-all ${cd.hoverBackground} ${cd.hoverText} active:scale-95`}
                 type="button"
             >
@@ -92,12 +95,14 @@ export default function CalendarHeader({
                         value={currentMonth.toString()}
                         onChange={handleMonthChange}
                         options={monthOptions}
+                        messages={messages}
                         className="min-w-0 flex-[1.4_1_0]"
                     />
                     <FastEditSelect
                         value={currentYear.toString()}
                         onChange={handleYearChange}
                         options={yearOptions}
+                        messages={messages}
                         className="min-w-0 flex-[0.8_1_0]"
                     />
                 </div>
@@ -105,12 +110,13 @@ export default function CalendarHeader({
                 <div
                     className={`text-[15px] font-bold ${cd.textColor} tracking-wide`}
                 >
-                    {formatMonthName(currentDate)}
+                    {`${messages.months[currentMonth]} ${currentYear}`}
                 </div>
             )}
 
             <button
                 onClick={onNextMonth}
+                aria-label={messages.nextMonth}
                 className={`p-2 rounded-xl cursor-pointer transition-all ${cd.hoverBackground} ${cd.hoverText} active:scale-95`}
                 type="button"
             >

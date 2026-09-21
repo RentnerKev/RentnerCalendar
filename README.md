@@ -153,17 +153,37 @@ function App() {
 
 _(Eine vollständige Liste findest du in den Typdefinitionen `CalendarCustomDesign` der Library)_
 
+## Sprache und Meldungen
+
+Mit `locale="en"` verwendet der Kalender die vollständigen englischen
+Standardtexte. `locale` ist standardmäßig `"de"`; bestehende deutsche
+Anzeigen bleiben damit unverändert. Einzelne Meldungen können über `messages`
+überschrieben werden:
+
+```tsx
+<CustomCalendar
+    locale="en"
+    messages={{
+        apply: 'Save',
+        required: 'Please choose a date',
+    }}
+/>
+```
+
+`CalendarMessages`, `calendarMessageCatalog` und `resolveCalendarMessages`
+werden aus dem Paketeinstieg exportiert.
+
 ## Hilfsfunktionen
 
 Die Library exportiert nützliche Funktionen zur Arbeit mit Daten und zur Formatierung:
 
-| Funktion                     | Beschreibung                                                                                                                  |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `formatCalendarValue(value)` | Formatiert `Date` oder `Range` zu einem lesbaren String (z.B. "01.01.2024 12:00 - 02.01.2024").                               |
-| `isSameDay(d1, d2)`          | Prüft, ob zwei Daten der gleiche Kalendertag sind.                                                                            |
-| `isToday(date)`              | Prüft, ob das übergebene Datum der heutige Tag ist.                                                                           |
-| `formatMonthName(date)`      | Gibt Monat und Jahr des Datums formatiert zurück (z.B. "Januar 2024").                                                        |
-| `getGermanHolidayName(date)` | Prüft, ob ein Datum ein deutscher Feiertag ist, und gibt dessen Namen als String (z.B. "Silvester") zurück, andernfalls null. |
+| Funktion                              | Beschreibung                                                                                                                  |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `formatCalendarValue(value, locale?)` | Formatiert `Date` oder `Range` auf Deutsch oder Englisch zu einem lesbaren String.                                            |
+| `isSameDay(d1, d2)`                   | Prüft, ob zwei Daten der gleiche Kalendertag sind.                                                                            |
+| `isToday(date)`                       | Prüft, ob das übergebene Datum der heutige Tag ist.                                                                           |
+| `formatMonthName(date, locale?)`      | Gibt Monat und Jahr des Datums auf Deutsch oder Englisch formatiert zurück (z.B. "Januar 2024").                              |
+| `getGermanHolidayName(date)`          | Prüft, ob ein Datum ein deutscher Feiertag ist, und gibt dessen Namen als String (z.B. "Silvester") zurück, andernfalls null. |
 
 ## Props (Typen)
 
@@ -193,6 +213,8 @@ Die Library exportiert nützliche Funktionen zur Arbeit mit Daten und zur Format
 | `weekStartsOn`  | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7` | `1`              | Definiert den Start der Woche (1 = Montag, 7 = Sonntag).                                                          |
 | `visibleDays`   | `number`                          | `7`              | Anzahl der sichtbaren Tage pro Woche im Grid.                                                                     |
 | `showHolidays`  | `boolean`                         | `false`          | Markiert deutsche gesetzliche Feiertage mit einem Punkt und Tooltip.                                              |
+| `locale`        | `'de' \| 'en'`                    | `'de'`           | Sprache für UI-, Validierungs- und ARIA-Texte sowie die Datumsformatierung.                                       |
+| `messages`      | `Partial<CalendarMessages>`       | `undefined`      | Überschreibt einzelne Texte des gewählten Sprachkatalogs.                                                         |
 | `switchMode`    | `boolean`                         | `false`          | Erlaubt es dem Nutzer, im Interface zwischen Einzeldatum- und Zeitraums-Modus zu wechseln.                        |
 | `isDeletatable` | `boolean`                         | `false`          | Fügt einen Button hinzu, um den ausgewählten Wert zu löschen (null).                                              |
 

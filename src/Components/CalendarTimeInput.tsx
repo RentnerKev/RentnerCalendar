@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { defaultCalendarDesign } from '../types.js'
 import type { KeyboardEvent } from 'react'
 import type { CalendarCustomDesign, CalendarTimeInputProps } from '../types.js'
+import { resolveCalendarMessages } from '../messages.js'
 import { formatTimeToString } from '../Tools/FormatFunctions.js'
 
 function SingleTimeInput({
@@ -196,8 +197,10 @@ export default function CalendarTimeInput({
     customDesign = defaultCalendarDesign,
     minTime,
     maxTime,
+    messages: providedMessages,
 }: CalendarTimeInputProps) {
     const cd = { ...defaultCalendarDesign, ...customDesign }
+    const messages = providedMessages ?? resolveCalendarMessages()
 
     const handleUpdate = (index: number, newDate: Date) => {
         if (enableRange && Array.isArray(value)) {
@@ -217,7 +220,7 @@ export default function CalendarTimeInput({
                 <>
                     <SingleTimeInput
                         date={value[0]}
-                        label="Von"
+                        label={messages.from}
                         onChangeDate={(d) => handleUpdate(0, d)}
                         cd={cd}
                         minTime={minTime}
@@ -225,7 +228,7 @@ export default function CalendarTimeInput({
                     />
                     <SingleTimeInput
                         date={value[1]}
-                        label="Bis"
+                        label={messages.to}
                         onChangeDate={(d) => handleUpdate(1, d)}
                         cd={cd}
                         minTime={minTime}
@@ -235,7 +238,7 @@ export default function CalendarTimeInput({
             ) : (
                 <SingleTimeInput
                     date={value as Date}
-                    label="Zeit"
+                    label={messages.time}
                     onChangeDate={(d) => handleUpdate(0, d)}
                     cd={cd}
                     minTime={minTime}

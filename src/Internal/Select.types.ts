@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { CalendarMessages } from '../messages.js'
 
 export interface Option {
     value: string
@@ -20,4 +21,5 @@ export interface CustomSelectProps {
     multiple?: boolean
     minSelection?: number
     maxSelection?: number
+    messages?: CalendarMessages
 }

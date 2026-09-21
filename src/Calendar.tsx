@@ -4,6 +4,7 @@ import { CustomTooltip } from './Internal/Tooltip.js'
 import { defaultCalendarDesign } from './types.js'
 import type { CSSProperties, InvalidEvent, MouseEvent } from 'react'
 import type { CalendarProps, CalendarValue } from './types.js'
+import { resolveCalendarMessages } from './messages.js'
 import CalendarHeader from './Components/CalendarHeader.js'
 import CalendarGrid from './Components/CalendarGrid.js'
 import CalendarTimeInput from './Components/CalendarTimeInput.js'
@@ -48,7 +49,7 @@ export function CustomCalendar({
     icon,
     backdrop = true,
     button = false,
-    placeholder = 'Klicke hier um die Auswahlen zu sehen!',
+    placeholder,
     customDesign = defaultCalendarDesign,
     closeOnSelect = false,
     minDate: rawMinDate,
@@ -59,12 +60,19 @@ export function CustomCalendar({
     weekStartsOn = 1,
     visibleDays = 7,
     showHolidays = false,
+    locale = 'de',
+    messages: messageOverrides,
 }: CalendarProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [isRangeMode, setIsRangeMode] = useState(enableRange)
     const [isTouched, setIsTouched] = useState(false)
 
     const normalizedValue = useMemo(() => normalizeValue(rawValue), [rawValue])
+    const messages = useMemo(
+        () => resolveCalendarMessages(locale, messageOverrides),
+        [locale, messageOverrides],
+    )
+    const resolvedPlaceholder = placeholder ?? messages.placeholder
     const minDate = useMemo(
         () => parseToDate(rawMinDate) || undefined,
         [rawMinDate],
@@ -100,7 +108,7 @@ export function CustomCalendar({
     const resolvedRadius = extractRadius(className) ?? '0.75rem'
     const error =
         required && !hasCalendarValue(normalizedValue)
-            ? 'Dieses Feld ist erforderlich'
+            ? messages.required
             : null
     const hasError = isTouched && error !== null
 
@@ -281,7 +289,7 @@ export function CustomCalendar({
     }
 
     const displayValue = normalizedValue
-        ? formatCalendarValue(normalizedValue)
+        ? formatCalendarValue(normalizedValue, locale)
         : ''
 
     const popoverContent = isOpen ? (
@@ -307,16 +315,18 @@ export function CustomCalendar({
                         <button
                             type="button"
                             onClick={() => setIsRangeMode(false)}
+                            aria-label={messages.day}
                             className={`flex-1 cursor-pointer py-1.5 text-sm font-medium rounded-md transition-all ${!isRangeMode ? `${cd.primaryBg} text-white shadow-sm` : `${cd.textMuted} ${cd.hoverText} hover:bg-white/5`}`}
                         >
-                            Tag
+                            {messages.day}
                         </button>
                         <button
                             type="button"
                             onClick={() => setIsRangeMode(true)}
+                            aria-label={messages.range}
                             className={`flex-1 cursor-pointer py-1.5 text-sm font-medium rounded-md transition-all ${isRangeMode ? `${cd.primaryBg} text-white shadow-sm` : `${cd.textMuted} ${cd.hoverText} hover:bg-white/5`}`}
                         >
-                            Zeitraum
+                            {messages.range}
                         </button>
                     </div>
                 )}
@@ -328,6 +338,7 @@ export function CustomCalendar({
                     onViewDateChange={handler.handleViewDateChange}
                     fastEdit={fastEdit}
                     customDesign={cd}
+                    messages={messages}
                 />
 
                 <CalendarGrid
@@ -341,6 +352,8 @@ export function CustomCalendar({
                     weekStartsOn={weekStartsOn}
                     visibleDays={visibleDays}
                     showHolidays={showHolidays}
+                    locale={locale}
+                    messages={messages}
                 />
 
                 {enableTime && (
@@ -351,6 +364,7 @@ export function CustomCalendar({
                         customDesign={cd}
                         minTime={minTime}
                         maxTime={maxTime}
+                        messages={messages}
                     />
                 )}
 
@@ -360,7 +374,7 @@ export function CustomCalendar({
                         onClick={handleApply}
                         className={`w-full cursor-pointer mt-4 py-2 rounded-lg text-white font-medium transition-colors ${cd.primaryBg} ${cd.primaryHover}`}
                     >
-                        Anwenden
+                        {messages.apply}
                     </button>
                 )}
             </div>
@@ -376,6 +390,7 @@ export function CustomCalendar({
             onClick={toggleCalendar}
             tabIndex={0}
             aria-invalid={hasError}
+            aria-label={isOpen ? messages.closeCalendar : messages.openCalendar}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
@@ -405,17 +420,19 @@ export function CustomCalendar({
             <span
                 className={`flex-1 truncate ${displayValue ? cd.textColor : cd.textMuted}`}
             >
-                {displayValue || placeholder}
+                {displayValue || resolvedPlaceholder}
             </span>
 
             {isDeletable && displayValue && (
-                <div
+                <button
+                    type="button"
                     onClick={handleClear}
+                    aria-label={messages.clear}
                     style={{ borderRadius: resolvedRadius }}
                     className="p-1 bg-red-500/50 hover:bg-red-500/40 transition-colors group/delete"
                 >
                     <X className="w-4 h-4" />
-                </div>
+                </button>
             )}
 
             {isOpen &&

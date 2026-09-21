@@ -4,6 +4,7 @@ import { AlertCircle, Check, ChevronDown } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { InvalidEvent } from 'react'
 import type { CustomSelectProps } from './Select.types.js'
+import { resolveCalendarMessages } from '../messages.js'
 
 export function CustomSelect({
     id,
@@ -19,7 +20,9 @@ export function CustomSelect({
     multiple = false,
     minSelection,
     maxSelection,
+    messages: providedMessages,
 }: CustomSelectProps) {
+    const messages = providedMessages ?? resolveCalendarMessages()
     const [open, setOpen] = useState(false)
     const [searchValue, setSearchValue] = useState('')
     const [isTouched, setIsTouched] = useState(false)
@@ -34,24 +37,31 @@ export function CustomSelect({
 
     const error = useMemo(() => {
         if (required && selectedValues.length === 0) {
-            return 'Dieses Feld ist erforderlich'
+            return messages.required
         }
         if (
             multiple &&
             minSelection !== undefined &&
             selectedValues.length < minSelection
         ) {
-            return `Mindestens ${minSelection} Optionen auswählen`
+            return messages.minSelection(minSelection)
         }
         if (
             multiple &&
             maxSelection !== undefined &&
             selectedValues.length > maxSelection
         ) {
-            return `Maximal ${maxSelection} Optionen auswählen`
+            return messages.maxSelection(maxSelection)
         }
         return null
-    }, [required, multiple, minSelection, maxSelection, selectedValues])
+    }, [
+        messages,
+        required,
+        multiple,
+        minSelection,
+        maxSelection,
+        selectedValues,
+    ])
 
     const hasError = isTouched && error !== null
     const hasLeftIcon = Boolean(icon || hasError)
@@ -258,7 +268,7 @@ export function CustomSelect({
                     <div className="border-b border-border-dark p-1">
                         <input
                             ref={searchInputRef}
-                            aria-label="Optionen suchen"
+                            aria-label={messages.searchOptions}
                             value={searchValue}
                             onChange={(event) =>
                                 setSearchValue(event.target.value)
@@ -276,7 +286,7 @@ export function CustomSelect({
                                     event.stopPropagation()
                                 }
                             }}
-                            placeholder="Suchen..."
+                            placeholder={messages.searchPlaceholder}
                             className="h-8 w-full rounded-md border border-border-dark bg-input-dark px-2 text-[11px] font-bold uppercase tracking-wider text-gray-300 outline-none placeholder:text-gray-500 focus:border-primary"
                         />
                     </div>
@@ -333,8 +343,8 @@ export function CustomSelect({
                             ) : (
                                 <div className="relative flex w-full select-none items-center rounded-md py-2 pl-8 pr-2 text-[11px] font-bold uppercase tracking-wider text-gray-500 opacity-60 outline-none italic cursor-not-allowed">
                                     {searchValue.trim()
-                                        ? 'Keine Ergebnisse'
-                                        : fallbackOption || 'Keine Optionen'}
+                                        ? messages.noResults
+                                        : fallbackOption || messages.noOptions}
                                 </div>
                             )}
                         </SelectPrimitive.Viewport>
