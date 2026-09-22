@@ -158,7 +158,7 @@ export function CustomCalendar({
     }
 
     const popoverStyle: CSSProperties = {
-        position: 'absolute',
+        position: 'fixed',
         top: dropdownPosition === 'bottom' ? `${coords.top}px` : 'auto',
         bottom: dropdownPosition === 'top' ? `${coords.bottom}px` : 'auto',
         left: `${coords.left}px`,
@@ -237,6 +237,20 @@ export function CustomCalendar({
             document.body.style.overflow = previousOverflow
         }
     }, [disabled, isOpen, readOnly])
+
+    useEffect(() => {
+        if (!isOpen) return
+
+        const updatePosition = positionHandler.updatePosition
+        updatePosition()
+        window.addEventListener('resize', updatePosition)
+        window.addEventListener('scroll', updatePosition, true)
+
+        return () => {
+            window.removeEventListener('resize', updatePosition)
+            window.removeEventListener('scroll', updatePosition, true)
+        }
+    }, [isOpen, positionHandler.updatePosition])
 
     const closeCalendar = useCallback(() => {
         setTempValue(normalizedValue)

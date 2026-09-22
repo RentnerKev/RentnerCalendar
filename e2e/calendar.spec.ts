@@ -20,6 +20,45 @@ test.describe('calendar playground', () => {
         await expect(trigger).toBeFocused()
     })
 
+    test('keeps the portal anchored to the trigger on a tall page', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 900, height: 700 })
+        await page.goto('/')
+        await page.evaluate(() => {
+            document.body.style.minHeight = '1600px'
+            const trigger = document.querySelector<HTMLElement>('#appointment')!
+            trigger.style.position = 'fixed'
+            trigger.style.top = '590px'
+            trigger.style.left = '300px'
+        })
+
+        const trigger = page.locator('#appointment')
+        await trigger.click()
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        await expect(dialog).toHaveCSS('position', 'fixed')
+        await expect
+            .poll(async () => {
+                const triggerBox = await trigger.boundingBox()
+                const dialogBox = await dialog.boundingBox()
+                return triggerBox && dialogBox
+                    ? triggerBox.y - (dialogBox.y + dialogBox.height)
+                    : null
+            })
+            .toBeCloseTo(8, 0)
+
+        await page.setViewportSize({ width: 900, height: 760 })
+        await expect
+            .poll(async () => {
+                const triggerBox = await trigger.boundingBox()
+                const dialogBox = await dialog.boundingBox()
+                return triggerBox && dialogBox
+                    ? triggerBox.y - (dialogBox.y + dialogBox.height)
+                    : null
+            })
+            .toBeCloseTo(8, 0)
+    })
+
     test('exposes selected days and native form metadata', async ({ page }) => {
         await page.goto('/')
 

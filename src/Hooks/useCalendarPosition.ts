@@ -28,10 +28,6 @@ export default function useCalendarPosition(
         }
 
         const rect = trigger.getBoundingClientRect()
-        const documentHeight = Math.max(
-            document.documentElement.scrollHeight,
-            document.body.scrollHeight,
-        )
         const spaceBelow = window.innerHeight - rect.bottom
         const spaceAbove = rect.top
         const estimatedCalendarHeight = 450
@@ -43,9 +39,9 @@ export default function useCalendarPosition(
         setPosition({
             dropdownPosition,
             coords: {
-                left: rect.left + window.scrollX,
-                top: rect.bottom + window.scrollY + 8,
-                bottom: documentHeight - (rect.top + window.scrollY) + 8,
+                left: rect.left,
+                top: rect.bottom + 8,
+                bottom: window.innerHeight - rect.top + 8,
                 width: rect.width,
                 maxHeight:
                     dropdownPosition === 'bottom'
