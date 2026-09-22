@@ -305,23 +305,18 @@ Die Library exportiert nützliche Funktionen zur Arbeit mit Daten und zur Format
 
 ## CSS-Konfiguration
 
-Der Kalender nutzt Tailwind CSS Variablen. Damit das Standard-Design korrekt angezeigt wird, füge dies zu deiner `index.css` hinzu:
+Der Kalender liefert einen eigenen Tailwind-Einstieg. Importiere ihn nach Tailwind CSS in deine Haupt-CSS-Datei:
 
 ```css
 @import 'tailwindcss';
-/* WICHTIG: Damit Tailwind die Klassen in der Library erkennt */
-@source "../node_modules/@rentnerkev/calendar";
-
-@theme {
-    --color-primary: #13ecd6;
-    --color-primary-hover: #0fbdaa;
-    --color-background-dark: #0f1014;
-    --color-surface-dark: #181a1f;
-    --color-input-dark: #22252b;
-    --color-border-dark: #2e323b;
-    --color-secondary-text: #9ca3af;
-}
+@import '@rentnerkev/calendar/tailwind.css';
 ```
+
+Der Paket-Einstieg scannt ausschließlich die veröffentlichten JavaScript-Dateien
+unter `dist`. Er stellt die gemeinsamen Theme-Tokens `primary`, `primary-hover`,
+`background-dark`, `surface-dark`, `input-dark`, `border-dark`, `secondary-text`
+und `muted-foreground` bereit. Eigene Werte können danach mit einem weiteren
+`@theme`-Block überschrieben werden.
 
 ## Entwicklung
 
