@@ -1,6 +1,6 @@
 {
     "name": "@rentnerkev/calendar",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "A customizable React calendar with range selection, time input, holidays, and fast navigation.",
     "author": "RentnerKev",
     "license": "MIT",
@@ -20,13 +20,14 @@
         "typecheck": "tsc --noEmit",
         "prepare": "bun run build",
         "pack:check": "bun pm pack --dry-run",
+        "test:e2e": "playwright test",
         "playground:dev": "bun --cwd playground dev",
         "playground:build": "bun --cwd playground build",
         "lint": "oxlint .",
         "lint:fix": "oxlint --fix .",
         "format": "oxfmt .",
         "format:check": "oxfmt --check .",
-        "verify": "bun run typecheck && bun run lint && bun run format:check && bun run test && bun run build && bun run pack:check"
+        "verify": "bun run typecheck && bun run lint && bun run format:check && bun run test && bun run build && bun run pack:check && bun run test:e2e"
     },
     "repository": {
         "type": "git",
@@ -45,6 +46,8 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
+        "@axe-core/playwright": "^4.13.0",
+        "@playwright/test": "^1.63.0",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.2.4",
         "oxfmt": "^0.68.0",
@@ -55,7 +58,7 @@
     },
     "dependencies": {
         "@radix-ui/react-select": "^2.3.7",
-        "@radix-ui/react-tooltip": "^1.2.16",
+        "@rentnerkev/tooltips": "^2.0.0",
         "lucide-react": "^1.47.0"
     },
     "exports": {

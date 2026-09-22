@@ -332,6 +332,7 @@ them with a later `@theme` block when needed.
 bun install --frozen-lockfile
 bun install --cwd playground --frozen-lockfile
 bun run verify
+bun run test:e2e
 bun run playground:build
 ```
 

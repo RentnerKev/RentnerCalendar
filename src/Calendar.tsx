@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { CustomTooltip } from './Internal/Tooltip.js'
 import { defaultCalendarDesign } from './types.js'
 import type {
     CSSProperties,
@@ -11,9 +9,8 @@ import type {
 } from 'react'
 import type { CalendarProps, CalendarValue } from './types.js'
 import { resolveCalendarMessages } from './messages.js'
-import CalendarHeader from './Components/CalendarHeader.js'
-import CalendarGrid from './Components/CalendarGrid.js'
-import CalendarTimeInput from './Components/CalendarTimeInput.js'
+import CalendarPopover from './Components/CalendarPopover.js'
+import useCalendarPosition from './Hooks/useCalendarPosition.js'
 import useCalendarLogic from './Hooks/useCalendarLogic.js'
 import {
     commitCalendarSelection,
@@ -24,12 +21,12 @@ import {
     mergeAriaIds,
     resolveCalendarFieldError,
 } from './Tools/CalendarField.js'
-import { AlertCircle, CalendarDays, X } from 'lucide-react'
 import {
     extractRadius,
     normalizeValue,
     parseToDate,
 } from './Tools/InternalOnlyFunctions.js'
+import CalendarField from './Components/CalendarField.js'
 
 const calendarPopoverMinWidth = 340
 
@@ -99,6 +96,7 @@ export function CustomCalendar({
     const labelId = `${fieldId}-label`
     const descriptionId = `${fieldId}-description`
     const errorId = `${fieldId}-error`
+    const dialogId = `${fieldId}-dialog`
 
     const normalizedValue = useMemo(() => normalizeValue(rawValue), [rawValue])
     const messages = useMemo(
@@ -117,18 +115,6 @@ export function CustomCalendar({
 
     const [tempValue, setTempValue] = useState(normalizedValue)
     const [prevRawValue, setPrevRawValue] = useState(rawValue)
-    const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>(
-        'bottom',
-    )
-
-    const [coords, setCoords] = useState({
-        top: 0,
-        bottom: 0,
-        left: 0,
-        width: 0,
-        maxHeight: 0,
-    })
-
     if (rawValue !== prevRawValue) {
         setPrevRawValue(rawValue)
         setTempValue(normalizedValue)
@@ -138,9 +124,14 @@ export function CustomCalendar({
         setIsOpen(false)
     }
 
-    const triggerRef = useRef<HTMLDivElement>(null)
+    const triggerRef = useRef<HTMLButtonElement>(null)
+    const popoverRef = useRef<HTMLDivElement>(null)
+    const wasOpenRef = useRef(false)
     const validationInputRef = useRef<HTMLInputElement>(null)
     const cd = { ...defaultCalendarDesign, ...customDesign }
+    const { handler: positionHandler, state: positionState } =
+        useCalendarPosition(triggerRef)
+    const { dropdownPosition, coords } = positionState
 
     const resolvedRadius = extractRadius(className) ?? '0.75rem'
     const internalError =
@@ -181,7 +172,7 @@ export function CustomCalendar({
     }
 
     const inputClasses = [
-        'relative flex items-center px-4 gap-3 shadow-sm transition-all cursor-pointer group outline-none',
+        'relative flex items-center px-4 gap-3 shadow-sm transition-colors cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
         hasError
             ? 'border-red-500 focus:ring-2 focus:ring-red-500/50'
             : cd.borderColor,
@@ -247,10 +238,34 @@ export function CustomCalendar({
         }
     }, [disabled, isOpen, readOnly])
 
-    function closeCalendar() {
+    const closeCalendar = useCallback(() => {
         setTempValue(normalizedValue)
         setIsOpen(false)
-    }
+    }, [normalizedValue])
+
+    useEffect(() => {
+        if (!isOpen) {
+            if (wasOpenRef.current) {
+                wasOpenRef.current = false
+                queueMicrotask(() => triggerRef.current?.focus())
+            }
+            return
+        }
+
+        wasOpenRef.current = true
+        queueMicrotask(() => popoverRef.current?.focus())
+
+        function handleEscape(event: KeyboardEvent) {
+            if (event.key !== 'Escape') return
+
+            event.preventDefault()
+            event.stopPropagation()
+            closeCalendar()
+        }
+
+        document.addEventListener('keydown', handleEscape)
+        return () => document.removeEventListener('keydown', handleEscape)
+    }, [closeCalendar, isOpen])
 
     function toggleCalendar() {
         if (disabled || readOnly) {
@@ -264,35 +279,7 @@ export function CustomCalendar({
             return
         }
 
-        if (triggerRef.current) {
-            const rect = triggerRef.current.getBoundingClientRect()
-            const spaceBelow = window.innerHeight - rect.bottom
-            const spaceAbove = rect.top
-
-            const estimatedCalendarHeight = 450
-
-            let pos: 'bottom' | 'top' = 'bottom'
-
-            if (
-                spaceBelow < estimatedCalendarHeight &&
-                spaceAbove > spaceBelow
-            ) {
-                pos = 'top'
-            }
-
-            setDropdownPosition(pos)
-
-            setCoords({
-                left: rect.left + window.scrollX,
-                top: rect.bottom + window.scrollY + 8,
-                bottom: window.innerHeight - rect.top - window.scrollY + 8,
-                width: rect.width,
-                maxHeight:
-                    pos === 'bottom'
-                        ? Math.max(spaceBelow - 16, 250)
-                        : Math.max(spaceAbove - 16, 250),
-            })
-        }
+        positionHandler.updatePosition()
 
         setIsOpen(true)
     }
@@ -358,7 +345,7 @@ export function CustomCalendar({
     }
 
     const setTriggerRef = useCallback(
-        (element: HTMLDivElement | null) => {
+        (element: HTMLButtonElement | null) => {
             triggerRef.current = element
             assignRef(forwardedTriggerRef, element)
         },
@@ -370,218 +357,83 @@ export function CustomCalendar({
         : ''
 
     const popoverContent = isOpen ? (
-        <>
-            {backdrop && (
-                <div
-                    className="fixed inset-0 z-[8999]"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        closeCalendar()
-                    }}
-                />
-            )}
-            <div
-                className={popoverClasses}
-                style={popoverStyle}
-                onClick={(e) => e.stopPropagation()}
-            >
-                {switchMode && (
-                    <div
-                        className={`flex items-center justify-between p-1 mb-4 rounded-lg bg-black/20 ${cd.borderColor} border`}
-                    >
-                        <button
-                            type="button"
-                            onClick={() => setIsRangeMode(false)}
-                            aria-label={messages.day}
-                            disabled={disabled || readOnly}
-                            className={`flex-1 cursor-pointer py-1.5 text-sm font-medium rounded-md transition-all ${!isRangeMode ? `${cd.primaryBg} text-white shadow-sm` : `${cd.textMuted} ${cd.hoverText} hover:bg-white/5`}`}
-                        >
-                            {messages.day}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setIsRangeMode(true)}
-                            aria-label={messages.range}
-                            disabled={disabled || readOnly}
-                            className={`flex-1 cursor-pointer py-1.5 text-sm font-medium rounded-md transition-all ${isRangeMode ? `${cd.primaryBg} text-white shadow-sm` : `${cd.textMuted} ${cd.hoverText} hover:bg-white/5`}`}
-                        >
-                            {messages.range}
-                        </button>
-                    </div>
-                )}
-
-                <CalendarHeader
-                    currentDate={state.viewDate}
-                    onPrevMonth={handler.handlePrevMonth}
-                    onNextMonth={handler.handleNextMonth}
-                    onViewDateChange={handler.handleViewDateChange}
-                    fastEdit={fastEdit}
-                    customDesign={cd}
-                    messages={messages}
-                    disabled={disabled}
-                    readOnly={readOnly}
-                />
-
-                <CalendarGrid
-                    handleGetDaysInMonth={handler.handleGetDaysInMonth}
-                    selectedDate={state.internalValue}
-                    onSelectDate={handler.handleDateSelect}
-                    enableRange={isRangeMode}
-                    customDesign={cd}
-                    minDate={minDate}
-                    maxDate={maxDate}
-                    weekStartsOn={weekStartsOn}
-                    visibleDays={visibleDays}
-                    showHolidays={showHolidays}
-                    locale={locale}
-                    messages={messages}
-                    disabled={disabled}
-                    readOnly={readOnly}
-                />
-
-                {enableTime && (
-                    <CalendarTimeInput
-                        value={state.internalValue}
-                        onChange={handler.handleTimeChange}
-                        enableRange={isRangeMode}
-                        customDesign={cd}
-                        minTime={minTime}
-                        maxTime={maxTime}
-                        messages={messages}
-                        disabled={disabled}
-                        readOnly={readOnly}
-                    />
-                )}
-
-                {button && (
-                    <button
-                        type="button"
-                        onClick={handleApply}
-                        disabled={disabled || readOnly}
-                        className={`w-full cursor-pointer mt-4 py-2 rounded-lg text-white font-medium transition-colors ${cd.primaryBg} ${cd.primaryHover}`}
-                    >
-                        {messages.apply}
-                    </button>
-                )}
-            </div>
-        </>
+        <CalendarPopover
+            backdrop={backdrop}
+            onClose={closeCalendar}
+            dialogId={dialogId}
+            popoverRef={popoverRef}
+            className={popoverClasses}
+            style={popoverStyle}
+            labelledBy={labelledBy}
+            describedBy={describedBy}
+            dialogLabel={messages.openCalendar}
+            switchMode={switchMode}
+            isRangeMode={isRangeMode}
+            onRangeModeChange={setIsRangeMode}
+            disabled={disabled}
+            readOnly={readOnly}
+            messages={messages}
+            currentDate={state.viewDate}
+            onPrevMonth={handler.handlePrevMonth}
+            onNextMonth={handler.handleNextMonth}
+            onViewDateChange={handler.handleViewDateChange}
+            fastEdit={fastEdit}
+            customDesign={cd}
+            getDaysInMonth={handler.handleGetDaysInMonth}
+            selectedDate={state.internalValue}
+            onSelectDate={handler.handleDateSelect}
+            minDate={minDate}
+            maxDate={maxDate}
+            weekStartsOn={weekStartsOn}
+            visibleDays={visibleDays}
+            showHolidays={showHolidays}
+            locale={locale}
+            enableTime={enableTime}
+            onTimeChange={handler.handleTimeChange}
+            minTime={minTime}
+            maxTime={maxTime}
+            button={button}
+            onApply={handleApply}
+        />
     ) : null
 
     return (
-        <div className="w-full">
-            {label != null && (
-                <div id={labelId} className="mb-1 text-sm font-medium">
-                    {label}
-                </div>
-            )}
-            <div
-                id={fieldId}
-                ref={setTriggerRef}
-                className={inputClasses}
-                style={inputStyle}
-                onClick={toggleCalendar}
-                tabIndex={disabled ? -1 : 0}
-                {...ariaProps}
-                aria-invalid={
-                    hasError || ariaProps['aria-invalid'] || undefined
-                }
-                aria-required={
-                    disabled
-                        ? undefined
-                        : externalError === undefined
-                          ? required || ariaProps['aria-required'] || undefined
-                          : ariaProps['aria-required']
-                }
-                aria-errormessage={
-                    hasError ? errorId : ariaProps['aria-errormessage']
-                }
-                aria-label={
-                    ariaLabel ??
-                    (labelledBy
-                        ? undefined
-                        : isOpen
-                          ? messages.closeCalendar
-                          : messages.openCalendar)
-                }
-                aria-labelledby={labelledBy}
-                aria-describedby={describedBy}
-                aria-disabled={
-                    disabled || ariaProps['aria-disabled'] || undefined
-                }
-                aria-readonly={
-                    readOnly || ariaProps['aria-readonly'] || undefined
-                }
-                aria-expanded={isOpen}
-                aria-haspopup={ariaProps['aria-haspopup'] ?? 'dialog'}
-                role="button"
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        toggleCalendar()
-                    }
-                }}
-            >
-                <input
-                    ref={validationInputRef}
-                    name={name}
-                    value={displayValue}
-                    onChange={() => undefined}
-                    onInvalid={handleInvalid}
-                    required={
-                        required && !disabled && externalError === undefined
-                    }
-                    disabled={disabled}
-                    readOnly={readOnly}
-                    tabIndex={-1}
-                    aria-hidden="true"
-                    className="pointer-events-none absolute h-px w-px opacity-0"
-                />
-                {hasError ? (
-                    <CustomTooltip content={error || ''} side="bottom">
-                        <AlertCircle className="h-5 w-5 text-red-500" />
-                    </CustomTooltip>
-                ) : (
-                    icon !== false &&
-                    (icon || (
-                        <CalendarDays className={`w-5 h-5 ${cd.textMuted}`} />
-                    ))
-                )}
-                <span
-                    className={`flex-1 truncate ${displayValue ? cd.textColor : cd.textMuted}`}
-                >
-                    {displayValue || resolvedPlaceholder}
-                </span>
-
-                {isDeletable && displayValue && (
-                    <button
-                        type="button"
-                        onClick={handleClear}
-                        aria-label={messages.clear}
-                        disabled={disabled || readOnly}
-                        style={{ borderRadius: resolvedRadius }}
-                        className="p-1 bg-red-500/50 hover:bg-red-500/40 transition-colors group/delete"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                )}
-
-                {isOpen &&
-                    typeof document !== 'undefined' &&
-                    createPortal(popoverContent, document.body)}
-            </div>
-            {description != null && (
-                <div
-                    id={descriptionId}
-                    className="mt-1 text-xs text-muted-foreground"
-                >
-                    {description}
-                </div>
-            )}
-            {hasError && error && (
-                <span id={errorId} className="sr-only">
-                    {error}
-                </span>
-            )}
-        </div>
+        <CalendarField
+            ariaLabel={ariaLabel}
+            ariaLabelledBy={labelledBy}
+            ariaDescribedBy={describedBy}
+            ariaProps={ariaProps}
+            cd={cd}
+            description={description}
+            descriptionId={descriptionId}
+            dialogId={dialogId}
+            disabled={disabled}
+            displayValue={displayValue}
+            error={error}
+            errorId={errorId}
+            fieldId={fieldId}
+            handleClear={handleClear}
+            handleInvalid={handleInvalid}
+            hasError={hasError}
+            icon={icon}
+            inputClasses={inputClasses}
+            inputStyle={inputStyle}
+            isDeletable={isDeletable}
+            isOpen={isOpen}
+            label={label}
+            labelId={labelId}
+            messages={messages}
+            name={name}
+            popoverContent={popoverContent}
+            readOnly={readOnly}
+            resolvedPlaceholder={resolvedPlaceholder}
+            resolvedRadius={resolvedRadius}
+            setTriggerRef={setTriggerRef}
+            toggleCalendar={toggleCalendar}
+            validationInputRef={validationInputRef}
+            validationRequired={
+                required && !disabled && externalError === undefined
+            }
+        />
     )
 }

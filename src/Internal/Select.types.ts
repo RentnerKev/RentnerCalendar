@@ -24,4 +24,5 @@ export interface CustomSelectProps {
     messages?: CalendarMessages
     disabled?: boolean
     readOnly?: boolean
+    'aria-label'?: string
 }

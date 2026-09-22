@@ -1,12 +1,13 @@
 import { defaultCalendarDesign } from '../types.js'
+import { CustomTooltip } from '@rentnerkev/tooltips'
 import type { CalendarGridProps } from '../types.js'
 import { resolveCalendarMessages } from '../messages.js'
 import {
     getGermanHolidayName,
-    getTooltipStyle,
     isSameDay,
     isToday,
 } from '../Tools/InternalOnlyFunctions.js'
+import useCalendarGridNavigation from '../Hooks/useCalendarGridNavigation.js'
 
 export default function CalendarGrid({
     handleGetDaysInMonth,
@@ -27,6 +28,8 @@ export default function CalendarGrid({
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const messages = providedMessages ?? resolveCalendarMessages(locale)
     const isInteractionDisabled = disabled || readOnly
+    const { handler: navigationHandler } =
+        useCalendarGridNavigation(visibleDays)
 
     const allDays = messages.weekdays
     const weekDays = []
@@ -54,12 +57,13 @@ export default function CalendarGrid({
                 })}
             </div>
             <div
+                data-calendar-grid=""
                 className="grid gap-1"
                 style={{
                     gridTemplateColumns: `repeat(${visibleDays}, minmax(0, 1fr))`,
                 }}
             >
-                {handleGetDaysInMonth().map(function (dayObj, index) {
+                {handleGetDaysInMonth().map(function (dayObj, dayIndex) {
                     let isSelected = false
                     let isInRange = false
 
@@ -102,7 +106,7 @@ export default function CalendarGrid({
                     const isCurrentDay = isToday(dayObj.date)
 
                     let buttonClass =
-                        'h-9 w-9 rounded-lg flex items-center justify-center text-sm transition-all relative '
+                        'h-9 w-9 rounded-lg flex items-center justify-center text-sm transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 '
 
                     if (isDisabled) {
                         buttonClass += `opacity-30 cursor-not-allowed ${cd.textDisabled} `
@@ -131,47 +135,59 @@ export default function CalendarGrid({
                     }
 
                     if (holidayName) {
-                        const tooltipStyle = getTooltipStyle(index, visibleDays)
+                        const dateLabel = dayObj.date.toLocaleDateString(
+                            locale === 'en' ? 'en-US' : 'de-DE',
+                            { dateStyle: 'full' },
+                        )
                         return (
-                            <div
-                                className="relative group"
+                            <CustomTooltip
                                 key={dayObj.date.getTime()}
+                                content={holidayName}
+                                side="top"
+                                disabledTrigger={isDisabled}
                             >
-                                <div
-                                    className={`absolute -top-8 z-20 hidden group-hover:block ${cd.primaryBg} ${cd.textBackground} text-xs px-2 py-1 rounded-md whitespace-nowrap shadow-lg pointer-events-none`}
-                                    style={tooltipStyle}
-                                >
-                                    {holidayName}
-                                </div>
                                 <button
+                                    data-calendar-day=""
                                     onClick={() =>
                                         !isDisabled && onSelectDate(dayObj.date)
+                                    }
+                                    onKeyDown={(event) =>
+                                        navigationHandler.handleDayKeyDown(
+                                            event,
+                                            dayIndex,
+                                        )
                                     }
                                     className={buttonClass.trim()}
                                     type="button"
                                     disabled={isDisabled}
-                                    aria-label={messages.selectDate(
-                                        dayObj.date.toLocaleDateString(
-                                            locale === 'en' ? 'en-US' : 'de-DE',
-                                            { dateStyle: 'full' },
-                                        ),
-                                    )}
+                                    aria-label={`${messages.selectDate(dateLabel)}: ${holidayName}`}
+                                    aria-pressed={isSelected}
+                                    aria-current={
+                                        isCurrentDay ? 'date' : undefined
+                                    }
                                 >
                                     {dayObj.date.getDate()}
                                     <span
                                         className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${cd.primaryBg}`}
                                     />
                                 </button>
-                            </div>
+                            </CustomTooltip>
                         )
                     }
 
                     return (
                         <button
+                            data-calendar-day=""
                             key={dayObj.date.getTime()}
                             onClick={function () {
                                 if (!isDisabled) onSelectDate(dayObj.date)
                             }}
+                            onKeyDown={(event) =>
+                                navigationHandler.handleDayKeyDown(
+                                    event,
+                                    dayIndex,
+                                )
+                            }
                             className={buttonClass.trim()}
                             type="button"
                             disabled={isDisabled}
@@ -181,6 +197,8 @@ export default function CalendarGrid({
                                     { dateStyle: 'full' },
                                 ),
                             )}
+                            aria-pressed={isSelected}
+                            aria-current={isCurrentDay ? 'date' : undefined}
                         >
                             {dayObj.date.getDate()}
                         </button>

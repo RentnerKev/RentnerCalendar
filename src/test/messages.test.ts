@@ -30,7 +30,7 @@ describe('calendar messages', () => {
             required: 'This field is required',
             apply: 'Apply',
             previousMonth: 'Previous month',
-            searchPlaceholder: 'Search...',
+            searchPlaceholder: 'Search…',
             day: 'Day',
             range: 'Range',
             from: 'From',

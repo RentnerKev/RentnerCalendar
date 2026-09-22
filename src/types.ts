@@ -56,8 +56,8 @@ export const defaultCalendarDesign: Required<CalendarCustomDesign> = {
     borderTransparent: 'border-transparent',
     textColor: 'text-white',
     textMuted: 'text-gray-400',
-    textMutedDark: 'text-gray-500',
-    textDisabled: 'text-gray-700',
+    textMutedDark: 'text-gray-400',
+    textDisabled: 'text-gray-400',
     textDay: 'text-gray-300',
     textBackground: 'text-background-dark',
     hoverBackground: 'hover:bg-white/5',
@@ -76,7 +76,7 @@ export interface CalendarProps extends AriaAttributes {
     required?: boolean
     disabled?: boolean
     readOnly?: boolean
-    triggerRef?: Ref<HTMLDivElement>
+    triggerRef?: Ref<HTMLButtonElement>
     className?: string
     enableTime?: boolean
     enableRange?: boolean

@@ -29,6 +29,8 @@ export interface CalendarMessages {
     from: string
     to: string
     time: string
+    month: string
+    year: string
     searchOptions: string
     searchPlaceholder: string
     noResults: string
@@ -87,8 +89,10 @@ const germanMessages: CalendarMessages = {
     from: 'Von',
     to: 'Bis',
     time: 'Zeit',
+    month: 'Monat',
+    year: 'Jahr',
     searchOptions: 'Optionen suchen',
-    searchPlaceholder: 'Suchen...',
+    searchPlaceholder: 'Suchen…',
     noResults: 'Keine Ergebnisse',
     noOptions: 'Keine Optionen',
     selectDate: (date) => `Datum auswählen: ${date}`,
@@ -126,8 +130,10 @@ const englishMessages: CalendarMessages = {
     from: 'From',
     to: 'To',
     time: 'Time',
+    month: 'Month',
+    year: 'Year',
     searchOptions: 'Search options',
-    searchPlaceholder: 'Search...',
+    searchPlaceholder: 'Search…',
     noResults: 'No results',
     noOptions: 'No options',
     selectDate: (date) => `Select date: ${date}`,

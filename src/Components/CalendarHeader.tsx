@@ -16,6 +16,7 @@ interface FastEditSelectProps {
     className?: string
     onChange: (value: string) => void
     messages: CalendarMessages
+    ariaLabel: string
     disabled?: boolean
     readOnly?: boolean
 }
@@ -26,6 +27,7 @@ function FastEditSelect({
     className = '',
     onChange,
     messages,
+    ariaLabel,
     disabled = false,
     readOnly = false,
 }: FastEditSelectProps) {
@@ -36,6 +38,7 @@ function FastEditSelect({
                 onValueChange={onChange}
                 options={options}
                 messages={messages}
+                aria-label={ariaLabel}
                 disabled={disabled}
                 readOnly={readOnly}
                 className="h-9 w-full !min-w-0 rounded-lg !py-2 !pl-3 !pr-8"
@@ -91,7 +94,7 @@ export default function CalendarHeader({
             <button
                 onClick={onPrevMonth}
                 aria-label={messages.previousMonth}
-                className={`p-2 rounded-xl cursor-pointer transition-all ${cd.hoverBackground} ${cd.hoverText} active:scale-95`}
+                className={`p-2 rounded-xl cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${cd.hoverBackground} ${cd.hoverText} motion-safe:active:scale-95`}
                 type="button"
                 disabled={disabled || readOnly}
             >
@@ -105,6 +108,7 @@ export default function CalendarHeader({
                         onChange={handleMonthChange}
                         options={monthOptions}
                         messages={messages}
+                        ariaLabel={messages.month}
                         disabled={disabled}
                         readOnly={readOnly}
                         className="min-w-0 flex-[1.4_1_0]"
@@ -114,6 +118,7 @@ export default function CalendarHeader({
                         onChange={handleYearChange}
                         options={yearOptions}
                         messages={messages}
+                        ariaLabel={messages.year}
                         disabled={disabled}
                         readOnly={readOnly}
                         className="min-w-0 flex-[0.8_1_0]"
@@ -130,7 +135,7 @@ export default function CalendarHeader({
             <button
                 onClick={onNextMonth}
                 aria-label={messages.nextMonth}
-                className={`p-2 rounded-xl cursor-pointer transition-all ${cd.hoverBackground} ${cd.hoverText} active:scale-95`}
+                className={`p-2 rounded-xl cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${cd.hoverBackground} ${cd.hoverText} motion-safe:active:scale-95`}
                 type="button"
                 disabled={disabled || readOnly}
             >

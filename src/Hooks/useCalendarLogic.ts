@@ -19,6 +19,31 @@ export default function useCalendarLogic(
               : new Date(),
     )
     const internalValue = value
+    const selectedDate =
+        Array.isArray(value) && value[0]
+            ? value[0]
+            : value instanceof Date
+              ? value
+              : undefined
+    const selectedMonthKey = selectedDate
+        ? `${selectedDate.getFullYear()}-${selectedDate.getMonth()}`
+        : ''
+    const [previousSelectedMonthKey, setPreviousSelectedMonthKey] =
+        useState(selectedMonthKey)
+
+    if (previousSelectedMonthKey !== selectedMonthKey) {
+        setPreviousSelectedMonthKey(selectedMonthKey)
+
+        if (selectedDate) {
+            setViewDate(
+                new Date(
+                    selectedDate.getFullYear(),
+                    selectedDate.getMonth(),
+                    1,
+                ),
+            )
+        }
+    }
 
     function handlePrevMonth() {
         setViewDate(

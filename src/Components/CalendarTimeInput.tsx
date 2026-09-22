@@ -129,6 +129,10 @@ function SingleTimeInput({
             <div
                 ref={containerRef}
                 tabIndex={disabled || readOnly ? -1 : 0}
+                role="textbox"
+                aria-label={`${label ?? 'Time'} ${timeStr.slice(0, 2)}:${timeStr.slice(2)}`}
+                aria-disabled={disabled || undefined}
+                aria-readonly={readOnly || undefined}
                 onKeyDown={handleKeyDown}
                 onFocus={() => {
                     if (!disabled && !readOnly && cursorPos === null) {
@@ -136,7 +140,7 @@ function SingleTimeInput({
                     }
                 }}
                 onBlur={() => setCursorPos(null)}
-                className={`relative flex items-center justify-center bg-transparent border ${cd.borderColor} rounded-lg px-3 py-1.5 ${cd.primaryFocusBorder} ${cd.primaryRing} transition-all shadow-sm ${disabled || readOnly ? 'cursor-not-allowed opacity-60' : 'cursor-text'} outline-none`}
+                className={`relative flex items-center justify-center bg-transparent border ${cd.borderColor} rounded-lg px-3 py-1.5 ${cd.primaryFocusBorder} ${cd.primaryRing} transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${disabled || readOnly ? 'cursor-not-allowed opacity-60' : 'cursor-text'}`}
             >
                 <div
                     className={`flex items-center ${cd.textColor} text-[15px] font-medium gap-0.5`}
@@ -201,6 +205,7 @@ function Digit({
 }) {
     return (
         <span
+            aria-hidden="true"
             onClick={(e) => {
                 e.stopPropagation()
                 if (!disabled && !readOnly) onClick()
