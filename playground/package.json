@@ -10,7 +10,7 @@
     },
     "dependencies": {
         "@tanstack/react-form": "^1.33.5",
-        "lucide-react": "^1.33.0",
+        "lucide-react": "^1.47.0",
         "react": "^19.3.0",
         "react-dom": "^19.3.0"
     },
