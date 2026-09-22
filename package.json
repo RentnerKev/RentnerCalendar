@@ -41,8 +41,8 @@
         "registry": "https://registry.npmjs.org"
     },
     "peerDependencies": {
-        "react": "^19.2.8",
-        "react-dom": "^19.2.8"
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
     },
     "devDependencies": {
         "@types/react": "^19.3.0",
@@ -84,10 +84,19 @@
             "import": "./dist/Tools/FormatFunctions.js",
             "types": "./dist/Tools/FormatFunctions.d.ts"
         },
+        "./date": {
+            "import": "./dist/date.js",
+            "types": "./dist/date.d.ts"
+        },
+        "./messages": {
+            "import": "./dist/messages.js",
+            "types": "./dist/messages.d.ts"
+        },
         "./types": {
             "import": "./dist/types.js",
             "types": "./dist/types.d.ts"
-        }
+        },
+        "./package.json": "./package.json"
     },
     "packageManager": "bun@1.4.2"
 }

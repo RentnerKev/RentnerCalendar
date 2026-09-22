@@ -1,86 +1,128 @@
 # @rentnerkev/calendar
 
-Ein flexibler React-DatePicker für Einzeltermine und Zeiträume mit Uhrzeit, Formularvalidierung und anpassbarem Tailwind-Design.
+A controlled React date picker for single dates and ranges, with optional time
+input, native form validation, localization, and customizable Tailwind styling.
 
 ## Installation
 
-Installiere das Paket mit npm oder Bun:
+With npm:
 
 ```bash
 npm install @rentnerkev/calendar
 ```
 
-## Verwendung
+Or with Bun:
 
-### Einfacher DatePicker
+```bash
+bun add @rentnerkev/calendar
+```
+
+## Quick start
+
+Use `SingleCalendar` or `RangeCalendar` for new code. Their value and callback
+types stay narrow and do not require casts.
 
 ```tsx
 import { useState } from 'react'
-import { CustomCalendar } from '@rentnerkev/calendar'
+import { SingleCalendar, type SingleCalendarValue } from '@rentnerkev/calendar'
 
-function MyComponent() {
-    const [date, setDate] = useState<Date | undefined>(new Date())
+export function AppointmentField() {
+    const [appointment, setAppointment] = useState<SingleCalendarValue>()
 
     return (
-        <CustomCalendar
+        <SingleCalendar
             id="appointment"
             name="appointment"
-            value={date}
-            onChange={(val) => setDate(val as Date)}
-            placeholder="Datum wählen..."
+            label="Appointment"
+            value={appointment}
+            onChange={setAppointment}
+            placeholder="Choose a date"
             required
         />
     )
 }
 ```
 
-### Required im Formular
+`CustomCalendar` remains available for backward compatibility, dynamic modes,
+and interfaces that let users switch between single-date and range selection.
 
-`required` ist standardmäßig deaktiviert. Wenn du es setzt und beim Submit noch kein Datum ausgewählt wurde, wird der Kalender rot, das linke Icon wird durch ein Ausrufezeichen ersetzt und der Fehlertext wird im Tooltip angezeigt. Das ist das hilfreich, wenn ein Placeholder wie "Termin auswählen" nur ein Hinweis und keine echte Auswahl sein soll.
+## Single dates and ranges
 
 ```tsx
 import { useState } from 'react'
-import { CustomCalendar, CalendarValue } from '@rentnerkev/calendar'
-import { CalendarClock } from 'lucide-react'
+import {
+    RangeCalendar,
+    SingleCalendar,
+    type RangeCalendarValue,
+    type SingleCalendarValue,
+} from '@rentnerkev/calendar'
 
-function RequiredCalendarForm() {
-    const [appointment, setAppointment] = useState<CalendarValue>()
+export function CalendarFields() {
+    const [appointment, setAppointment] = useState<SingleCalendarValue>()
+    const [period, setPeriod] = useState<RangeCalendarValue>()
 
     return (
-        <form
-            onSubmit={(event) => {
-                event.preventDefault()
-                event.currentTarget.reportValidity()
-            }}
-        >
-            <CustomCalendar
-                id="appointment"
-                name="appointment"
+        <>
+            <SingleCalendar
                 value={appointment}
                 onChange={setAppointment}
-                placeholder="Termin auswählen"
-                required
                 enableTime
-                closeOnSelect
-                icon={<CalendarClock className="h-4 w-4" />}
             />
-
-            <button type="submit">Absenden</button>
-        </form>
+            <RangeCalendar value={period} onChange={setPeriod} />
+        </>
     )
 }
 ```
 
-### Maximales Konfigurations-Beispiel
+Selections commit immediately when `button` is `false`. `backdrop` only
+controls outside-click behavior, while `closeOnSelect` only controls whether a
+completed selection closes the popover. When `button` is `true`, the Apply
+button commits the pending value.
 
-Hier siehst du alle verfügbaren Props im Einsatz:
+## Form and accessibility contract
+
+`label` and `description` receive stable IDs and are connected to the visible
+trigger through `aria-labelledby` and `aria-describedby`. An external `error`
+overrides internal validation; `error={null}` explicitly clears it. Additional
+React `aria-*` attributes are forwarded to the trigger and merged with the
+component state.
+
+On an invalid native submit, the visible trigger receives focus. A disabled
+calendar is excluded from validation and form submission. A read-only calendar
+keeps its form value but prevents opening and changes.
 
 ```tsx
-import { useState } from 'react'
-import { CustomCalendar, CalendarValue } from '@rentnerkev/calendar'
-import { Clock } from 'lucide-react'
+<SingleCalendar
+    id="appointment"
+    name="appointment"
+    label="Appointment"
+    description="Choose an available time slot."
+    error={serverError ?? undefined}
+    aria-label="Choose an appointment"
+    triggerRef={triggerRef}
+    required
+/>
+```
 
-function FullFeaturedPicker() {
+## Full configuration example
+
+```tsx
+import { Clock } from 'lucide-react'
+import { useState } from 'react'
+import {
+    CustomCalendar,
+    type CalendarCustomDesign,
+    type CalendarValue,
+} from '@rentnerkev/calendar'
+
+const calendarDesign: CalendarCustomDesign = {
+    primaryBg: 'bg-blue-600',
+    primaryHover: 'hover:bg-blue-700',
+    surfaceBackground: 'bg-slate-900',
+    borderColor: 'border-slate-700',
+}
+
+export function BookingRange() {
     const [value, setValue] = useState<CalendarValue>([new Date(), null])
 
     return (
@@ -89,143 +131,45 @@ function FullFeaturedPicker() {
             name="bookingRange"
             value={value}
             onChange={setValue}
-            required={true} // Pflichtfeld mit rotem Fehlerzustand beim Submit
-            enableRange={true} // Start- und Enddatum Auswahl
-            enableTime={true} // Uhrzeit-Eingabe (HH:mm)
-            button={true} // "Anwenden" Button anzeigen
-            backdrop={true} // Schließt Popover bei Klick außerhalb
-            customDesign={myDesign} // Eigene Farben auf die Kalender Component
-            icon={<Clock size={16} />} // Eigenes Icon (oder false zum Ausblenden)
-            placeholder="Zeitraum wählen..." // Wird angezeigt wenn nichts ausgewählt ist
-            className="w-120 h-20 rounded-lg" // Container Klasse
-            closeOnSelect={true} // Popover schließt nach Datumsauswahl automatisch
-            minDate={new Date()} // Kein Datum vor heute wählbar
-            maxDate={new Date('2026-12-31')} // Kein Datum nach 2026 wählbar
-            minTime="08:00" // Früheste auswählbare Zeit
-            maxTime="18:00" // Späteste auswählbare Zeit
-            weekStartsOn={1} // Woche startet am Montag (1=Mo, 7=So)
-            visibleDays={5} // Zeigt nur 5 Tage an (z.B. Mo-Fr)
-            showHolidays={true} // Deutsche Feiertage mit Punkt & Tooltip markieren
-            switchMode={true} // Erlaubt dem User zwischen Einzeldatum und Zeitraum zu wechseln
-            isDeletatable={true} // Zeigt einen Löschen-Button an, um die Auswahl zu leeren
+            required
+            enableRange
+            enableTime
+            button
+            backdrop
+            customDesign={calendarDesign}
+            icon={<Clock size={16} />}
+            placeholder="Choose a period"
+            className="h-20 w-120 rounded-lg"
+            closeOnSelect
+            minDate={new Date()}
+            maxDate={new Date('2026-12-31')}
+            minTime="08:00"
+            maxTime="18:00"
+            weekStartsOn={1}
+            visibleDays={5}
+            showHolidays
+            switchMode
+            isDeletable
         />
     )
 }
 ```
 
-## Custom Design (Theming)
+## Value parsing and serialization
 
-Du kannst das Aussehen des Kalenders über die `customDesign` Prop anpassen. Hierbei werden Tailwind-Klassen für die verschiedenen Elemente übergeben.
-
-```tsx
-import { CustomCalendar, CalendarCustomDesign } from '@rentnerkev/calendar'
-
-const myDesign: CalendarCustomDesign = {
-    primaryBg: 'bg-blue-600',
-    primaryHover: 'hover:bg-blue-700',
-    surfaceBackground: 'bg-slate-900',
-    borderColor: 'border-slate-700',
-    // ... alle weiteren Felder sind optional
-}
-
-function App() {
-    return <CustomCalendar customDesign={myDesign} />
-}
-```
-
-### Verfügbare Design-Felder
-
-| Feld                | Typ      | Beschreibung                                                   |
-| ------------------- | -------- | -------------------------------------------------------------- |
-| `primaryColor`      | `string` | Klasse für primäre Textfarbe (z.B. `text-primary`).            |
-| `primaryBg`         | `string` | Hintergrund für ausgewählte Tage (z.B. `bg-primary`).          |
-| `primaryHover`      | `string` | Hover-Hintergrund für Buttons (z.B. `hover:bg-primary-hover`). |
-| `primaryBorder`     | `string` | Rahmenfarbe für den aktiven Zustand (z.B. `border-primary`).   |
-| `primaryRing`       | `string` | Klasse für den Focus-Ring (z.B. `focus:ring-primary/50`).      |
-| `surfaceBackground` | `string` | Hintergrund des Popovers (z.B. `bg-surface-dark`).             |
-| `inputBackground`   | `string` | Hintergrund des Input-Feldes (z.B. `bg-input-dark`).           |
-| `borderColor`       | `string` | Standard Rahmenfarbe (z.B. `border-border-dark`).              |
-| `textColor`         | `string` | Haupt-Textfarbe (z.B. `text-white`).                           |
-| `textMuted`         | `string` | Farbe für weniger wichtigen Text (z.B. `text-gray-400`).       |
-| `textMutedDark`     | `string` | Dunklere Muted-Farbe (z.B. `text-gray-500`).                   |
-| `textDay`           | `string` | Farbe der Wochentage/Zahlen im Grid (z.B. `text-gray-300`).    |
-| `hoverBackground`   | `string` | Hintergrund beim Hovern von Tagen (z.B. `hover:bg-white/5`).   |
-
-_(Eine vollständige Liste findest du in den Typdefinitionen `CalendarCustomDesign` der Library)_
-
-## Sprache und Meldungen
-
-Mit `locale="en"` verwendet der Kalender die vollständigen englischen
-Standardtexte. `locale` ist standardmäßig `"de"`; bestehende deutsche
-Anzeigen bleiben damit unverändert. Einzelne Meldungen können über `messages`
-überschrieben werden:
-
-```tsx
-<CustomCalendar
-    locale="en"
-    messages={{
-        apply: 'Save',
-        required: 'Please choose a date',
-    }}
-/>
-```
-
-`CalendarMessages`, `calendarMessageCatalog` und `resolveCalendarMessages`
-werden aus dem Paketeinstieg exportiert.
-
-### Gemeinsamer Feldvertrag
-
-`label` und `description` werden mit stabilen IDs gerendert und automatisch
-über `aria-labelledby` beziehungsweise `aria-describedby` mit dem sichtbaren
-Trigger verknüpft. Ein gesetztes `error` überschreibt die interne
-Pflichtfeldmeldung; `error={null}` unterdrückt sie. `disabled` entfernt den
-versteckten Formularwert aus Validierung und Submit, während `readOnly` den
-Wert beibehält, aber Öffnen und Änderungen verhindert.
-Weitere React-`aria-*`-Attribute werden direkt an den sichtbaren Trigger
-weitergegeben; zustandsabhängige Werte werden dabei mit dem Feldzustand
-zusammengeführt.
-
-```tsx
-<CustomCalendar
-    id="appointment"
-    name="appointment"
-    label="Termin"
-    description="Wähle einen verfügbaren Termin."
-    error={serverError ?? undefined}
-    aria-label="Termin auswählen"
-    triggerRef={triggerRef}
-/>
-```
-
-## Typisierte Single- und Range-APIs
-
-Für neuen Code stehen `SingleCalendar` und `RangeCalendar` mit schmalen
-Value- und Callback-Typen bereit. `CustomCalendar` bleibt als vollständig
-kompatibler Einstieg für dynamische Modi und `switchMode` erhalten.
-
-```tsx
-import {
-    RangeCalendar,
-    SingleCalendar,
-    type RangeCalendarValue,
-    type SingleCalendarValue,
-} from '@rentnerkev/calendar'
-
-const [appointment, setAppointment] = useState<SingleCalendarValue>()
-const [period, setPeriod] = useState<RangeCalendarValue>()
-
-<SingleCalendar value={appointment} onChange={setAppointment} enableTime />
-<RangeCalendar value={period} onChange={setPeriod} />
-```
-
-`parseCalendarValue` normalisiert einzelne Werte und Ranges. Dabei werden
-ungültige Range-Grenzen zu `null`, während ein ungültiger Einzelwert
-`undefined` ergibt. `serializeCalendarValue` erzeugt standardmäßig vollständige
-UTC-ISO-Zeitstempel. Mit `{ format: 'date' }` entstehen lokale
-Kalenderdatumswerte im Format `YYYY-MM-DD`.
+`parseCalendarValue` normalizes single values and ranges. Invalid range bounds
+become `null`; an invalid single value becomes `undefined`.
+`serializeCalendarValue` returns full UTC ISO timestamps by default. Pass
+`{ format: 'date' }` to produce local `YYYY-MM-DD` calendar dates.
 
 ```ts
-const value = parseCalendarValue('21.09.2026 14:30')
+import {
+    isCalendarRange,
+    parseCalendarValue,
+    serializeCalendarValue,
+} from '@rentnerkev/calendar'
+
+const value = parseCalendarValue('2026-09-21T14:30:00+02:00')
 const timestamp = serializeCalendarValue(value)
 const dateOnly = serializeCalendarValue(value, { format: 'date' })
 
@@ -235,96 +179,165 @@ if (isCalendarRange(range)) {
 }
 ```
 
-`parseCalendarISODate` interpretiert `YYYY-MM-DD` bewusst als lokales
-Kalenderdatum und verhindert dadurch Verschiebungen auf den Vortag.
-`parseCalendarISOString` verarbeitet vollständige ISO-Zeitpunkte mit `Z` oder
-Offset. Die Gegenstücke heißen `serializeCalendarISODate` und
-`serializeCalendarISOString`. Ungültige Werte führen zu `undefined` und werfen
-keinen `RangeError`.
+`parseCalendarISODate` treats `YYYY-MM-DD` as a local calendar date and avoids
+an accidental shift to the previous day. `parseCalendarISOString` accepts a
+full timestamp with a zone or offset. Their counterparts are
+`serializeCalendarISODate` and `serializeCalendarISOString`. Invalid values
+return `undefined` instead of throwing a `RangeError`.
 
-## Hilfsfunktionen
+## Localization and messages
 
-Die Library exportiert nützliche Funktionen zur Arbeit mit Daten und zur Formatierung:
+German remains the default for backward compatibility. Set `locale="en"` for
+the complete English UI, validation, ARIA text, and date formatting. Override
+individual messages with a typed `Partial<CalendarMessages>` object.
 
-| Funktion                                  | Beschreibung                                                                                                                  |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `formatCalendarValue(value, locale?)`     | Formatiert `Date` oder `Range` auf Deutsch oder Englisch zu einem lesbaren String.                                            |
-| `parseCalendarValue(value)`               | Normalisiert Single-/Range-Eingaben und lehnt unmögliche Datumswerte ab.                                                      |
-| `serializeCalendarValue(value, options?)` | Serialisiert Werte als ISO-Zeitpunkt oder lokales ISO-Kalenderdatum.                                                          |
-| `isCalendarRange(value)`                  | Prüft typsicher auf eine gültige Calendar-Range.                                                                              |
-| `parseCalendarISODate(value)`             | Liest ein striktes lokales `YYYY-MM-DD`-Kalenderdatum.                                                                        |
-| `serializeCalendarISODate(value)`         | Schreibt ein Datum ohne UTC-Verschiebung als `YYYY-MM-DD`.                                                                    |
-| `parseCalendarISOString(value)`           | Liest einen vollständigen ISO-Zeitpunkt mit Zone oder Offset.                                                                 |
-| `serializeCalendarISOString(value)`       | Schreibt einen gültigen Zeitpunkt sicher mit `Date#toISOString()`.                                                            |
-| `isSameDay(d1, d2)`                       | Prüft, ob zwei Daten der gleiche Kalendertag sind.                                                                            |
-| `isToday(date)`                           | Prüft, ob das übergebene Datum der heutige Tag ist.                                                                           |
-| `formatMonthName(date, locale?)`          | Gibt Monat und Jahr des Datums auf Deutsch oder Englisch formatiert zurück (z.B. "Januar 2024").                              |
-| `getGermanHolidayName(date)`              | Prüft, ob ein Datum ein deutscher Feiertag ist, und gibt dessen Namen als String (z.B. "Silvester") zurück, andernfalls null. |
+```tsx
+<SingleCalendar
+    locale="en"
+    messages={{
+        apply: 'Save',
+        required: 'Please choose a date',
+    }}
+/>
+```
 
-## Props (Typen)
+`CalendarMessages`, `calendarMessageCatalog`, and `resolveCalendarMessages`
+are available from the root entry and `@rentnerkev/calendar/messages`.
 
-### `CustomCalendar`
+## Utilities
 
-| Prop               | Typ                               | Standard         | Beschreibung                                                                                                      |
-| ------------------ | --------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `id`               | `string`                          | `undefined`      | ID für den sichtbaren Trigger, nützlich für Labels und Formularfelder.                                            |
-| `name`             | `string`                          | `undefined`      | Name für Formular-Submit und native Pflichtfeld-Validierung.                                                      |
-| `value`            | `CalendarInputValue`              | `undefined`      | Das aktuell ausgewählte Datum oder die Range. Unterstützt `Date`, `string` (ISO/Deutsch), `number` (Timestamp).   |
-| `onChange`         | `(value: CalendarValue) => void`  | -                | Callback bei Änderung des Wertes.                                                                                 |
-| `required`         | `boolean`                         | `false`          | Aktiviert Pflichtfeld-Validierung. Ohne Auswahl wird der Trigger beim Submit rot und zeigt den Fehler im Tooltip. |
-| `label`            | `ReactNode`                       | `undefined`      | Sichtbare Feldbezeichnung mit stabiler ID und automatischer `aria-labelledby`-Verknüpfung.                        |
-| `description`      | `ReactNode`                       | `undefined`      | Hilfetext mit stabiler ID, der in `aria-describedby` einfließt.                                                   |
-| `error`            | `string \| null`                  | `undefined`      | Externer Fehler. Überschreibt die interne Validierung; `null` unterdrückt diese.                                  |
-| `disabled`         | `boolean`                         | `false`          | Deaktiviert Interaktion und verstecktes Formularfeld; der Wert wird nicht validiert oder submitted.               |
-| `readOnly`         | `boolean`                         | `false`          | Verhindert Öffnen und Änderungen, der Formularwert bleibt erhalten.                                               |
-| `triggerRef`       | `Ref<HTMLDivElement>`             | `undefined`      | Ref auf den sichtbaren Trigger, der bei nativem Invalid-Submit fokussiert wird.                                   |
-| `aria-label`       | `string`                          | `undefined`      | Zusätzliche oder alternative zugängliche Beschriftung des Triggers.                                               |
-| `aria-labelledby`  | `string`                          | `undefined`      | Zusätzliche Beschriftungs-IDs; sie werden mit der Label-ID zusammengeführt.                                       |
-| `aria-describedby` | `string`                          | `undefined`      | Zusätzliche Beschreibungs-IDs; sie werden mit Beschreibung und Fehler zusammengeführt.                            |
-| `enableTime`       | `boolean`                         | `false`          | Aktiviert die Zeitauswahl unter dem Kalendergrid.                                                                 |
-| `enableRange`      | `boolean`                         | `false`          | Aktiviert die Auswahl eines Zeitraums (Start- und Enddatum).                                                      |
-| `customDesign`     | `CalendarCustomDesign`            | `defaultDesign`  | Objekt zur individuellen Gestaltung des Designs.                                                                  |
-| `placeholder`      | `string`                          | "Klicke hier..." | Platzhalter-Text im Input-Feld.                                                                                   |
-| `button`           | `boolean`                         | `false`          | Zeigt einen "Anwenden"-Button im Popover an.                                                                      |
-| `backdrop`         | `boolean`                         | `true`           | Schließt das Popover beim Klick außerhalb (Overlay).                                                              |
-| `icon`             | `ReactNode \| boolean`            | `CalendarDays`   | Icon links im Input. Kann ein React-Element sein oder `false`, um das Icon komplett auszublenden.                 |
-| `className`        | `string`                          | `""`             | Zusätzliche CSS-Klassen für den äußeren Container. Bestimmt auch den Radius des Popovers.                         |
-| `closeOnSelect`    | `boolean`                         | `false`          | Schließt das Popover automatisch, sobald ein Datum (oder eine vollständige Range) gewählt wurde.                  |
-| `minDate`          | `CalendarInputValue`              | `undefined`      | Begrenzt die Auswahl auf Daten ab (inklusive) diesem Datum.                                                       |
-| `maxDate`          | `CalendarInputValue`              | `undefined`      | Begrenzt die Auswahl auf Daten bis (inklusive) diesem Datum.                                                      |
-| `minTime`          | `string`                          | `undefined`      | Früheste wählbare Uhrzeit im Format "HH:mm".                                                                      |
-| `maxTime`          | `string`                          | `undefined`      | Späteste wählbare Uhrzeit im Format "HH:mm".                                                                      |
-| `fastEdit`         | `boolean`                         | `true`           | Zeigt im Header schnelle Monat- und Jahr-Selects für größere Datumssprünge.                                       |
-| `weekStartsOn`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7` | `1`              | Definiert den Start der Woche (1 = Montag, 7 = Sonntag).                                                          |
-| `visibleDays`      | `number`                          | `7`              | Anzahl der sichtbaren Tage pro Woche im Grid.                                                                     |
-| `showHolidays`     | `boolean`                         | `false`          | Markiert deutsche gesetzliche Feiertage mit einem Punkt und Tooltip.                                              |
-| `locale`           | `'de' \| 'en'`                    | `'de'`           | Sprache für UI-, Validierungs- und ARIA-Texte sowie die Datumsformatierung.                                       |
-| `messages`         | `Partial<CalendarMessages>`       | `undefined`      | Überschreibt einzelne Texte des gewählten Sprachkatalogs.                                                         |
-| `switchMode`       | `boolean`                         | `false`          | Erlaubt es dem Nutzer, im Interface zwischen Einzeldatum- und Zeitraums-Modus zu wechseln.                        |
-| `isDeletatable`    | `boolean`                         | `false`          | Fügt einen Button hinzu, um den ausgewählten Wert zu löschen (null).                                              |
+| Function                                  | Description                                                       |
+| ----------------------------------------- | ----------------------------------------------------------------- |
+| `formatCalendarValue(value, locale?)`     | Formats a date or range as readable German or English text.       |
+| `parseCalendarValue(value)`               | Normalizes single and range input and rejects impossible dates.   |
+| `serializeCalendarValue(value, options?)` | Serializes values as timestamps or local calendar dates.          |
+| `isCalendarRange(value)`                  | Type-safe guard for valid calendar ranges.                        |
+| `parseCalendarISODate(value)`             | Reads a strict local `YYYY-MM-DD` date.                           |
+| `serializeCalendarISODate(value)`         | Writes a date as `YYYY-MM-DD` without a UTC shift.                |
+| `parseCalendarISOString(value)`           | Reads a complete timestamp with a zone or offset.                 |
+| `serializeCalendarISOString(value)`       | Safely writes a valid timestamp with `Date#toISOString()`.        |
+| `isSameDay(first, second)`                | Checks whether two inputs represent the same local calendar day.  |
+| `isToday(value)`                          | Checks whether an input represents today.                         |
+| `formatMonthName(date, locale?)`          | Formats a month and year in German or English.                    |
+| `getGermanHolidayName(date)`              | Returns the German name of a supported German holiday, or `null`. |
 
-## CSS-Konfiguration
+Date helpers are also available from `@rentnerkev/calendar/date`; parsing and
+serialization helpers are available from `@rentnerkev/calendar/value`.
 
-Der Kalender liefert einen eigenen Tailwind-Einstieg. Importiere ihn nach Tailwind CSS in deine Haupt-CSS-Datei:
+## Custom design
+
+Pass `customDesign` to override individual Tailwind classes.
+
+```tsx
+import type { CalendarCustomDesign } from '@rentnerkev/calendar'
+
+const customDesign: CalendarCustomDesign = {
+    primaryBg: 'bg-blue-600',
+    primaryHover: 'hover:bg-blue-700',
+    surfaceBackground: 'bg-slate-900',
+    borderColor: 'border-slate-700',
+}
+```
+
+Common design fields include:
+
+| Field               | Description                           |
+| ------------------- | ------------------------------------- |
+| `primaryColor`      | Primary text color class.             |
+| `primaryBg`         | Selected-day background class.        |
+| `primaryHover`      | Hover background class for buttons.   |
+| `primaryBorder`     | Active-state border class.            |
+| `primaryRing`       | Focus-ring class.                     |
+| `surfaceBackground` | Popover background class.             |
+| `inputBackground`   | Trigger background class.             |
+| `borderColor`       | Default border class.                 |
+| `textColor`         | Main text class.                      |
+| `textMuted`         | Secondary text class.                 |
+| `textMutedDark`     | Lower-emphasis text class.            |
+| `textDay`           | Weekday and calendar-grid text class. |
+| `hoverBackground`   | Day hover background class.           |
+
+See the `CalendarCustomDesign` type for the complete list.
+
+## `CustomCalendar` props
+
+| Prop               | Type                              | Default        | Description                                       |
+| ------------------ | --------------------------------- | -------------- | ------------------------------------------------- |
+| `id`               | `string`                          | `undefined`    | ID for the visible trigger.                       |
+| `name`             | `string`                          | `undefined`    | Native form field name.                           |
+| `value`            | `CalendarInputValue`              | `undefined`    | Controlled date or range value.                   |
+| `onChange`         | `(value: CalendarValue) => void`  | –              | Receives committed value changes exactly once.    |
+| `required`         | `boolean`                         | `false`        | Enables native required validation.               |
+| `label`            | `ReactNode`                       | `undefined`    | Visible, accessible field label.                  |
+| `description`      | `ReactNode`                       | `undefined`    | Help text included in `aria-describedby`.         |
+| `error`            | `string \| null`                  | `undefined`    | External error; `null` clears validation errors.  |
+| `disabled`         | `boolean`                         | `false`        | Disables interaction and form submission.         |
+| `readOnly`         | `boolean`                         | `false`        | Prevents changes while retaining the form value.  |
+| `triggerRef`       | `Ref<HTMLDivElement>`             | `undefined`    | Ref to the focusable visible trigger.             |
+| `aria-label`       | `string`                          | `undefined`    | Alternative accessible trigger label.             |
+| `aria-labelledby`  | `string`                          | `undefined`    | Additional accessible label IDs.                  |
+| `aria-describedby` | `string`                          | `undefined`    | Additional description IDs.                       |
+| `enableTime`       | `boolean`                         | `false`        | Enables time selection.                           |
+| `enableRange`      | `boolean`                         | `false`        | Enables range selection.                          |
+| `customDesign`     | `CalendarCustomDesign`            | Default design | Overrides design classes.                         |
+| `placeholder`      | `string`                          | Localized      | Trigger placeholder.                              |
+| `button`           | `boolean`                         | `false`        | Requires the Apply button to commit changes.      |
+| `backdrop`         | `boolean`                         | `true`         | Enables closing on an outside click.              |
+| `icon`             | `ReactNode \| boolean`            | `CalendarDays` | Custom icon, or `false` to hide it.               |
+| `className`        | `string`                          | `''`           | Additional outer-container classes.               |
+| `closeOnSelect`    | `boolean`                         | `false`        | Closes after a completed selection.               |
+| `minDate`          | `CalendarInputValue`              | `undefined`    | Inclusive minimum selectable date.                |
+| `maxDate`          | `CalendarInputValue`              | `undefined`    | Inclusive maximum selectable date.                |
+| `minTime`          | `string`                          | `undefined`    | Earliest selectable `HH:mm` time.                 |
+| `maxTime`          | `string`                          | `undefined`    | Latest selectable `HH:mm` time.                   |
+| `fastEdit`         | `boolean`                         | `true`         | Shows fast month and year controls.               |
+| `weekStartsOn`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7` | `1`            | First weekday, Monday through Sunday.             |
+| `visibleDays`      | `number`                          | `7`            | Number of visible days per week.                  |
+| `showHolidays`     | `boolean`                         | `false`        | Marks supported German holidays.                  |
+| `locale`           | `'de' \| 'en'`                    | `'de'`         | UI, validation, ARIA, and formatting locale.      |
+| `messages`         | `Partial<CalendarMessages>`       | `undefined`    | Overrides localized messages.                     |
+| `switchMode`       | `boolean`                         | `false`        | Lets users switch between single and range modes. |
+| `isDeletable`      | `boolean`                         | `false`        | Adds a button that clears the selected value.     |
+
+## Tailwind CSS
+
+Import the package entry after Tailwind CSS in your main stylesheet:
 
 ```css
 @import 'tailwindcss';
 @import '@rentnerkev/calendar/tailwind.css';
 ```
 
-Der Paket-Einstieg scannt ausschließlich die veröffentlichten JavaScript-Dateien
-unter `dist`. Er stellt die gemeinsamen Theme-Tokens `primary`, `primary-hover`,
-`background-dark`, `surface-dark`, `input-dark`, `border-dark`, `secondary-text`
-und `muted-foreground` bereit. Eigene Werte können danach mit einem weiteren
-`@theme`-Block überschrieben werden.
+The entry scans only published JavaScript under `dist`. It provides the shared
+`primary`, `primary-hover`, `background-dark`, `surface-dark`, `input-dark`,
+`border-dark`, `secondary-text`, and `muted-foreground` theme tokens. Override
+them with a later `@theme` block when needed.
 
-## Entwicklung
+## Public entry points
+
+- `@rentnerkev/calendar`
+- `@rentnerkev/calendar/calendar`
+- `@rentnerkev/calendar/single-calendar`
+- `@rentnerkev/calendar/range-calendar`
+- `@rentnerkev/calendar/value`
+- `@rentnerkev/calendar/format`
+- `@rentnerkev/calendar/date`
+- `@rentnerkev/calendar/messages`
+- `@rentnerkev/calendar/types`
+- `@rentnerkev/calendar/tailwind.css`
+
+## Development
 
 ```bash
-bun install
+bun install --frozen-lockfile
+bun install --cwd playground --frozen-lockfile
 bun run verify
-bun run playground:dev
+bun run playground:build
 ```
 
-`bun run verify` prüft Typen, Oxlint, Oxfmt, den Paket-Build und den
-veröffentlichten Paketinhalt per Dry Run.
+`bun run verify` checks types, Oxlint, Oxfmt, tests, the package build, and the
+published package contents.
+
+## License
+
+MIT
