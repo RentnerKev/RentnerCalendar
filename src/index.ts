@@ -1,6 +1,7 @@
 export { CustomCalendar } from './Calendar.js'
 export { SingleCalendar } from './SingleCalendar.js'
 export { RangeCalendar } from './RangeCalendar.js'
+export { CalendarProvider } from './CalendarProvider.js'
 export { defaultCalendarDesign } from './types.js'
 export { calendarMessageCatalog, resolveCalendarMessages } from './messages.js'
 export { getGermanHolidayName, isSameDay, isToday } from './date.js'
@@ -47,6 +48,10 @@ export type {
     SingleCalendarProps,
     SingleCalendarValue,
 } from './types.js'
+export type {
+    CalendarDefaults,
+    CalendarProviderProps,
+} from './CalendarProvider.js'
 export type {
     CalendarHolidayName,
     CalendarLocale,

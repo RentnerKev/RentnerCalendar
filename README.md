@@ -59,6 +59,40 @@ export function AppointmentField() {
 `CustomCalendar` remains available for backward compatibility, dynamic modes,
 and interfaces that let users switch between single-date and range selection.
 
+## Shared defaults
+
+Wrap related calendars in `CalendarProvider` to share a locale, message
+overrides, and Tailwind design classes. Nested providers inherit outer values;
+their values override matching keys. Props on an individual calendar override
+the provider defaults.
+
+```tsx
+import {
+    CalendarProvider,
+    RangeCalendar,
+    SingleCalendar,
+} from '@rentnerkev/calendar'
+
+export function LocalizedBookingFields() {
+    return (
+        <CalendarProvider
+            locale="en"
+            customDesign={{
+                primaryBg: 'bg-blue-600',
+                surfaceBackground: 'bg-slate-900',
+            }}
+            messages={{ required: 'Choose a date first' }}
+        >
+            <SingleCalendar label="Start" />
+            <RangeCalendar label="Period" locale="de" />
+        </CalendarProvider>
+    )
+}
+```
+
+`CalendarProviderProps` and `CalendarDefaults` are exported from the package
+root for typed provider helpers.
+
 ## Single dates and ranges
 
 ```tsx
