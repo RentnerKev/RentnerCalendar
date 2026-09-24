@@ -1,6 +1,6 @@
 {
     "name": "@rentnerkev/calendar",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "description": "A customizable React calendar with range selection, time input, holidays, and fast navigation.",
     "author": "RentnerKev",
     "license": "MIT",
@@ -17,7 +17,7 @@
     "scripts": {
         "build": "bun -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true })\" && tsc",
         "test": "bun test",
-        "typecheck": "tsc --noEmit",
+        "typecheck": "tsc --noEmit && tsc --project tsconfig.type-tests.json",
         "prepare": "bun run build",
         "pack:check": "bun pm pack --dry-run",
         "test:e2e": "playwright test",

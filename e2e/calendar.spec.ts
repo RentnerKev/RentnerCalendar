@@ -20,6 +20,20 @@ test.describe('calendar playground', () => {
         await expect(trigger).toBeFocused()
     })
 
+    test('reports field blur only after focus leaves the calendar', async ({
+        page,
+    }) => {
+        await page.goto('/')
+
+        const trigger = page.locator('#appointment')
+        await trigger.click()
+        await expect(page.getByRole('dialog')).toBeVisible()
+        await expect(page.getByText('Termin ist erforderlich.')).toHaveCount(0)
+
+        await page.getByTestId('set-calendar-value').focus()
+        await expect(page.getByText('Termin ist erforderlich.')).toBeVisible()
+    })
+
     test('keeps the portal anchored to the trigger on a tall page', async ({
         page,
     }) => {
