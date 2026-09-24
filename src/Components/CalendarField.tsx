@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom'
 import type {
     AriaAttributes,
     CSSProperties,
+    FocusEvent,
     MouseEvent,
     ReactNode,
     RefObject,
@@ -27,6 +28,7 @@ interface CalendarFieldProps {
     errorId: string
     fieldId: string
     handleClear: (event: MouseEvent<HTMLButtonElement>) => void
+    handleFieldBlur: (event: FocusEvent<HTMLDivElement>) => void
     handleInvalid: (event: React.InvalidEvent<HTMLInputElement>) => void
     hasError: boolean
     icon?: ReactNode | boolean
@@ -64,6 +66,7 @@ export default function CalendarField({
     errorId,
     fieldId,
     handleClear,
+    handleFieldBlur,
     handleInvalid,
     hasError,
     icon,
@@ -85,7 +88,7 @@ export default function CalendarField({
     validationRequired,
 }: CalendarFieldProps) {
     return (
-        <div className="w-full">
+        <div className="w-full" onBlur={handleFieldBlur}>
             {label != null && (
                 <div id={labelId} className="mb-1 text-sm font-medium">
                     {label}

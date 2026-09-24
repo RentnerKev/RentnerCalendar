@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { defaultCalendarDesign } from './types.js'
 import type {
     CSSProperties,
+    FocusEvent,
     InvalidEvent,
     MouseEvent,
     MutableRefObject,
@@ -17,6 +18,7 @@ import {
     shouldCloseCalendarAfterSelection,
 } from './Tools/CalendarCommit.js'
 import { formatCalendarValue } from './Tools/FormatFunctions.js'
+import { serializeCalendarValue } from './Tools/CalendarValue.js'
 import {
     mergeAriaIds,
     resolveCalendarFieldError,
@@ -56,6 +58,8 @@ export function CustomCalendar({
     value: rawValue,
     onChange,
     getFormValue,
+    formValueFormat = 'display',
+    onBlur,
     required = false,
     enableTime = false,
     enableRange = false,
@@ -359,6 +363,20 @@ export function CustomCalendar({
         triggerRef.current?.focus()
     }
 
+    function handleFieldBlur(event: FocusEvent<HTMLDivElement>) {
+        const nextTarget = event.relatedTarget
+
+        if (
+            nextTarget instanceof Node &&
+            (event.currentTarget.contains(nextTarget) ||
+                popoverRef.current?.contains(nextTarget))
+        ) {
+            return
+        }
+
+        onBlur?.(event)
+    }
+
     const setTriggerRef = useCallback(
         (element: HTMLButtonElement | null) => {
             triggerRef.current = element
@@ -370,10 +388,19 @@ export function CustomCalendar({
     const displayValue = normalizedValue
         ? formatCalendarValue(normalizedValue, locale)
         : ''
-    const formValue =
-        displayValue && normalizedValue && getFormValue
-            ? getFormValue(normalizedValue)
-            : displayValue
+    let formValue = displayValue
+    if (displayValue && normalizedValue) {
+        if (getFormValue) {
+            formValue = getFormValue(normalizedValue)
+        } else if (formValueFormat !== 'display') {
+            const serialized = serializeCalendarValue(normalizedValue, {
+                format: formValueFormat === 'iso-date' ? 'date' : 'datetime',
+            })
+            formValue = Array.isArray(serialized)
+                ? JSON.stringify(serialized)
+                : (serialized ?? '')
+        }
+    }
 
     const popoverContent = isOpen ? (
         <CalendarPopover
@@ -433,6 +460,7 @@ export function CustomCalendar({
             errorId={errorId}
             fieldId={fieldId}
             handleClear={handleClear}
+            handleFieldBlur={handleFieldBlur}
             handleInvalid={handleInvalid}
             hasError={hasError}
             icon={icon}

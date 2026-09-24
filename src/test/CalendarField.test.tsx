@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { CustomCalendar } from '../Calendar.js'
+import { RangeCalendar } from '../RangeCalendar.js'
+import { SingleCalendar } from '../SingleCalendar.js'
 import { serializeCalendarISODate } from '../Tools/CalendarValue.js'
 import {
     mergeAriaIds,
@@ -97,6 +99,73 @@ describe('calendar field contract rendering', () => {
         expect(defaultMarkup).toContain('name="appointment" value="09/21/2026"')
         expect(isoMarkup).toContain('name="appointment" value="2026-09-21"')
         expect(isoMarkup).toContain('09/21/2026')
+    })
+
+    test('serializes single dates with the built-in ISO formats', () => {
+        const date = new Date('2026-09-21T12:30:00.000Z')
+        const dateMarkup = renderToStaticMarkup(
+            <SingleCalendar
+                name="appointment"
+                value={new Date(2026, 8, 21)}
+                locale="en"
+                formValueFormat="iso-date"
+            />,
+        )
+        const dateTimeMarkup = renderToStaticMarkup(
+            <SingleCalendar
+                name="appointment"
+                value={date}
+                formValueFormat="iso-datetime"
+            />,
+        )
+
+        expect(dateMarkup).toContain('name="appointment" value="2026-09-21"')
+        expect(dateMarkup).toContain('09/21/2026')
+        expect(dateTimeMarkup).toContain(
+            'name="appointment" value="2026-09-21T12:30:00.000Z"',
+        )
+    })
+
+    test('serializes range bounds as one JSON form value', () => {
+        const markup = renderToStaticMarkup(
+            <RangeCalendar
+                name="period"
+                value={[new Date(2026, 8, 21), null]}
+                formValueFormat="iso-date"
+            />,
+        )
+
+        expect(markup).toContain(
+            'name="period" value="[&quot;2026-09-21&quot;,null]"',
+        )
+    })
+
+    test('lets the mode-specific serializer override the built-in format', () => {
+        const singleMarkup = renderToStaticMarkup(
+            <SingleCalendar
+                name="appointment"
+                value={new Date(2026, 8, 21)}
+                formValueFormat="iso-datetime"
+                getFormValue={(date) => serializeCalendarISODate(date) ?? ''}
+            />,
+        )
+        const rangeMarkup = renderToStaticMarkup(
+            <RangeCalendar
+                name="period"
+                value={[new Date(2026, 8, 21), new Date(2026, 8, 24)]}
+                formValueFormat="iso-datetime"
+                getFormValue={(range) =>
+                    range
+                        .map((date) => serializeCalendarISODate(date))
+                        .join('/')
+                }
+            />,
+        )
+
+        expect(singleMarkup).toContain('name="appointment" value="2026-09-21"')
+        expect(rangeMarkup).toContain(
+            'name="period" value="2026-09-21/2026-09-24"',
+        )
     })
 
     test('lets range consumers define one explicit form value', () => {

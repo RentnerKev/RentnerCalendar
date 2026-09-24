@@ -187,7 +187,10 @@ function App() {
 
                         <form.Field
                             name="appointment"
-                            validators={{ onSubmit: requiredCalendarValidator }}
+                            validators={{
+                                onBlur: requiredCalendarValidator,
+                                onSubmit: requiredCalendarValidator,
+                            }}
                         >
                             {(field) => (
                                 <div className="flex flex-col gap-2">
@@ -221,6 +224,7 @@ function App() {
                                         onChange={(value) =>
                                             field.handleChange(value)
                                         }
+                                        onBlur={field.handleBlur}
                                         placeholder="Termin auswählen"
                                         required
                                         enableTime
