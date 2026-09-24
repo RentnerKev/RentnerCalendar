@@ -1,10 +1,11 @@
-import type { AriaAttributes, ReactNode, Ref } from 'react'
+import type { AriaAttributes, FocusEventHandler, ReactNode, Ref } from 'react'
 import type { CalendarLocale, CalendarMessages } from './messages.js'
 
 export type CalendarRange = [Date | null, Date | null]
 export type SingleCalendarValue = Date | undefined
 export type RangeCalendarValue = CalendarRange | undefined
 export type CalendarValue = SingleCalendarValue | RangeCalendarValue
+export type CalendarFormValueFormat = 'display' | 'iso-date' | 'iso-datetime'
 
 export type CalendarDateInput = Date | string | number | null
 export type SingleCalendarInputValue = CalendarDateInput | undefined
@@ -71,6 +72,8 @@ export interface CalendarProps extends AriaAttributes {
     value?: CalendarInputValue
     onChange?: (value: CalendarValue) => void
     getFormValue?: (value: CalendarValue) => string
+    formValueFormat?: CalendarFormValueFormat
+    onBlur?: FocusEventHandler<HTMLDivElement>
     label?: ReactNode
     description?: ReactNode
     error?: string | null
@@ -103,19 +106,21 @@ export interface CalendarProps extends AriaAttributes {
 
 export type CalendarSharedProps = Omit<
     CalendarProps,
-    'value' | 'onChange' | 'enableRange' | 'switchMode'
+    'value' | 'onChange' | 'getFormValue' | 'enableRange' | 'switchMode'
 >
 
 export type SingleCalendarProps = CalendarSharedProps & {
     mode?: 'single'
     value?: SingleCalendarInputValue
     onChange?: (value: SingleCalendarValue) => void
+    getFormValue?: (value: Date) => string
 }
 
 export type RangeCalendarProps = CalendarSharedProps & {
     mode?: 'range'
     value?: RangeCalendarInputValue
     onChange?: (value: RangeCalendarValue) => void
+    getFormValue?: (value: CalendarRange) => string
 }
 
 export type CalendarModeProps =

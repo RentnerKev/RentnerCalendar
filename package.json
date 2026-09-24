@@ -17,7 +17,7 @@
     "scripts": {
         "build": "bun -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true })\" && tsc",
         "test": "bun test",
-        "typecheck": "tsc --noEmit",
+        "typecheck": "tsc --noEmit && tsc --project tsconfig.type-tests.json",
         "prepare": "bun run build",
         "pack:check": "bun pm pack --dry-run",
         "test:e2e": "playwright test",

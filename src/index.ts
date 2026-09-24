@@ -30,6 +30,7 @@ export type {
 export type {
     CalendarDateInput,
     CalendarCustomDesign,
+    CalendarFormValueFormat,
     CalendarGridProps,
     CalendarHeaderProps,
     CalendarInputValue,
