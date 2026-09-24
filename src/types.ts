@@ -70,6 +70,7 @@ export interface CalendarProps extends AriaAttributes {
     name?: string
     value?: CalendarInputValue
     onChange?: (value: CalendarValue) => void
+    getFormValue?: (value: CalendarValue) => string
     label?: ReactNode
     description?: ReactNode
     error?: string | null

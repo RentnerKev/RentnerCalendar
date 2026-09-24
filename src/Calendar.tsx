@@ -55,6 +55,7 @@ export function CustomCalendar({
     name,
     value: rawValue,
     onChange,
+    getFormValue,
     required = false,
     enableTime = false,
     enableRange = false,
@@ -369,6 +370,10 @@ export function CustomCalendar({
     const displayValue = normalizedValue
         ? formatCalendarValue(normalizedValue, locale)
         : ''
+    const formValue =
+        displayValue && normalizedValue && getFormValue
+            ? getFormValue(normalizedValue)
+            : displayValue
 
     const popoverContent = isOpen ? (
         <CalendarPopover
@@ -423,6 +428,7 @@ export function CustomCalendar({
             dialogId={dialogId}
             disabled={disabled}
             displayValue={displayValue}
+            formValue={formValue}
             error={error}
             errorId={errorId}
             fieldId={fieldId}
