@@ -3,6 +3,19 @@
 A controlled React date picker for single dates and ranges, with optional time
 input, native form validation, localization, and customizable Tailwind styling.
 
+## Requirements
+
+Use React 19 with React DOM 19, an ESM-capable build, and Tailwind CSS 4 for
+the documented styling. Import this package's `tailwind.css` entry into your
+Tailwind stylesheet. It uses `@source` for published classes and `@theme` for
+global tokens such as `--color-primary`. Check for token name collisions with
+your app and override them in a later `@theme` block if needed.
+
+In a React Server Components app, import and render the calendar from a module
+beginning with `'use client'`; define its state and callbacks there. See the
+[Tailwind directives](https://tailwindcss.com/docs/functions-and-directives)
+and [React client boundary](https://react.dev/reference/rsc/use-client) guides.
+
 ## Installation
 
 With npm:
@@ -90,6 +103,27 @@ component state.
 On an invalid native submit, the visible trigger receives focus. A disabled
 calendar is excluded from validation and form submission. A read-only calendar
 keeps its form value but prevents opening and changes.
+
+By default, native form submission uses the localized display text for
+compatibility. Pass `getFormValue` to define a backend format without changing
+the visible text. For a single date, the existing ISO helper returns a local
+`YYYY-MM-DD` value:
+
+```tsx
+import { serializeCalendarISODate, SingleCalendar } from '@rentnerkev/calendar'
+
+;<SingleCalendar
+    name="appointment"
+    value={appointment}
+    onChange={setAppointment}
+    getFormValue={(value) =>
+        value instanceof Date ? (serializeCalendarISODate(value) ?? '') : ''
+    }
+/>
+```
+
+Range mode still submits one field. Use `getFormValue` to encode both bounds in
+the format your backend expects, such as a JSON array of ISO dates.
 
 ```tsx
 <SingleCalendar
@@ -261,43 +295,44 @@ See the `CalendarCustomDesign` type for the complete list.
 
 ## `CustomCalendar` props
 
-| Prop               | Type                              | Default        | Description                                       |
-| ------------------ | --------------------------------- | -------------- | ------------------------------------------------- |
-| `id`               | `string`                          | `undefined`    | ID for the visible trigger.                       |
-| `name`             | `string`                          | `undefined`    | Native form field name.                           |
-| `value`            | `CalendarInputValue`              | `undefined`    | Controlled date or range value.                   |
-| `onChange`         | `(value: CalendarValue) => void`  | –              | Receives committed value changes exactly once.    |
-| `required`         | `boolean`                         | `false`        | Enables native required validation.               |
-| `label`            | `ReactNode`                       | `undefined`    | Visible, accessible field label.                  |
-| `description`      | `ReactNode`                       | `undefined`    | Help text included in `aria-describedby`.         |
-| `error`            | `string \| null`                  | `undefined`    | External error; `null` clears validation errors.  |
-| `disabled`         | `boolean`                         | `false`        | Disables interaction and form submission.         |
-| `readOnly`         | `boolean`                         | `false`        | Prevents changes while retaining the form value.  |
-| `triggerRef`       | `Ref<HTMLDivElement>`             | `undefined`    | Ref to the focusable visible trigger.             |
-| `aria-label`       | `string`                          | `undefined`    | Alternative accessible trigger label.             |
-| `aria-labelledby`  | `string`                          | `undefined`    | Additional accessible label IDs.                  |
-| `aria-describedby` | `string`                          | `undefined`    | Additional description IDs.                       |
-| `enableTime`       | `boolean`                         | `false`        | Enables time selection.                           |
-| `enableRange`      | `boolean`                         | `false`        | Enables range selection.                          |
-| `customDesign`     | `CalendarCustomDesign`            | Default design | Overrides design classes.                         |
-| `placeholder`      | `string`                          | Localized      | Trigger placeholder.                              |
-| `button`           | `boolean`                         | `false`        | Requires the Apply button to commit changes.      |
-| `backdrop`         | `boolean`                         | `true`         | Enables closing on an outside click.              |
-| `icon`             | `ReactNode \| boolean`            | `CalendarDays` | Custom icon, or `false` to hide it.               |
-| `className`        | `string`                          | `''`           | Additional outer-container classes.               |
-| `closeOnSelect`    | `boolean`                         | `false`        | Closes after a completed selection.               |
-| `minDate`          | `CalendarInputValue`              | `undefined`    | Inclusive minimum selectable date.                |
-| `maxDate`          | `CalendarInputValue`              | `undefined`    | Inclusive maximum selectable date.                |
-| `minTime`          | `string`                          | `undefined`    | Earliest selectable `HH:mm` time.                 |
-| `maxTime`          | `string`                          | `undefined`    | Latest selectable `HH:mm` time.                   |
-| `fastEdit`         | `boolean`                         | `true`         | Shows fast month and year controls.               |
-| `weekStartsOn`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7` | `1`            | First weekday, Monday through Sunday.             |
-| `visibleDays`      | `number`                          | `7`            | Number of visible days per week.                  |
-| `showHolidays`     | `boolean`                         | `false`        | Marks supported German holidays.                  |
-| `locale`           | `'de' \| 'en'`                    | `'de'`         | UI, validation, ARIA, and formatting locale.      |
-| `messages`         | `Partial<CalendarMessages>`       | `undefined`    | Overrides localized messages.                     |
-| `switchMode`       | `boolean`                         | `false`        | Lets users switch between single and range modes. |
-| `isDeletable`      | `boolean`                         | `false`        | Adds a button that clears the selected value.     |
+| Prop               | Type                               | Default        | Description                                                |
+| ------------------ | ---------------------------------- | -------------- | ---------------------------------------------------------- |
+| `id`               | `string`                           | `undefined`    | ID for the visible trigger.                                |
+| `name`             | `string`                           | `undefined`    | Native form field name.                                    |
+| `value`            | `CalendarInputValue`               | `undefined`    | Controlled date or range value.                            |
+| `onChange`         | `(value: CalendarValue) => void`   | –              | Receives committed value changes exactly once.             |
+| `getFormValue`     | `(value: CalendarValue) => string` | `undefined`    | Optional native form serializer; defaults to display text. |
+| `required`         | `boolean`                          | `false`        | Enables native required validation.                        |
+| `label`            | `ReactNode`                        | `undefined`    | Visible, accessible field label.                           |
+| `description`      | `ReactNode`                        | `undefined`    | Help text included in `aria-describedby`.                  |
+| `error`            | `string \| null`                   | `undefined`    | External error; `null` clears validation errors.           |
+| `disabled`         | `boolean`                          | `false`        | Disables interaction and form submission.                  |
+| `readOnly`         | `boolean`                          | `false`        | Prevents changes while retaining the form value.           |
+| `triggerRef`       | `Ref<HTMLDivElement>`              | `undefined`    | Ref to the focusable visible trigger.                      |
+| `aria-label`       | `string`                           | `undefined`    | Alternative accessible trigger label.                      |
+| `aria-labelledby`  | `string`                           | `undefined`    | Additional accessible label IDs.                           |
+| `aria-describedby` | `string`                           | `undefined`    | Additional description IDs.                                |
+| `enableTime`       | `boolean`                          | `false`        | Enables time selection.                                    |
+| `enableRange`      | `boolean`                          | `false`        | Enables range selection.                                   |
+| `customDesign`     | `CalendarCustomDesign`             | Default design | Overrides design classes.                                  |
+| `placeholder`      | `string`                           | Localized      | Trigger placeholder.                                       |
+| `button`           | `boolean`                          | `false`        | Requires the Apply button to commit changes.               |
+| `backdrop`         | `boolean`                          | `true`         | Enables closing on an outside click.                       |
+| `icon`             | `ReactNode \| boolean`             | `CalendarDays` | Custom icon, or `false` to hide it.                        |
+| `className`        | `string`                           | `''`           | Additional outer-container classes.                        |
+| `closeOnSelect`    | `boolean`                          | `false`        | Closes after a completed selection.                        |
+| `minDate`          | `CalendarInputValue`               | `undefined`    | Inclusive minimum selectable date.                         |
+| `maxDate`          | `CalendarInputValue`               | `undefined`    | Inclusive maximum selectable date.                         |
+| `minTime`          | `string`                           | `undefined`    | Earliest selectable `HH:mm` time.                          |
+| `maxTime`          | `string`                           | `undefined`    | Latest selectable `HH:mm` time.                            |
+| `fastEdit`         | `boolean`                          | `true`         | Shows fast month and year controls.                        |
+| `weekStartsOn`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7`  | `1`            | First weekday, Monday through Sunday.                      |
+| `visibleDays`      | `number`                           | `7`            | Number of visible days per week.                           |
+| `showHolidays`     | `boolean`                          | `false`        | Marks supported German holidays.                           |
+| `locale`           | `'de' \| 'en'`                     | `'de'`         | UI, validation, ARIA, and formatting locale.               |
+| `messages`         | `Partial<CalendarMessages>`        | `undefined`    | Overrides localized messages.                              |
+| `switchMode`       | `boolean`                          | `false`        | Lets users switch between single and range modes.          |
+| `isDeletable`      | `boolean`                          | `false`        | Adds a button that clears the selected value.              |
 
 ## Tailwind CSS
 

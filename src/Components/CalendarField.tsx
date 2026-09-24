@@ -22,6 +22,7 @@ interface CalendarFieldProps {
     descriptionId: string
     disabled: boolean
     displayValue: string
+    formValue: string
     error: string | null
     errorId: string
     fieldId: string
@@ -58,6 +59,7 @@ export default function CalendarField({
     descriptionId,
     disabled,
     displayValue,
+    formValue,
     error,
     errorId,
     fieldId,
@@ -165,7 +167,7 @@ export default function CalendarField({
             <input
                 ref={validationInputRef}
                 name={name}
-                value={displayValue}
+                value={formValue}
                 onChange={() => undefined}
                 onInvalid={handleInvalid}
                 required={validationRequired}
