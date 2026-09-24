@@ -1,4 +1,8 @@
-import { RangeCalendar, SingleCalendar } from '../src/index.js'
+import {
+    CalendarProvider,
+    RangeCalendar,
+    SingleCalendar,
+} from '../src/index.js'
 import type { CalendarRange } from '../src/index.js'
 
 const single = (
@@ -30,4 +34,15 @@ const invalidRange = (
     <RangeCalendar getFormValue={(_date: Date) => ''} />
 )
 
-void [single, range, invalidSingle, invalidRange]
+const withDefaults = (
+    <CalendarProvider
+        locale="en"
+        customDesign={{ inputBackground: 'bg-slate-900' }}
+        messages={{ placeholder: 'Choose a date' }}
+    >
+        <SingleCalendar />
+        <RangeCalendar locale="de" />
+    </CalendarProvider>
+)
+
+void [single, range, invalidSingle, invalidRange, withDefaults]

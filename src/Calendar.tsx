@@ -29,6 +29,7 @@ import {
     parseToDate,
 } from './Tools/InternalOnlyFunctions.js'
 import CalendarField from './Components/CalendarField.js'
+import { useCalendarDefaults } from './CalendarProvider.js'
 
 const calendarPopoverMinWidth = 340
 
@@ -70,7 +71,7 @@ export function CustomCalendar({
     backdrop = true,
     button = false,
     placeholder,
-    customDesign = defaultCalendarDesign,
+    customDesign: providedCustomDesign,
     closeOnSelect = false,
     minDate: rawMinDate,
     maxDate: rawMaxDate,
@@ -80,8 +81,8 @@ export function CustomCalendar({
     weekStartsOn = 1,
     visibleDays = 7,
     showHolidays = false,
-    locale = 'de',
-    messages: messageOverrides,
+    locale: providedLocale,
+    messages: providedMessages,
     label,
     description,
     error: externalError,
@@ -93,6 +94,23 @@ export function CustomCalendar({
     triggerRef: forwardedTriggerRef,
     ...ariaProps
 }: CalendarProps) {
+    const defaults = useCalendarDefaults()
+    const locale = providedLocale ?? defaults.locale ?? 'de'
+    const messageOverrides = useMemo(
+        () => ({
+            ...defaults.messages,
+            ...providedMessages,
+            holidayNames: {
+                ...defaults.messages?.holidayNames,
+                ...providedMessages?.holidayNames,
+            },
+        }),
+        [defaults.messages, providedMessages],
+    )
+    const customDesign = {
+        ...defaults.customDesign,
+        ...providedCustomDesign,
+    }
     const [isOpen, setIsOpen] = useState(false)
     const [isRangeMode, setIsRangeMode] = useState(enableRange)
     const [isTouched, setIsTouched] = useState(false)
