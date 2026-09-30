@@ -33,7 +33,7 @@
         "type": "git",
         "url": "git+https://github.com/RentnerKev/RentnerCalendar.git"
     },
-    "homepage": "https://github.com/RentnerKev/RentnerCalendar#readme",
+    "homepage": "https://packages.rentner.dev/packages/calendar",
     "bugs": {
         "url": "https://github.com/RentnerKev/RentnerCalendar/issues"
     },
