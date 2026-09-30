@@ -73,6 +73,15 @@ describe('calendar value parsing', () => {
         expect(parseCalendarValue([])).toBeUndefined()
         expect(parseCalendarValue([new Date()])).toBeUndefined()
     })
+
+    test('orders reversed range values chronologically', () => {
+        const range = parseCalendarValue(['2026-09-22', '2026-09-18'] as const)
+
+        expect(Array.isArray(range)).toBe(true)
+        if (!Array.isArray(range)) return
+        expect(range[0]?.getDate()).toBe(18)
+        expect(range[1]?.getDate()).toBe(22)
+    })
 })
 
 describe('calendar value serialization', () => {
@@ -103,6 +112,12 @@ describe('calendar value serialization', () => {
             null,
         ])
         expect(serializeCalendarValue([null, null])).toEqual([null, null])
+        expect(
+            serializeCalendarValue(
+                [new Date(2026, 8, 22), new Date(2026, 8, 18)],
+                { format: 'date' },
+            ),
+        ).toEqual(['2026-09-18', '2026-09-22'])
     })
 
     test('never throws for invalid dates', () => {

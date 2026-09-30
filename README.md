@@ -121,10 +121,18 @@ export function CalendarFields() {
 }
 ```
 
-Selections commit immediately when `button` is `false`. `backdrop` only
-controls outside-click behavior, while `closeOnSelect` only controls whether a
-completed selection closes the popover. When `button` is `true`, the Apply
-button commits the pending value.
+Selections commit immediately when `button` is `false`. `closeOnSelect` controls
+whether a completed selection closes the popover. When `button` is `true`, the
+Apply button commits the pending value. Without time input, a completed range
+always starts at 00:00 on the earlier local day and ends at 23:59:59.999 on
+the later local day, even when the later day is selected first.
+
+With the default `backdrop={true}`, the picker is a modal dialog: focus stays
+inside it, Escape closes it and returns focus to the trigger, and the page
+does not scroll while it is open. Set `backdrop={false}` for a nonmodal picker.
+The date grid has one Tab stop. Arrow keys move by day or week, Home and End
+move within the visible week, Page Up and Page Down move by month, and Shift
+with Page Up or Page Down moves by year. Disabled days are skipped.
 
 ## Form and accessibility contract
 
@@ -367,7 +375,7 @@ See the `CalendarCustomDesign` type for the complete list.
 | `customDesign`     | `CalendarCustomDesign`                      | Default design | Overrides design classes.                                            |
 | `placeholder`      | `string`                                    | Localized      | Trigger placeholder.                                                 |
 | `button`           | `boolean`                                   | `false`        | Requires the Apply button to commit changes.                         |
-| `backdrop`         | `boolean`                                   | `true`         | Enables closing on an outside click.                                 |
+| `backdrop`         | `boolean`                                   | `true`         | Modal backdrop, focus loop, and outside-click close.                 |
 | `icon`             | `ReactNode \| boolean`                      | `CalendarDays` | Custom icon, or `false` to hide it.                                  |
 | `className`        | `string`                                    | `''`           | Additional outer-container classes.                                  |
 | `closeOnSelect`    | `boolean`                                   | `false`        | Closes after a completed selection.                                  |

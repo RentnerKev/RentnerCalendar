@@ -33,6 +33,7 @@ export interface CalendarMessages {
     year: string
     searchOptions: string
     searchPlaceholder: string
+    keyboardHelp?: string
     noResults: string
     noOptions: string
     selectDate: (date: string) => string
@@ -93,6 +94,8 @@ const germanMessages: CalendarMessages = {
     year: 'Jahr',
     searchOptions: 'Optionen suchen',
     searchPlaceholder: 'Suchen…',
+    keyboardHelp:
+        'Pfeiltasten navigieren tageweise oder wochenweise. Pos1 und Ende springen zum Wochenanfang und -ende. Bild auf und Bild ab wechseln den Monat; mit Umschalttaste wechseln sie das Jahr.',
     noResults: 'Keine Ergebnisse',
     noOptions: 'Keine Optionen',
     selectDate: (date) => `Datum auswählen: ${date}`,
@@ -134,6 +137,8 @@ const englishMessages: CalendarMessages = {
     year: 'Year',
     searchOptions: 'Search options',
     searchPlaceholder: 'Search…',
+    keyboardHelp:
+        'Use arrow keys to move by day or week. Home and End move to the start and end of the week. Page Up and Page Down change the month; hold Shift to change the year.',
     noResults: 'No results',
     noOptions: 'No options',
     selectDate: (date) => `Select date: ${date}`,

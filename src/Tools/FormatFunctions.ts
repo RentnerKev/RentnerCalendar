@@ -1,7 +1,11 @@
 import { toSafeDate } from './InternalOnlyFunctions.js'
 import type { CalendarLocale } from '../messages.js'
 
-function formatSingle(dateInput: unknown, locale: CalendarLocale) {
+function formatSingle(
+    dateInput: unknown,
+    locale: CalendarLocale,
+    ignoreEndOfDay = false,
+) {
     const date = toSafeDate(dateInput)
     if (!date) return '?'
 
@@ -14,7 +18,14 @@ function formatSingle(dateInput: unknown, locale: CalendarLocale) {
         },
     )
 
-    const hasExplicitTime = date.getHours() !== 0 || date.getMinutes() !== 0
+    const isEndOfDay =
+        date.getHours() === 23 &&
+        date.getMinutes() === 59 &&
+        date.getSeconds() === 59 &&
+        date.getMilliseconds() === 999
+    const hasExplicitTime =
+        (date.getHours() !== 0 || date.getMinutes() !== 0) &&
+        !(ignoreEndOfDay && isEndOfDay)
 
     if (hasExplicitTime) {
         const timeStr = date.toLocaleTimeString(
@@ -54,7 +65,7 @@ export function formatCalendarValue(
 
     if (Array.isArray(value)) {
         const start = formatSingle(value[0], locale)
-        const end = formatSingle(value[1], locale)
+        const end = formatSingle(value[1], locale, true)
         if (start === '?' && end === '?') return ''
         return `${start} - ${end}`
     }

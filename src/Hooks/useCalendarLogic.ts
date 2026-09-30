@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { CalendarValue } from '../types.js'
+import { isCalendarDayWithinBounds } from '../Tools/CalendarDay.js'
+import { completeCalendarRange } from '../Tools/CalendarSelection.js'
 
 export default function useCalendarLogic(
     value?: CalendarValue,
@@ -110,18 +112,7 @@ export default function useCalendarLogic(
     }
 
     function handleDateSelect(date: Date) {
-        if (
-            minDate &&
-            new Date(date).setHours(0, 0, 0, 0) <
-                new Date(minDate).setHours(0, 0, 0, 0)
-        )
-            return
-        if (
-            maxDate &&
-            new Date(date).setHours(23, 59, 59, 999) >
-                new Date(maxDate).setHours(23, 59, 59, 999)
-        )
-            return
+        if (!isCalendarDayWithinBounds(date, minDate, maxDate)) return
 
         let newValue: CalendarValue
         if (enableRange) {
@@ -140,21 +131,12 @@ export default function useCalendarLogic(
                 }
                 newValue = [newStart, null]
             } else {
-                const start = new Date(currentRange[0])
-                const end = new Date(date)
-                if (enableTime && currentRange[1]) {
-                    end.setHours(
-                        currentRange[1].getHours(),
-                        currentRange[1].getMinutes(),
-                    )
-                } else {
-                    end.setHours(23, 59, 59, 999)
-                }
-                if (end < start) {
-                    newValue = [end, start]
-                } else {
-                    newValue = [start, end]
-                }
+                newValue = completeCalendarRange(
+                    currentRange[0],
+                    date,
+                    Boolean(enableTime),
+                    currentRange[1],
+                )
             }
         } else {
             newValue = new Date(date)

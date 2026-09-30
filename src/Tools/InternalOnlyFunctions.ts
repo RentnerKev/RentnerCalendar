@@ -44,6 +44,13 @@ export function isToday(date: unknown) {
     return isSameDay(date, today)
 }
 
+function calendarDayNumber(year: number, month: number, day: number) {
+    const utcDate = new Date(0)
+    utcDate.setUTCFullYear(year, month - 1, day)
+    utcDate.setUTCHours(0, 0, 0, 0)
+    return utcDate.getTime() / (1000 * 60 * 60 * 24)
+}
+
 export function getGermanHolidayName(date: unknown): string | null {
     const safeDate = toSafeDate(date)
     if (!safeDate) return null
@@ -87,10 +94,9 @@ export function getGermanHolidayName(date: unknown): string | null {
     )
         ostern_tag = 18
 
-    const ostersonntag = new Date(y, ostern_monat - 1, ostern_tag)
-    const diffDays = Math.round(
-        (safeDate.getTime() - ostersonntag.getTime()) / (1000 * 60 * 60 * 24),
-    )
+    const diffDays =
+        calendarDayNumber(y, m, d) -
+        calendarDayNumber(y, ostern_monat, ostern_tag)
 
     if (diffDays === -2) return 'Karfreitag'
     if (diffDays === 0) return 'Ostersonntag'

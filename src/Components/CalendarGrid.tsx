@@ -3,11 +3,29 @@ import { CustomTooltip } from '@rentnerkev/tooltips'
 import type { CalendarGridProps } from '../types.js'
 import { resolveCalendarMessages } from '../messages.js'
 import {
+    getCalendarDateKey,
+    isCalendarDayWithinBounds,
+} from '../Tools/CalendarDay.js'
+import {
     getGermanHolidayName,
     isSameDay,
     isToday,
 } from '../Tools/InternalOnlyFunctions.js'
 import useCalendarGridNavigation from '../Hooks/useCalendarGridNavigation.js'
+
+interface CalendarGridInternalProps extends CalendarGridProps {
+    currentDate: Date
+    onViewDateChange: (date: Date) => void
+    monthHeadingId: string
+    keyboardHelpId: string
+}
+
+function formatLongWeekday(locale: 'de' | 'en', isoDay: number) {
+    const date = new Date(2023, 0, 2 + isoDay - 1)
+    return date.toLocaleDateString(locale === 'en' ? 'en-US' : 'de-DE', {
+        weekday: 'long',
+    })
+}
 
 export default function CalendarGrid({
     handleGetDaysInMonth,
@@ -24,186 +42,266 @@ export default function CalendarGrid({
     messages: providedMessages,
     disabled = false,
     readOnly = false,
-}: CalendarGridProps) {
+    currentDate,
+    onViewDateChange,
+    monthHeadingId,
+    keyboardHelpId,
+}: CalendarGridInternalProps) {
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const messages = providedMessages ?? resolveCalendarMessages(locale)
     const isInteractionDisabled = disabled || readOnly
-    const { handler: navigationHandler } =
-        useCalendarGridNavigation(visibleDays)
+    const dayItems = handleGetDaysInMonth()
+    const isDateDisabled = (date: Date) =>
+        isInteractionDisabled ||
+        !isCalendarDayWithinBounds(date, minDate, maxDate)
 
-    const allDays = messages.weekdays
-    const weekDays = []
-    for (let i = 0; i < visibleDays; i++) {
-        weekDays.push(allDays[(weekStartsOn - 1 + i) % 7])
+    let preferredDate: Date | undefined
+    if (Array.isArray(selectedDate)) {
+        preferredDate = selectedDate[0] ?? selectedDate[1] ?? undefined
+    } else if (selectedDate instanceof Date) {
+        preferredDate = selectedDate
     }
+
+    const initialFocusDate =
+        dayItems.find(
+            ({ date }) =>
+                preferredDate &&
+                isSameDay(date, preferredDate) &&
+                !isDateDisabled(date),
+        )?.date ??
+        dayItems.find(({ date }) => isToday(date) && !isDateDisabled(date))
+            ?.date ??
+        dayItems.find(({ date }) => !isDateDisabled(date))?.date
+
+    const { gridRef, state, handler } = useCalendarGridNavigation({
+        columnCount: visibleDays,
+        weekStartsOn,
+        currentDate,
+        initialFocusDate,
+        minDate,
+        maxDate,
+        onViewDateChange,
+    })
+
+    const hasActiveDate = dayItems.some(
+        ({ date }) =>
+            getCalendarDateKey(date) === state.activeDateKey &&
+            !isDateDisabled(date),
+    )
+    const activeDateKey = hasActiveDate
+        ? state.activeDateKey
+        : initialFocusDate
+          ? getCalendarDateKey(initialFocusDate)
+          : ''
+
+    const weekDays = Array.from({ length: visibleDays }, (_, index) => {
+        const isoDay = ((weekStartsOn - 1 + index) % 7) + 1
+        return {
+            shortName: messages.weekdays[isoDay - 1],
+            fullName: formatLongWeekday(locale, isoDay),
+        }
+    })
+    const rows = Array.from(
+        { length: Math.ceil(dayItems.length / visibleDays) },
+        (_, rowIndex) =>
+            dayItems.slice(
+                rowIndex * visibleDays,
+                (rowIndex + 1) * visibleDays,
+            ),
+    )
 
     return (
         <div className="w-full overflow-hidden">
             <div
-                className="grid gap-1 mb-2"
-                style={{
-                    gridTemplateColumns: `repeat(${visibleDays}, minmax(0, 1fr))`,
-                }}
-            >
-                {weekDays.map(function (day) {
-                    return (
-                        <div
-                            key={day}
-                            className={`text-center text-[11px] font-bold ${cd.textMutedDark} uppercase tracking-wider py-1`}
-                        >
-                            {day}
-                        </div>
-                    )
-                })}
-            </div>
-            <div
+                ref={gridRef}
                 data-calendar-grid=""
-                className="grid gap-1"
-                style={{
-                    gridTemplateColumns: `repeat(${visibleDays}, minmax(0, 1fr))`,
-                }}
+                role="grid"
+                aria-labelledby={monthHeadingId}
+                aria-describedby={keyboardHelpId}
+                aria-rowcount={rows.length + 1}
+                aria-colcount={visibleDays}
+                className="w-full"
             >
-                {handleGetDaysInMonth().map(function (dayObj, dayIndex) {
-                    let isSelected = false
-                    let isInRange = false
-
-                    const germanHolidayName = showHolidays
-                        ? getGermanHolidayName(dayObj.date)
-                        : null
-                    const holidayName = germanHolidayName
-                        ? (messages.holidayNames[
-                              germanHolidayName as keyof typeof messages.holidayNames
-                          ] ?? germanHolidayName)
-                        : null
-                    const isBeforeMin = minDate
-                        ? new Date(dayObj.date).setHours(0, 0, 0, 0) <
-                          new Date(minDate).setHours(0, 0, 0, 0)
-                        : false
-                    const isAfterMax = maxDate
-                        ? new Date(dayObj.date).setHours(23, 59, 59, 999) >
-                          new Date(maxDate).setHours(23, 59, 59, 999)
-                        : false
-                    const isDisabled =
-                        isBeforeMin || isAfterMax || isInteractionDisabled
-
-                    if (enableRange && Array.isArray(selectedDate)) {
-                        const [start, end] = selectedDate
-                        if (start && isSameDay(dayObj.date, start))
-                            isSelected = true
-                        if (end && isSameDay(dayObj.date, end))
-                            isSelected = true
-                        if (
-                            start &&
-                            end &&
-                            dayObj.date > start &&
-                            dayObj.date < end
-                        )
-                            isInRange = true
-                    } else if (!enableRange && selectedDate instanceof Date) {
-                        isSelected = isSameDay(dayObj.date, selectedDate)
-                    }
-
-                    const isCurrentDay = isToday(dayObj.date)
-
-                    let buttonClass =
-                        'h-9 w-9 rounded-lg flex items-center justify-center text-sm transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 '
-
-                    if (isDisabled) {
-                        buttonClass += `opacity-30 cursor-not-allowed ${cd.textDisabled} `
-                    } else {
-                        buttonClass += 'cursor-pointer '
-                        if (isSelected) {
-                            buttonClass += `${cd.primaryBg} ${cd.textBackground} font-bold `
-                        } else if (isInRange) {
-                            buttonClass += `${cd.primaryBgSubtle} ${cd.textColor} `
-                        } else if (!dayObj.isCurrentMonth) {
-                            buttonClass += `${cd.textDisabled} ${cd.hoverTextMuted} `
-                        } else {
-                            buttonClass += `${cd.textDay} ${cd.hoverBackground} ${cd.hoverText} `
-                        }
-                    }
-
-                    if (
-                        isCurrentDay &&
-                        !isSelected &&
-                        !isInRange &&
-                        !isDisabled
-                    ) {
-                        buttonClass += `border ${cd.primaryBorder} ${cd.primaryColor} `
-                    } else if (isCurrentDay && isDisabled) {
-                        buttonClass += `border ${cd.borderColor} `
-                    }
-
-                    if (holidayName) {
-                        const dateLabel = dayObj.date.toLocaleDateString(
-                            locale === 'en' ? 'en-US' : 'de-DE',
-                            { dateStyle: 'full' },
-                        )
-                        return (
-                            <CustomTooltip
-                                key={dayObj.date.getTime()}
-                                content={holidayName}
-                                side="top"
-                                disabledTrigger={isDisabled}
+                <div role="rowgroup">
+                    <div
+                        role="row"
+                        className="grid gap-1 mb-1"
+                        style={{
+                            gridTemplateColumns: `repeat(${visibleDays}, minmax(0, 1fr))`,
+                        }}
+                    >
+                        {weekDays.map(({ shortName, fullName }) => (
+                            <div
+                                key={fullName}
+                                role="columnheader"
+                                aria-label={fullName}
+                                className={`text-center text-[11px] font-bold ${cd.textMutedDark} uppercase tracking-wider py-1`}
                             >
-                                <button
-                                    data-calendar-day=""
-                                    onClick={() =>
-                                        !isDisabled && onSelectDate(dayObj.date)
-                                    }
-                                    onKeyDown={(event) =>
-                                        navigationHandler.handleDayKeyDown(
-                                            event,
-                                            dayIndex,
-                                        )
-                                    }
-                                    className={buttonClass.trim()}
-                                    type="button"
-                                    disabled={isDisabled}
-                                    aria-label={`${messages.selectDate(dateLabel)}: ${holidayName}`}
-                                    aria-pressed={isSelected}
-                                    aria-current={
-                                        isCurrentDay ? 'date' : undefined
-                                    }
-                                >
-                                    {dayObj.date.getDate()}
-                                    <span
-                                        className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${cd.primaryBg}`}
-                                    />
-                                </button>
-                            </CustomTooltip>
-                        )
-                    }
-
-                    return (
-                        <button
-                            data-calendar-day=""
-                            key={dayObj.date.getTime()}
-                            onClick={function () {
-                                if (!isDisabled) onSelectDate(dayObj.date)
+                                {shortName}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div role="rowgroup" className="grid gap-1">
+                    {rows.map((week) => (
+                        <div
+                            key={`week-${getCalendarDateKey(week[0].date)}`}
+                            role="row"
+                            className="grid gap-1"
+                            style={{
+                                gridTemplateColumns: `repeat(${visibleDays}, minmax(0, 1fr))`,
                             }}
-                            onKeyDown={(event) =>
-                                navigationHandler.handleDayKeyDown(
-                                    event,
-                                    dayIndex,
-                                )
-                            }
-                            className={buttonClass.trim()}
-                            type="button"
-                            disabled={isDisabled}
-                            aria-label={messages.selectDate(
-                                dayObj.date.toLocaleDateString(
-                                    locale === 'en' ? 'en-US' : 'de-DE',
-                                    { dateStyle: 'full' },
-                                ),
-                            )}
-                            aria-pressed={isSelected}
-                            aria-current={isCurrentDay ? 'date' : undefined}
                         >
-                            {dayObj.date.getDate()}
-                        </button>
-                    )
-                })}
+                            {week.map(function (dayObj) {
+                                const dateKey = getCalendarDateKey(dayObj.date)
+                                let isSelected = false
+                                let isInRange = false
+
+                                const germanHolidayName = showHolidays
+                                    ? getGermanHolidayName(dayObj.date)
+                                    : null
+                                const holidayName = germanHolidayName
+                                    ? (messages.holidayNames[
+                                          germanHolidayName as keyof typeof messages.holidayNames
+                                      ] ?? germanHolidayName)
+                                    : null
+                                const dayDisabled = isDateDisabled(dayObj.date)
+
+                                if (
+                                    enableRange &&
+                                    Array.isArray(selectedDate)
+                                ) {
+                                    const [start, end] = selectedDate
+                                    if (
+                                        start &&
+                                        isSameDay(dayObj.date, start)
+                                    ) {
+                                        isSelected = true
+                                    }
+                                    if (end && isSameDay(dayObj.date, end)) {
+                                        isSelected = true
+                                    }
+                                    if (
+                                        start &&
+                                        end &&
+                                        dayObj.date > start &&
+                                        dayObj.date < end
+                                    ) {
+                                        isInRange = true
+                                    }
+                                } else if (
+                                    !enableRange &&
+                                    selectedDate instanceof Date
+                                ) {
+                                    isSelected = isSameDay(
+                                        dayObj.date,
+                                        selectedDate,
+                                    )
+                                }
+
+                                const isCurrentDay = isToday(dayObj.date)
+                                let buttonClass =
+                                    'h-9 w-9 rounded-lg flex items-center justify-center text-sm transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 '
+
+                                if (dayDisabled) {
+                                    buttonClass += `opacity-30 cursor-not-allowed ${cd.textDisabled} `
+                                } else {
+                                    buttonClass += 'cursor-pointer '
+                                    if (isSelected) {
+                                        buttonClass += `${cd.primaryBg} ${cd.textBackground} font-bold `
+                                    } else if (isInRange) {
+                                        buttonClass += `${cd.primaryBgSubtle} ${cd.textColor} `
+                                    } else if (!dayObj.isCurrentMonth) {
+                                        buttonClass += `${cd.textDisabled} ${cd.hoverTextMuted} `
+                                    } else {
+                                        buttonClass += `${cd.textDay} ${cd.hoverBackground} ${cd.hoverText} `
+                                    }
+                                }
+
+                                if (
+                                    isCurrentDay &&
+                                    !isSelected &&
+                                    !isInRange &&
+                                    !dayDisabled
+                                ) {
+                                    buttonClass += `border ${cd.primaryBorder} ${cd.primaryColor} `
+                                } else if (isCurrentDay && dayDisabled) {
+                                    buttonClass += `border ${cd.borderColor} `
+                                }
+
+                                const dateLabel =
+                                    dayObj.date.toLocaleDateString(
+                                        locale === 'en' ? 'en-US' : 'de-DE',
+                                        { dateStyle: 'full' },
+                                    )
+                                const dayButton = (
+                                    <button
+                                        key={dateKey}
+                                        data-calendar-day=""
+                                        data-calendar-date={dateKey}
+                                        onClick={() =>
+                                            !dayDisabled &&
+                                            onSelectDate(dayObj.date)
+                                        }
+                                        onFocus={() =>
+                                            handler.handleDayFocus(dayObj.date)
+                                        }
+                                        onKeyDown={(event) =>
+                                            handler.handleDayKeyDown(
+                                                event,
+                                                dayObj.date,
+                                            )
+                                        }
+                                        className={buttonClass.trim()}
+                                        type="button"
+                                        disabled={dayDisabled}
+                                        tabIndex={
+                                            !dayDisabled &&
+                                            dateKey === activeDateKey
+                                                ? 0
+                                                : -1
+                                        }
+                                        aria-label={`${messages.selectDate(dateLabel)}${holidayName ? `: ${holidayName}` : ''}`}
+                                        aria-pressed={isSelected}
+                                        aria-current={
+                                            isCurrentDay ? 'date' : undefined
+                                        }
+                                    >
+                                        {dayObj.date.getDate()}
+                                        {holidayName && (
+                                            <span
+                                                aria-hidden="true"
+                                                className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${cd.primaryBg}`}
+                                            />
+                                        )}
+                                    </button>
+                                )
+
+                                return (
+                                    <div
+                                        key={dateKey}
+                                        role="gridcell"
+                                        aria-selected={isSelected}
+                                        className="flex items-center justify-center"
+                                    >
+                                        {holidayName ? (
+                                            <CustomTooltip
+                                                key={dateKey}
+                                                content={holidayName}
+                                                side="top"
+                                                disabledTrigger={dayDisabled}
+                                            >
+                                                {dayButton}
+                                            </CustomTooltip>
+                                        ) : (
+                                            dayButton
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     )

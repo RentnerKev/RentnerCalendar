@@ -66,6 +66,7 @@ export default function CalendarHeader({
     fastEdit = true,
     customDesign = defaultCalendarDesign,
     messages: providedMessages,
+    monthHeadingId,
     disabled = false,
     readOnly = false,
 }: CalendarHeaderProps) {
@@ -125,11 +126,25 @@ export default function CalendarHeader({
                     />
                 </div>
             ) : (
-                <div
+                <h2
+                    id={monthHeadingId}
+                    aria-live="polite"
+                    aria-atomic="true"
                     className={`text-[15px] font-bold ${cd.textColor} tracking-wide`}
                 >
                     {`${messages.months[currentMonth]} ${currentYear}`}
-                </div>
+                </h2>
+            )}
+
+            {fastEdit && (
+                <h2
+                    id={monthHeadingId}
+                    aria-live="polite"
+                    aria-atomic="true"
+                    className="sr-only"
+                >
+                    {`${messages.months[currentMonth]} ${currentYear}`}
+                </h2>
             )}
 
             <button

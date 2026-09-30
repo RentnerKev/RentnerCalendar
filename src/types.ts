@@ -135,6 +135,7 @@ export interface CalendarHeaderProps {
     fastEdit?: boolean
     customDesign?: CalendarCustomDesign
     messages?: CalendarMessages
+    monthHeadingId?: string
     disabled?: boolean
     readOnly?: boolean
 }

@@ -7,6 +7,7 @@ import type {
     SingleCalendarInputValue,
     SingleCalendarValue,
 } from '../types.js'
+import { compareCalendarDays } from './CalendarDay.js'
 
 const isoDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/
 const localIsoDateTimePattern =
@@ -238,10 +239,16 @@ export function parseCalendarValue(value: unknown): CalendarValue {
     if (Array.isArray(value)) {
         if (value.length !== 2) return undefined
 
-        return [
+        const range = [
             parseCalendarDate(value[0]) ?? null,
             parseCalendarDate(value[1]) ?? null,
-        ]
+        ] as const
+
+        if (range[0] && range[1] && range[0].getTime() > range[1].getTime()) {
+            return [range[1], range[0]]
+        }
+
+        return [range[0], range[1]]
     }
 
     return parseCalendarDate(value)
@@ -283,9 +290,18 @@ export function serializeCalendarValue(
             : serializeCalendarISOString
 
     if (Array.isArray(value)) {
+        const [first, second] = value
+        const range =
+            format === 'date' &&
+            first &&
+            second &&
+            compareCalendarDays(first, second) > 0
+                ? [second, first]
+                : value
+
         return [
-            serializeDate(value[0]) ?? null,
-            serializeDate(value[1]) ?? null,
+            serializeDate(range[0]) ?? null,
+            serializeDate(range[1]) ?? null,
         ]
     }
 

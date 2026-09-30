@@ -1,4 +1,4 @@
-import type { CSSProperties, RefObject } from 'react'
+import type { CSSProperties, KeyboardEvent, RefObject } from 'react'
 import CalendarGrid from './CalendarGrid.js'
 import CalendarHeader from './CalendarHeader.js'
 import CalendarTimeInput from './CalendarTimeInput.js'
@@ -82,6 +82,60 @@ export default function CalendarPopover({
     button,
     onApply,
 }: CalendarPopoverProps) {
+    const monthHeadingId = `${dialogId}-month-heading`
+    const keyboardHelpId = `${dialogId}-keyboard-help`
+
+    function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+        if (!backdrop || event.key !== 'Tab') {
+            return
+        }
+
+        const dialog = event.currentTarget
+        const focusableElements = Array.from(
+            dialog.querySelectorAll<HTMLElement>(
+                'a[href], area[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex], [contenteditable="true"]',
+            ),
+        ).filter((element) => {
+            return (
+                element.tabIndex >= 0 &&
+                !element.matches(':disabled') &&
+                element.closest('[hidden], [inert], [aria-hidden="true"]') ===
+                    null &&
+                element.getClientRects().length > 0
+            )
+        })
+
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements.at(-1)
+
+        if (!firstElement || !lastElement) {
+            event.preventDefault()
+            dialog.focus()
+            return
+        }
+
+        const activeElement = document.activeElement
+        const focusIsInDialog = dialog.contains(activeElement)
+
+        if (
+            event.shiftKey &&
+            (!focusIsInDialog ||
+                activeElement === dialog ||
+                activeElement === firstElement)
+        ) {
+            event.preventDefault()
+            lastElement.focus()
+        } else if (
+            !event.shiftKey &&
+            (!focusIsInDialog ||
+                activeElement === dialog ||
+                activeElement === lastElement)
+        ) {
+            event.preventDefault()
+            firstElement.focus()
+        }
+    }
+
     return (
         <>
             {backdrop && (
@@ -100,11 +154,12 @@ export default function CalendarPopover({
                 className={className}
                 style={style}
                 role="dialog"
-                aria-modal="false"
+                aria-modal={backdrop}
                 aria-labelledby={labelledBy}
                 aria-label={labelledBy ? undefined : dialogLabel}
                 aria-describedby={describedBy}
                 tabIndex={-1}
+                onKeyDown={handleDialogKeyDown}
                 onClick={(event) => event.stopPropagation()}
             >
                 {switchMode && (
@@ -140,6 +195,7 @@ export default function CalendarPopover({
                     fastEdit={fastEdit}
                     customDesign={customDesign}
                     messages={messages}
+                    monthHeadingId={monthHeadingId}
                     disabled={disabled}
                     readOnly={readOnly}
                 />
@@ -158,6 +214,10 @@ export default function CalendarPopover({
                     messages={messages}
                     disabled={disabled}
                     readOnly={readOnly}
+                    currentDate={currentDate}
+                    onViewDateChange={onViewDateChange}
+                    monthHeadingId={monthHeadingId}
+                    keyboardHelpId={keyboardHelpId}
                 />
                 {enableTime && (
                     <CalendarTimeInput
@@ -172,6 +232,12 @@ export default function CalendarPopover({
                         readOnly={readOnly}
                     />
                 )}
+                <p
+                    id={keyboardHelpId}
+                    className={`mt-3 text-[11px] leading-4 ${customDesign.textMuted}`}
+                >
+                    {messages.keyboardHelp}
+                </p>
                 {button && (
                     <button
                         type="button"

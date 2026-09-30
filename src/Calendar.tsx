@@ -251,7 +251,7 @@ export function CustomCalendar({
     }, [])
 
     useEffect(() => {
-        if (!isOpen || disabled || readOnly) return
+        if (!isOpen || !backdrop || disabled || readOnly) return
 
         const previousOverflow = document.body.style.overflow
         document.body.style.overflow = 'hidden'
@@ -259,7 +259,7 @@ export function CustomCalendar({
         return () => {
             document.body.style.overflow = previousOverflow
         }
-    }, [disabled, isOpen, readOnly])
+    }, [backdrop, disabled, isOpen, readOnly])
 
     useEffect(() => {
         if (!isOpen) return
@@ -290,10 +290,15 @@ export function CustomCalendar({
         }
 
         wasOpenRef.current = true
-        queueMicrotask(() => popoverRef.current?.focus())
+        queueMicrotask(() => {
+            const initialDay = popoverRef.current?.querySelector<HTMLElement>(
+                '[data-calendar-day][tabindex="0"]',
+            )
+            ;(initialDay ?? popoverRef.current)?.focus()
+        })
 
         function handleEscape(event: KeyboardEvent) {
-            if (event.key !== 'Escape') return
+            if (event.key !== 'Escape' || event.defaultPrevented) return
 
             event.preventDefault()
             event.stopPropagation()

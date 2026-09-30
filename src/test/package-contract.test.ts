@@ -55,5 +55,11 @@ describe('published package contract', () => {
         expect(isSameDay(firstDate, secondDate)).toBe(true)
         expect(isToday(new Date())).toBe(true)
         expect(getGermanHolidayName(new Date(2026, 0, 1))).toBe('Neujahr')
+        expect(getGermanHolidayName(new Date(2026, 3, 5, 23, 59, 59))).toBe(
+            'Ostersonntag',
+        )
+        expect(getGermanHolidayName(new Date(2024, 2, 31, 23, 59, 59))).toBe(
+            'Ostersonntag',
+        )
     })
 })
