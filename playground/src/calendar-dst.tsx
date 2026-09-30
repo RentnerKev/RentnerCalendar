@@ -130,7 +130,7 @@ function App() {
                     <button
                         id="tighten-minimum"
                         type="button"
-                        className="w-fit rounded border border-gray-600 px-3 py-2"
+                        className="fixed top-4 right-4 z-[10000] w-fit rounded border border-gray-600 bg-[#101419] px-3 py-2"
                         onClick={() => setMinimum('13:00')}
                     >
                         Tighten minimum to 13:00
