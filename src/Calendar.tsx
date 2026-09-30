@@ -153,7 +153,10 @@ export function CustomCalendar({
     const validationInputRef = useRef<HTMLInputElement>(null)
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const { handler: positionHandler, state: positionState } =
-        useCalendarPosition(triggerRef)
+        useCalendarPosition(triggerRef, {
+            minWidth: calendarPopoverMinWidth,
+            matchTriggerWidth: className.match(/w-/) !== null,
+        })
     const { dropdownPosition, coords } = positionState
 
     const resolvedRadius = extractRadius(className) ?? '0.75rem'
@@ -185,10 +188,8 @@ export function CustomCalendar({
         top: dropdownPosition === 'bottom' ? `${coords.top}px` : 'auto',
         bottom: dropdownPosition === 'top' ? `${coords.bottom}px` : 'auto',
         left: `${coords.left}px`,
-        width: className.match(/w-/)
-            ? `${coords.width}px`
-            : `${calendarPopoverMinWidth}px`,
-        minWidth: `${calendarPopoverMinWidth}px`,
+        width: `${coords.width}px`,
+        minWidth: `${coords.width}px`,
         maxHeight: `${coords.maxHeight}px`,
         borderRadius: resolvedRadius,
         borderWidth: '1px',

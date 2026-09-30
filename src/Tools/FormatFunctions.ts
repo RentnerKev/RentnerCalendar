@@ -61,7 +61,7 @@ export function formatCalendarValue(
     value?: unknown,
     locale: CalendarLocale = 'de',
 ): string {
-    if (!value) return ''
+    if (value === undefined || value === null || value === '') return ''
 
     if (Array.isArray(value)) {
         const start = formatSingle(value[0], locale)

@@ -100,7 +100,9 @@ export default function CalendarHeader({
     }
 
     return (
-        <div className="flex items-center justify-between mb-4 px-1">
+        <div
+            className={`sticky top-0 z-10 flex items-center justify-between mb-4 px-1 ${cd.surfaceBackground}`}
+        >
             <button
                 onClick={onPrevMonth}
                 aria-label={messages.previousMonth}

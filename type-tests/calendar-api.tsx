@@ -34,6 +34,16 @@ const invalidRange = (
     <RangeCalendar getFormValue={(_date: Date) => ''} />
 )
 
+const invalidSingleBounds = (
+    // @ts-expect-error Date bounds accept one date value, not a range tuple.
+    <SingleCalendar minDate={[new Date(2026, 8, 21), null]} />
+)
+
+const invalidRangeBounds = (
+    // @ts-expect-error Date bounds accept one date value, not a range tuple.
+    <RangeCalendar maxDate={[new Date(2026, 8, 21), null]} />
+)
+
 const withDefaults = (
     <CalendarProvider
         locale="en"
@@ -45,4 +55,12 @@ const withDefaults = (
     </CalendarProvider>
 )
 
-void [single, range, invalidSingle, invalidRange, withDefaults]
+void [
+    single,
+    range,
+    invalidSingle,
+    invalidRange,
+    invalidSingleBounds,
+    invalidRangeBounds,
+    withDefaults,
+]

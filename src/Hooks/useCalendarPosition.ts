@@ -12,8 +12,14 @@ export interface CalendarPosition {
     }
 }
 
+interface CalendarPositionOptions {
+    minWidth?: number
+    matchTriggerWidth?: boolean
+}
+
 export default function useCalendarPosition(
     triggerRef: RefObject<HTMLElement | null>,
+    { minWidth = 340, matchTriggerWidth = false }: CalendarPositionOptions = {},
 ) {
     const [position, setPosition] = useState<CalendarPosition>({
         dropdownPosition: 'bottom',
@@ -28,8 +34,35 @@ export default function useCalendarPosition(
         }
 
         const rect = trigger.getBoundingClientRect()
-        const spaceBelow = window.innerHeight - rect.bottom
-        const spaceAbove = rect.top
+        const viewportGutter = Math.min(8, window.innerHeight / 2)
+        const anchorGap = 8
+        const horizontalGutter = Math.min(16, window.innerWidth / 2)
+        const availableWidth = Math.max(
+            0,
+            window.innerWidth - horizontalGutter * 2,
+        )
+        const preferredWidth = matchTriggerWidth
+            ? Math.max(minWidth, rect.width)
+            : minWidth
+        const width = Math.min(preferredWidth, availableWidth)
+        const maxLeft = Math.max(
+            horizontalGutter,
+            window.innerWidth - width - horizontalGutter,
+        )
+        const left = Math.min(Math.max(rect.left, horizontalGutter), maxLeft)
+        const maxAnchorY = Math.max(
+            viewportGutter,
+            window.innerHeight - viewportGutter,
+        )
+        const clampAnchorY = (value: number) =>
+            Math.min(Math.max(value, viewportGutter), maxAnchorY)
+        const anchorTop = clampAnchorY(rect.top)
+        const anchorBottom = clampAnchorY(rect.bottom)
+        const spaceBelow = Math.max(
+            0,
+            window.innerHeight - anchorBottom - anchorGap - viewportGutter,
+        )
+        const spaceAbove = Math.max(0, anchorTop - anchorGap - viewportGutter)
         const estimatedCalendarHeight = 450
         const dropdownPosition: CalendarPosition['dropdownPosition'] =
             spaceBelow < estimatedCalendarHeight && spaceAbove > spaceBelow
@@ -39,17 +72,15 @@ export default function useCalendarPosition(
         setPosition({
             dropdownPosition,
             coords: {
-                left: rect.left,
-                top: rect.bottom + 8,
-                bottom: window.innerHeight - rect.top + 8,
-                width: rect.width,
+                left,
+                top: anchorBottom + anchorGap,
+                bottom: window.innerHeight - anchorTop + anchorGap,
+                width,
                 maxHeight:
-                    dropdownPosition === 'bottom'
-                        ? Math.max(spaceBelow - 16, 250)
-                        : Math.max(spaceAbove - 16, 250),
+                    dropdownPosition === 'bottom' ? spaceBelow : spaceAbove,
             },
         })
-    }, [triggerRef])
+    }, [triggerRef, minWidth, matchTriggerWidth])
 
     return {
         handler: { updatePosition },

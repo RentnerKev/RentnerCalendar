@@ -280,6 +280,13 @@ return `undefined` instead of throwing a `RangeError`. Four-digit local years
 from `0000` through `0099` remain those calendar years in the date grid and
 month navigation.
 
+String inputs accept local ISO dates (`YYYY-MM-DD`), local ISO date-times
+(`YYYY-MM-DDTHH:mm[:ss[.fraction]]`, with one to three fractional digits and
+an optional space in place of `T`), ISO date-times with `Z` or a numeric
+offset, and German dates (`D.M.YYYY`) with an optional time. Other string
+formats are rejected instead of being passed to the runtime's permissive date
+parser. Numeric inputs are Unix timestamps in milliseconds.
+
 ## Localization and messages
 
 German remains the default for backward compatibility. Set `locale="en"` for
@@ -384,8 +391,8 @@ See the `CalendarCustomDesign` type for the complete list.
 | `icon`             | `ReactNode \| boolean`                      | `CalendarDays` | Custom icon, or `false` to hide it.                                  |
 | `className`        | `string`                                    | `''`           | Additional outer-container classes.                                  |
 | `closeOnSelect`    | `boolean`                                   | `false`        | Closes after a completed selection.                                  |
-| `minDate`          | `CalendarInputValue`                        | `undefined`    | Inclusive minimum selectable date.                                   |
-| `maxDate`          | `CalendarInputValue`                        | `undefined`    | Inclusive maximum selectable date.                                   |
+| `minDate`          | `CalendarDateInput`                         | `undefined`    | Inclusive minimum selectable date.                                   |
+| `maxDate`          | `CalendarDateInput`                         | `undefined`    | Inclusive maximum selectable date.                                   |
 | `minTime`          | `string`                                    | `undefined`    | Earliest selectable `HH:mm` time.                                    |
 | `maxTime`          | `string`                                    | `undefined`    | Latest selectable `HH:mm` time.                                      |
 | `fastEdit`         | `boolean`                                   | `true`         | Shows fast month and year controls.                                  |

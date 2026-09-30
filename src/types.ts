@@ -92,8 +92,8 @@ export interface CalendarProps extends AriaAttributes {
     placeholder?: string
     customDesign?: CalendarCustomDesign
     closeOnSelect?: boolean
-    minDate?: CalendarInputValue
-    maxDate?: CalendarInputValue
+    minDate?: CalendarDateInput
+    maxDate?: CalendarDateInput
     minTime?: string
     maxTime?: string
     fastEdit?: boolean

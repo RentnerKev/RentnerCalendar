@@ -30,6 +30,10 @@ describe('calendar-day ranges', () => {
         expect(formatCalendarValue(range)).toBe('18.09.2026 - 22.09.2026')
     })
 
+    test('formats the Unix epoch timestamp as a valid date', () => {
+        expect(formatCalendarValue(0)).toBe(formatCalendarValue(new Date(0)))
+    })
+
     test('keeps both ends inclusive when a range spans the spring DST change', () => {
         const range = completeCalendarRange(
             new Date(2026, 2, 29, 0, 0),

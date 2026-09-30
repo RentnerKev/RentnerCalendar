@@ -260,6 +260,142 @@ test.describe('calendar playground', () => {
             .toBeCloseTo(8, 0)
     })
 
+    test('keeps the modal calendar and header inside narrow viewports when scrolling', async ({
+        page,
+    }) => {
+        const checkViewport = async (scenario: {
+            width: number
+            height: number
+            triggerTop: number
+        }) => {
+            await page.setViewportSize({
+                width: scenario.width,
+                height: scenario.height,
+            })
+            await page.goto('/')
+
+            const trigger = page.locator('#appointment')
+            await expect(trigger).toBeVisible()
+            await trigger.evaluate((element, triggerTop) => {
+                const target = element as HTMLElement
+                document.body.style.minHeight = '1200px'
+                target.style.position = 'fixed'
+                target.style.left = '16px'
+                target.style.top = `${triggerTop}px`
+                target.style.width = 'calc(100vw - 32px)'
+            }, scenario.triggerTop)
+
+            await expect(trigger).toHaveCSS('left', '16px')
+            await expect(trigger).toHaveCSS('top', `${scenario.triggerTop}px`)
+            await trigger.click()
+
+            const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+            await expect(dialog).toBeVisible()
+            await expect
+                .poll(async () => {
+                    const bounds = await dialog.boundingBox()
+                    return Boolean(
+                        bounds &&
+                        bounds.x >= 0 &&
+                        bounds.y >= 0 &&
+                        bounds.x + bounds.width <= scenario.width &&
+                        bounds.y + bounds.height <= scenario.height,
+                    )
+                })
+                .toBe(true)
+
+            const month = dialog.getByRole('combobox', { name: 'Monat' })
+            const headerBounds = await month.boundingBox()
+            expect(headerBounds).not.toBeNull()
+            expect(headerBounds!.x).toBeGreaterThanOrEqual(0)
+            expect(headerBounds!.y).toBeGreaterThanOrEqual(0)
+            expect(headerBounds!.x + headerBounds!.width).toBeLessThanOrEqual(
+                scenario.width,
+            )
+            expect(headerBounds!.y + headerBounds!.height).toBeLessThanOrEqual(
+                scenario.height,
+            )
+
+            await month.click()
+            await expect(
+                page.getByRole('textbox', { name: 'Optionen suchen' }),
+            ).toBeVisible()
+        }
+
+        await checkViewport({ width: 320, height: 400, triggerTop: 180 })
+        await checkViewport({ width: 320, height: 640, triggerTop: 500 })
+
+        await page.setViewportSize({ width: 320, height: 400 })
+        await page.goto('/')
+
+        const trigger = page.locator('#appointment')
+        await expect(trigger).toBeVisible()
+        await trigger.evaluate((element) => {
+            const scrollContainer = element.parentElement
+
+            if (!scrollContainer) {
+                throw new Error('Calendar trigger must have a parent container')
+            }
+
+            scrollContainer.style.position = 'fixed'
+            scrollContainer.style.left = '16px'
+            scrollContainer.style.top = '0'
+            scrollContainer.style.width = '288px'
+            scrollContainer.style.height = '400px'
+            scrollContainer.style.overflowY = 'auto'
+
+            const spacer = document.createElement('div')
+            spacer.style.height = '800px'
+            scrollContainer.insertBefore(spacer, element)
+            const trailingSpacer = document.createElement('div')
+            trailingSpacer.style.height = '800px'
+            scrollContainer.append(trailingSpacer)
+            scrollContainer.scrollTop = 720
+        })
+
+        await expect
+            .poll(async () => {
+                const bounds = await trigger.boundingBox()
+                return Boolean(
+                    bounds && bounds.y >= 0 && bounds.y + bounds.height <= 400,
+                )
+            })
+            .toBe(true)
+        await trigger.click()
+
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        await expect(dialog).toBeVisible()
+
+        const anchorAndDialogFit = async (
+            anchorPosition: 'above' | 'below',
+        ) => {
+            const anchorBounds = await trigger.boundingBox()
+            const dialogBounds = await dialog.boundingBox()
+
+            return Boolean(
+                anchorBounds &&
+                dialogBounds &&
+                (anchorPosition === 'above'
+                    ? anchorBounds.y + anchorBounds.height <= 0
+                    : anchorBounds.y >= 400) &&
+                dialogBounds.x >= 0 &&
+                dialogBounds.y >= 0 &&
+                dialogBounds.x + dialogBounds.width <= 320 &&
+                dialogBounds.y + dialogBounds.height <= 400,
+            )
+        }
+
+        await trigger.evaluate((element) => {
+            element.parentElement!.scrollTop = 0
+        })
+        await expect.poll(() => anchorAndDialogFit('below')).toBe(true)
+
+        await trigger.evaluate((element) => {
+            element.parentElement!.scrollTop = 1000
+        })
+        await expect.poll(() => anchorAndDialogFit('above')).toBe(true)
+    })
+
     test('exposes selected days and native form metadata', async ({ page }) => {
         await page.goto('/')
 

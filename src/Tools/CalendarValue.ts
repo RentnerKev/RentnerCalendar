@@ -221,8 +221,7 @@ export function parseCalendarDate(value: unknown): Date | undefined {
         return parseGermanDate(trimmedValue)
     }
 
-    const date = new Date(trimmedValue)
-    return isValidDate(date) ? date : undefined
+    return undefined
 }
 
 export function parseCalendarValue(

@@ -53,6 +53,8 @@ describe('calendar value parsing', () => {
         expect(german?.getHours()).toBe(14)
         expect(german?.getMinutes()).toBe(30)
         expect(parseCalendarValue('31.02.2026')).toBeUndefined()
+        expect(parseCalendarValue('2/31/2026')).toBeUndefined()
+        expect(parseCalendarValue('2026-2-31')).toBeUndefined()
         expect(parseCalendarValue(new Date(Number.NaN))).toBeUndefined()
     })
 

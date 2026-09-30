@@ -116,4 +116,90 @@ export async function check({ page, expect }) {
         '2030-12-24T13:00:00.000Z',
         '2030-12-24T13:00:00.000Z',
     ])
+
+    await page.keyboard.press('Escape')
+    await expect(rangeDialog).toHaveCount(0)
+    /* eslint-disable no-await-in-loop -- Each viewport and scroll check uses the same page in sequence. */
+    for (const scenario of [
+        { width: 320, height: 400, top: 180 },
+        { width: 320, height: 640, top: 500 },
+    ]) {
+        await page.setViewportSize({
+            width: scenario.width,
+            height: scenario.height,
+        })
+        await singleTrigger.evaluate((element, top) => {
+            Object.assign(element.style, {
+                position: 'fixed',
+                left: '16px',
+                top: `${top}px`,
+                width: 'calc(100vw - 32px)',
+            })
+        }, scenario.top)
+        await singleTrigger.click()
+        await expect(singleDialog).toBeVisible()
+        const assertInside = async (locator) => {
+            const bounds = await locator.boundingBox()
+            expect(bounds).not.toBeNull()
+            expect(bounds.x).toBeGreaterThanOrEqual(0)
+            expect(bounds.y).toBeGreaterThanOrEqual(0)
+            expect(bounds.x + bounds.width).toBeLessThanOrEqual(scenario.width)
+            expect(bounds.y + bounds.height).toBeLessThanOrEqual(
+                scenario.height,
+            )
+        }
+        await assertInside(singleDialog)
+        for (const locator of [
+            singleDialog.getByRole('combobox', { name: 'Month', exact: true }),
+            singleDialog.getByRole('combobox', { name: 'Year', exact: true }),
+            singleDialog.getByRole('button', {
+                name: 'Previous month',
+                exact: true,
+            }),
+            singleDialog.getByRole('button', {
+                name: 'Next month',
+                exact: true,
+            }),
+        ]) {
+            await assertInside(locator)
+        }
+        for (const offscreenTop of [-400, scenario.height + 400]) {
+            await singleTrigger.evaluate((element, top) => {
+                element.style.top = `${top}px`
+                window.dispatchEvent(new Event('scroll'))
+            }, offscreenTop)
+            await expect
+                .poll(async () => {
+                    const bounds = await singleDialog.boundingBox()
+                    return Boolean(
+                        bounds &&
+                        bounds.x >= 0 &&
+                        bounds.y >= 0 &&
+                        bounds.x + bounds.width <= scenario.width &&
+                        bounds.y + bounds.height <= scenario.height,
+                    )
+                })
+                .toBe(true)
+            await assertInside(
+                singleDialog.getByRole('combobox', {
+                    name: 'Month',
+                    exact: true,
+                }),
+            )
+        }
+        await singleTrigger.evaluate((element, top) => {
+            element.style.top = `${top}px`
+            window.dispatchEvent(new Event('scroll'))
+        }, scenario.top)
+        await singleDialog
+            .getByRole('combobox', { name: 'Month', exact: true })
+            .click()
+        await expect(
+            page.getByRole('textbox', { name: 'Search options' }),
+        ).toBeVisible()
+        await page.keyboard.press('Escape')
+        await page.keyboard.press('Escape')
+        await expect(singleDialog).toHaveCount(0)
+    }
+    /* eslint-enable no-await-in-loop */
 }
