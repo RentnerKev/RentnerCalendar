@@ -3,9 +3,11 @@ import { CustomTooltip } from '@rentnerkev/tooltips'
 import type { CalendarGridProps } from '../types.js'
 import { resolveCalendarMessages } from '../messages.js'
 import {
+    compareCalendarDays,
     getCalendarDateKey,
     isCalendarDayWithinBounds,
 } from '../Tools/CalendarDay.js'
+import { hasCalendarTimeWithinBounds } from '../Tools/CalendarTime.js'
 import {
     getGermanHolidayName,
     isSameDay,
@@ -32,9 +34,12 @@ export default function CalendarGrid({
     selectedDate,
     onSelectDate,
     enableRange,
+    enableTime,
     customDesign = defaultCalendarDesign,
     minDate,
     maxDate,
+    minTime,
+    maxTime,
     visibleDays = 7,
     weekStartsOn = 1,
     showHolidays = false,
@@ -53,7 +58,8 @@ export default function CalendarGrid({
     const dayItems = handleGetDaysInMonth()
     const isDateDisabled = (date: Date) =>
         isInteractionDisabled ||
-        !isCalendarDayWithinBounds(date, minDate, maxDate)
+        !isCalendarDayWithinBounds(date, minDate, maxDate) ||
+        (enableTime && !hasCalendarTimeWithinBounds(date, minTime, maxTime))
 
     let preferredDate: Date | undefined
     if (Array.isArray(selectedDate)) {
@@ -80,6 +86,7 @@ export default function CalendarGrid({
         initialFocusDate,
         minDate,
         maxDate,
+        isDateSelectable: (date) => !isDateDisabled(date),
         onViewDateChange,
     })
 
@@ -120,6 +127,7 @@ export default function CalendarGrid({
                 aria-describedby={keyboardHelpId}
                 aria-rowcount={rows.length + 1}
                 aria-colcount={visibleDays}
+                aria-multiselectable={enableRange || undefined}
                 className="w-full"
             >
                 <div role="rowgroup">
@@ -156,6 +164,7 @@ export default function CalendarGrid({
                                 const dateKey = getCalendarDateKey(dayObj.date)
                                 let isSelected = false
                                 let isInRange = false
+                                let rangeMembership: string | undefined
 
                                 const germanHolidayName = showHolidays
                                     ? getGermanHolidayName(dayObj.date)
@@ -177,17 +186,37 @@ export default function CalendarGrid({
                                         isSameDay(dayObj.date, start)
                                     ) {
                                         isSelected = true
+                                        rangeMembership =
+                                            end && isSameDay(dayObj.date, end)
+                                                ? locale === 'en'
+                                                    ? 'start and end of selected range'
+                                                    : 'Anfang und Ende des ausgewählten Zeitraums'
+                                                : locale === 'en'
+                                                  ? 'start of selected range'
+                                                  : 'Beginn des ausgewählten Zeitraums'
                                     }
                                     if (end && isSameDay(dayObj.date, end)) {
                                         isSelected = true
+                                        rangeMembership ??=
+                                            locale === 'en'
+                                                ? 'end of selected range'
+                                                : 'Ende des ausgewählten Zeitraums'
                                     }
                                     if (
                                         start &&
                                         end &&
-                                        dayObj.date > start &&
-                                        dayObj.date < end
+                                        compareCalendarDays(
+                                            dayObj.date,
+                                            start,
+                                        ) > 0 &&
+                                        compareCalendarDays(dayObj.date, end) <
+                                            0
                                     ) {
                                         isInRange = true
+                                        rangeMembership =
+                                            locale === 'en'
+                                                ? 'within selected range'
+                                                : 'im ausgewählten Zeitraum'
                                     }
                                 } else if (
                                     !enableRange &&
@@ -261,8 +290,8 @@ export default function CalendarGrid({
                                                 ? 0
                                                 : -1
                                         }
-                                        aria-label={`${messages.selectDate(dateLabel)}${holidayName ? `: ${holidayName}` : ''}`}
-                                        aria-pressed={isSelected}
+                                        aria-label={`${messages.selectDate(dateLabel)}${holidayName ? `: ${holidayName}` : ''}${rangeMembership ? `, ${rangeMembership}` : ''}`}
+                                        aria-pressed={isSelected || isInRange}
                                         aria-current={
                                             isCurrentDay ? 'date' : undefined
                                         }
@@ -281,7 +310,7 @@ export default function CalendarGrid({
                                     <div
                                         key={dateKey}
                                         role="gridcell"
-                                        aria-selected={isSelected}
+                                        aria-selected={isSelected || isInRange}
                                         className="flex items-center justify-center"
                                     >
                                         {holidayName ? (

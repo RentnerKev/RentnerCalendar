@@ -145,9 +145,12 @@ export interface CalendarGridProps {
     selectedDate?: CalendarValue
     onSelectDate: (date: Date) => void
     enableRange?: boolean
+    enableTime?: boolean
     customDesign?: CalendarCustomDesign
     minDate?: Date
     maxDate?: Date
+    minTime?: string
+    maxTime?: string
     weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7
     visibleDays?: number
     showHolidays?: boolean

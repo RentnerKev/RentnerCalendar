@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { execFileSync } from 'node:child_process'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
     isCalendarRange,
@@ -23,6 +24,43 @@ describe('calendar value parsing', () => {
         expect(parseCalendarISODate('2026-02-29')).toBeUndefined()
         expect(parseCalendarISODate('2024-02-29')).toBeInstanceOf(Date)
         expect(parseCalendarISODate('2026-13-01')).toBeUndefined()
+    })
+
+    test('accepts a date with a midnight gap while keeping local datetimes strict', () => {
+        const moduleUrl = new URL('../Tools/CalendarValue.ts', import.meta.url)
+            .href
+        const source = `
+            const { parseCalendarISODate, parseCalendarDate } = await import(${JSON.stringify(moduleUrl)})
+            const date = parseCalendarISODate('2018-11-04')
+            console.log(JSON.stringify({
+                date: date && [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours()],
+                datetimeRejected: parseCalendarDate('2018-11-04T00:30') === undefined,
+            }))
+        `
+        const saoPauloValue = execFileSync(process.execPath, ['-e', source], {
+            encoding: 'utf8',
+            env: { ...process.env, TZ: 'America/Sao_Paulo' },
+        })
+        const apiaValue = execFileSync(
+            process.execPath,
+            [
+                '-e',
+                `
+                    const { parseCalendarISODate } = await import(${JSON.stringify(moduleUrl)})
+                    console.log(JSON.stringify(parseCalendarISODate('2011-12-30') === undefined))
+                `,
+            ],
+            {
+                encoding: 'utf8',
+                env: { ...process.env, TZ: 'Pacific/Apia' },
+            },
+        )
+
+        expect(JSON.parse(saoPauloValue)).toEqual({
+            date: [2018, 11, 4, 1],
+            datetimeRejected: true,
+        })
+        expect(JSON.parse(apiaValue)).toBe(true)
     })
 
     test('parses strict ISO instants and rejects normalized invalid dates', () => {

@@ -130,6 +130,23 @@ the range stays chronological: an edit that would move one endpoint past the
 other is clamped to the other endpoint. A time control stays disabled until its
 date endpoint has been selected.
 
+Time input uses local whole minutes. A typed time that falls in the spring
+clock-change gap is rejected, leaving the current selection unchanged. If a
+time bound clamps to a missing minute, the value moves inward to the nearest
+representable minute within the bounds: a maximum of `02:30` can clamp to
+`01:59`, and a minimum of `02:30` can clamp to `03:00`. If the allowed interval
+contains no representable minute on a date, that date is disabled and Apply
+cannot commit an endpoint on it. During the repeated autumn hour, an ambiguous
+minute uses its earlier occurrence.
+
+When selecting a different date with time enabled, the current wall time is
+preserved when possible. If that minute is missing on the chosen date, the
+calendar uses the closest representable minute allowed by the time bounds.
+
+Apply stays disabled while any selected endpoint is outside the current time
+bounds, including when those bounds change while the dialog is open. Adjust
+the time or select a date again before applying the selection.
+
 With the default `backdrop={true}`, the picker is a modal dialog: focus stays
 inside it, Escape closes it and returns focus to the trigger, and the page
 does not scroll while it is open. Set `backdrop={false}` for a nonmodal picker.

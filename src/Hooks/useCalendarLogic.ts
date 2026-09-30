@@ -5,7 +5,8 @@ import {
     getCalendarMonthDays,
     isCalendarDayWithinBounds,
 } from '../Tools/CalendarDay.js'
-import { completeCalendarRange } from '../Tools/CalendarSelection.js'
+import { createCalendarDateSelection } from '../Tools/CalendarSelection.js'
+import { hasCalendarTimeWithinBounds } from '../Tools/CalendarTime.js'
 
 export default function useCalendarLogic(
     value?: CalendarValue,
@@ -16,6 +17,8 @@ export default function useCalendarLogic(
     visibleDays: number = 7,
     minDate?: Date,
     maxDate?: Date,
+    minTime?: string,
+    maxTime?: string,
 ) {
     const [viewDate, setViewDate] = useState(
         Array.isArray(value) && value[0]
@@ -86,42 +89,21 @@ export default function useCalendarLogic(
 
     function handleDateSelect(date: Date) {
         if (!isCalendarDayWithinBounds(date, minDate, maxDate)) return
-
-        let newValue: CalendarValue
-        if (enableRange) {
-            const currentRange = Array.isArray(internalValue)
-                ? internalValue
-                : [null, null]
-            if (!currentRange[0] || (currentRange[0] && currentRange[1])) {
-                const newStart = new Date(date)
-                if (enableTime && currentRange[0]) {
-                    newStart.setHours(
-                        currentRange[0].getHours(),
-                        currentRange[0].getMinutes(),
-                    )
-                } else {
-                    newStart.setHours(0, 0, 0, 0)
-                }
-                newValue = [newStart, null]
-            } else {
-                newValue = completeCalendarRange(
-                    currentRange[0],
-                    date,
-                    Boolean(enableTime),
-                    currentRange[1],
-                )
-            }
-        } else {
-            newValue = new Date(date)
-            if (enableTime && internalValue instanceof Date) {
-                newValue.setHours(
-                    internalValue.getHours(),
-                    internalValue.getMinutes(),
-                )
-            } else if (!enableTime) {
-                newValue.setHours(0, 0, 0, 0)
-            }
+        if (
+            enableTime &&
+            !hasCalendarTimeWithinBounds(date, minTime, maxTime)
+        ) {
+            return
         }
+
+        const newValue = createCalendarDateSelection(date, internalValue, {
+            enableRange,
+            enableTime,
+            minDate,
+            maxDate,
+            minTime,
+            maxTime,
+        })
         onChange?.(newValue, 'date')
     }
 

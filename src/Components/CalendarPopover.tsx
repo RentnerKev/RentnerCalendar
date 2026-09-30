@@ -4,6 +4,7 @@ import CalendarHeader from './CalendarHeader.js'
 import CalendarTimeInput from './CalendarTimeInput.js'
 import type { CalendarMessages, CalendarLocale } from '../messages.js'
 import type { CalendarCustomDesign, CalendarValue } from '../types.js'
+import { calendarValueHasTimeWithinBounds } from '../Tools/CalendarTime.js'
 
 interface CalendarPopoverProps {
     backdrop: boolean
@@ -100,6 +101,9 @@ export default function CalendarPopover({
 }: CalendarPopoverProps) {
     const monthHeadingId = `${dialogId}-month-heading`
     const keyboardHelpId = `${dialogId}-keyboard-help`
+    const applyDisabled =
+        enableTime &&
+        !calendarValueHasTimeWithinBounds(selectedDate, minTime, maxTime)
 
     function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
         if (!backdrop || event.key !== 'Tab') {
@@ -261,9 +265,12 @@ export default function CalendarPopover({
                     selectedDate={selectedDate}
                     onSelectDate={onSelectDate}
                     enableRange={isRangeMode}
+                    enableTime={enableTime}
                     customDesign={customDesign}
                     minDate={minDate}
                     maxDate={maxDate}
+                    minTime={minTime}
+                    maxTime={maxTime}
                     weekStartsOn={weekStartsOn}
                     visibleDays={visibleDays}
                     showHolidays={showHolidays}
@@ -299,7 +306,7 @@ export default function CalendarPopover({
                     <button
                         type="button"
                         onClick={onApply}
-                        disabled={disabled || readOnly}
+                        disabled={disabled || readOnly || applyDisabled}
                         className={`mt-4 w-full cursor-pointer rounded-lg py-2 font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${customDesign.primaryBg} ${customDesign.primaryHover}`}
                     >
                         {messages.apply}

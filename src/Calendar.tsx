@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { defaultCalendarDesign } from './types.js'
-import type {
-    CSSProperties,
-    FocusEvent,
-    InvalidEvent,
-    MouseEvent,
-    MutableRefObject,
-    Ref,
-} from 'react'
+import type { CSSProperties, FocusEvent, InvalidEvent, MouseEvent } from 'react'
 import type { CalendarProps, CalendarValue } from './types.js'
 import { resolveCalendarMessages } from './messages.js'
 import CalendarPopover from './Components/CalendarPopover.js'
@@ -19,6 +12,7 @@ import {
 } from './Tools/CalendarCommit.js'
 import { formatCalendarValue } from './Tools/FormatFunctions.js'
 import { serializeCalendarValue } from './Tools/CalendarValue.js'
+import { calendarValueHasTimeWithinBounds } from './Tools/CalendarTime.js'
 import {
     mergeAriaIds,
     resolveCalendarFieldError,
@@ -30,16 +24,9 @@ import {
 } from './Tools/InternalOnlyFunctions.js'
 import CalendarField from './Components/CalendarField.js'
 import { useCalendarDefaults } from './CalendarProvider.js'
+import { composeRefs } from './Tools/Refs.js'
 
 const calendarPopoverMinWidth = 340
-
-function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
-    if (typeof ref === 'function') {
-        ref(value)
-    } else if (ref) {
-        ;(ref as MutableRefObject<T | null>).current = value
-    }
-}
 
 function hasCalendarValue(value?: CalendarValue) {
     if (!value) {
@@ -364,10 +351,19 @@ export function CustomCalendar({
         visibleDays,
         minDate,
         maxDate,
+        minTime,
+        maxTime,
     )
 
     function handleApply() {
         if (disabled || readOnly) {
+            return
+        }
+
+        if (
+            enableTime &&
+            !calendarValueHasTimeWithinBounds(tempValue, minTime, maxTime)
+        ) {
             return
         }
 
@@ -446,10 +442,8 @@ export function CustomCalendar({
     }
 
     const setTriggerRef = useCallback(
-        (element: HTMLButtonElement | null) => {
-            triggerRef.current = element
-            assignRef(forwardedTriggerRef, element)
-        },
+        (element: HTMLButtonElement | null) =>
+            composeRefs(triggerRef, forwardedTriggerRef)(element),
         [forwardedTriggerRef],
     )
 

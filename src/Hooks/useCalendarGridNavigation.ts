@@ -14,6 +14,7 @@ interface CalendarGridNavigationOptions {
     initialFocusDate?: Date
     minDate?: Date
     maxDate?: Date
+    isDateSelectable?: (date: Date) => boolean
     onViewDateChange: (date: Date) => void
 }
 
@@ -80,6 +81,7 @@ export default function useCalendarGridNavigation({
     initialFocusDate,
     minDate,
     maxDate,
+    isDateSelectable,
     onViewDateChange,
 }: CalendarGridNavigationOptions) {
     const gridRef = useRef<HTMLDivElement>(null)
@@ -148,6 +150,7 @@ export default function useCalendarGridNavigation({
                     minDate,
                     maxDate,
                 )
+                const isSelectable = isDateSelectable?.(candidate) ?? true
                 const isOutsideVisibleMonth =
                     candidate.getFullYear() !== currentDate.getFullYear() ||
                     candidate.getMonth() !== currentDate.getMonth()
@@ -157,6 +160,7 @@ export default function useCalendarGridNavigation({
 
                 if (
                     withinBounds &&
+                    isSelectable &&
                     ((button && !button.disabled) ||
                         (!button &&
                             isOutsideVisibleMonth &&
@@ -184,6 +188,7 @@ export default function useCalendarGridNavigation({
                 minDate,
                 maxDate,
             )
+            const isSelectable = isDateSelectable?.(candidate) ?? true
             const isOutsideVisibleMonth =
                 candidate.getFullYear() !== currentDate.getFullYear() ||
                 candidate.getMonth() !== currentDate.getMonth()
@@ -191,6 +196,7 @@ export default function useCalendarGridNavigation({
             const visibleColumn = (isoWeekday - weekStartsOn + 7) % 7
             if (
                 withinBounds &&
+                isSelectable &&
                 ((button && !button.disabled) ||
                     (!button &&
                         isOutsideVisibleMonth &&

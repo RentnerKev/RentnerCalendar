@@ -23,6 +23,12 @@ function moveCalendarMonth(dateKey: string, monthOffset: number) {
     return `${String(target.getUTCFullYear()).padStart(4, '0')}-${String(target.getUTCMonth() + 1).padStart(2, '0')}-${String(target.getUTCDate()).padStart(2, '0')}`
 }
 
+function moveCalendarDay(dateKey: string, dayOffset: number) {
+    const [year, month, day] = dateKey.split('-').map(Number)
+    const target = new Date(Date.UTC(year, month - 1, day + dayOffset))
+    return `${String(target.getUTCFullYear()).padStart(4, '0')}-${String(target.getUTCMonth() + 1).padStart(2, '0')}-${String(target.getUTCDate()).padStart(2, '0')}`
+}
+
 test.describe('calendar playground', () => {
     test('opens the portal dialog and restores focus after Escape', async ({
         page,
@@ -438,6 +444,41 @@ test.describe('calendar playground', () => {
         await expect(page.locator('input[name="appointment"]')).toHaveAttribute(
             'required',
         )
+    })
+
+    test('announces interior dates as selected members of a range', async ({
+        page,
+    }) => {
+        await page.goto('/')
+        await page.locator('#appointment').click()
+
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        await dialog.getByRole('button', { name: 'Zeitraum' }).click()
+        const todayKey = await dialog
+            .locator('[data-calendar-day][aria-current="date"]')
+            .getAttribute('data-calendar-date')
+        const startKey = moveCalendarDay(todayKey!, 0)
+        const middleKey = moveCalendarDay(todayKey!, 1)
+        const endKey = moveCalendarDay(todayKey!, 2)
+
+        await dialog.locator(`[data-calendar-date="${startKey}"]`).click()
+        await dialog.locator(`[data-calendar-date="${endKey}"]`).click()
+
+        const grid = dialog.getByRole('grid')
+        const middleDay = dialog.locator(`[data-calendar-date="${middleKey}"]`)
+        await expect(grid).toHaveAttribute('aria-multiselectable', 'true')
+        await expect(middleDay).toHaveAttribute('aria-pressed', 'true')
+        await expect(middleDay).toHaveAttribute(
+            'aria-label',
+            /im ausgewählten Zeitraum/,
+        )
+        await expect
+            .poll(() =>
+                middleDay.evaluate((button) =>
+                    button.parentElement?.getAttribute('aria-selected'),
+                ),
+            )
+            .toBe('true')
     })
 
     test('uses a roving date-grid tab stop and WAI-ARIA date navigation keys', async ({

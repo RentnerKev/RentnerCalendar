@@ -101,6 +101,22 @@ function createLocalDate(
     return date
 }
 
+function createLocalDateOnly(year: number, month: number, day: number) {
+    const midnight = createLocalDate(year, month, day)
+    if (midnight) return midnight
+    if (!isValidDateParts(year, month, day)) return undefined
+
+    const firstRepresentableTime = new Date(0)
+    firstRepresentableTime.setFullYear(year, month - 1, day)
+    firstRepresentableTime.setHours(0, 0, 0, 0)
+
+    return firstRepresentableTime.getFullYear() === year &&
+        firstRepresentableTime.getMonth() === month - 1 &&
+        firstRepresentableTime.getDate() === day
+        ? firstRepresentableTime
+        : undefined
+}
+
 function isValidDate(value: unknown): value is Date {
     return value instanceof Date && !Number.isNaN(value.getTime())
 }
@@ -109,7 +125,11 @@ export function parseCalendarISODate(value: string) {
     const match = isoDatePattern.exec(value.trim())
     if (!match) return undefined
 
-    return createLocalDate(Number(match[1]), Number(match[2]), Number(match[3]))
+    return createLocalDateOnly(
+        Number(match[1]),
+        Number(match[2]),
+        Number(match[3]),
+    )
 }
 
 export function serializeCalendarISODate(
