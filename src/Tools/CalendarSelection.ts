@@ -31,3 +31,19 @@ export function completeCalendarRange(
         ? [secondBoundary, firstBoundary]
         : [firstBoundary, secondBoundary]
 }
+
+export function updateCalendarRangeBoundary(
+    range: CalendarRange,
+    index: 0 | 1,
+    date: Date,
+): CalendarRange {
+    const nextRange: CalendarRange = [...range]
+    nextRange[index] = date
+
+    const [start, end] = nextRange
+    if (start && end && start.getTime() > end.getTime()) {
+        nextRange[index] = new Date(nextRange[1 - index]!)
+    }
+
+    return nextRange
+}

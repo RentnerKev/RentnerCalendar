@@ -27,6 +27,61 @@ export function endOfCalendarDay(date: Date) {
     return result
 }
 
+export function createCalendarDate(year: number, month: number, day: number) {
+    const result = new Date(0)
+    result.setFullYear(year, month, day)
+    result.setHours(0, 0, 0, 0)
+    return result
+}
+
+export function getCalendarMonthDays(
+    year: number,
+    month: number,
+    weekStartsOn: number,
+    visibleDays: number,
+) {
+    const firstDayOfMonth = createCalendarDate(year, month, 1)
+    const jsFirstDay = firstDayOfMonth.getDay()
+    const isoFirstDay = jsFirstDay === 0 ? 7 : jsFirstDay
+    const startingDayIndex = (isoFirstDay - weekStartsOn + 7) % 7
+    const daysInMonth = createCalendarDate(year, month + 1, 0).getDate()
+    const days: { date: Date; isCurrentMonth: boolean }[] = []
+    const prevMonthDays = createCalendarDate(year, month, 0).getDate()
+
+    for (let index = startingDayIndex - 1; index >= 0; index -= 1) {
+        days.push({
+            date: createCalendarDate(year, month - 1, prevMonthDays - index),
+            isCurrentMonth: false,
+        })
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+        days.push({
+            date: createCalendarDate(year, month, day),
+            isCurrentMonth: true,
+        })
+    }
+
+    const remainingDays = 42 - days.length
+    for (let day = 1; day <= remainingDays; day += 1) {
+        days.push({
+            date: createCalendarDate(year, month + 1, day),
+            isCurrentMonth: false,
+        })
+    }
+
+    if (visibleDays < 7) {
+        return days.filter(({ date }) => {
+            const jsDay = date.getDay()
+            const isoDay = jsDay === 0 ? 7 : jsDay
+            const relativeDay = (isoDay - weekStartsOn + 7) % 7
+            return relativeDay < visibleDays
+        })
+    }
+
+    return days
+}
+
 export function isCalendarDayWithinBounds(
     date: Date,
     minDate?: Date,
@@ -39,22 +94,26 @@ export function isCalendarDayWithinBounds(
 }
 
 export function addCalendarDays(date: Date, days: number) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days)
+    return createCalendarDate(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate() + days,
+    )
 }
 
 export function addCalendarMonths(date: Date, months: number) {
-    const firstOfTargetMonth = new Date(
+    const firstOfTargetMonth = createCalendarDate(
         date.getFullYear(),
         date.getMonth() + months,
         1,
     )
-    const lastDayOfTargetMonth = new Date(
+    const lastDayOfTargetMonth = createCalendarDate(
         firstOfTargetMonth.getFullYear(),
         firstOfTargetMonth.getMonth() + 1,
         0,
     ).getDate()
 
-    return new Date(
+    return createCalendarDate(
         firstOfTargetMonth.getFullYear(),
         firstOfTargetMonth.getMonth(),
         Math.min(date.getDate(), lastDayOfTargetMonth),

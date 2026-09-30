@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import CalendarGrid from '../Components/CalendarGrid.js'
+import {
+    createCalendarDate,
+    getCalendarMonthDays,
+} from '../Tools/CalendarDay.js'
 
 function findDayButton(markup: string, date: string) {
     return markup.match(
@@ -42,5 +46,25 @@ describe('calendar grid accessibility and date bounds', () => {
         expect(findDayButton(markup, '2026-09-10')).not.toContain('disabled=""')
         expect(findDayButton(markup, '2026-09-20')).not.toContain('disabled=""')
         expect(findDayButton(markup, '2026-09-21')).toContain('disabled=""')
+    })
+
+    test('renders dates in years below 100 without shifting them by 1900', () => {
+        const currentDate = createCalendarDate(42, 0, 1)
+        const days = getCalendarMonthDays(42, 0, 1, 7)
+        const markup = renderToStaticMarkup(
+            <CalendarGrid
+                currentDate={currentDate}
+                monthHeadingId="month-heading"
+                keyboardHelpId="keyboard-help"
+                onViewDateChange={() => undefined}
+                handleGetDaysInMonth={() => days}
+                selectedDate={createCalendarDate(42, 0, 15)}
+                onSelectDate={() => undefined}
+            />,
+        )
+
+        expect(markup).toContain('data-calendar-date="0042-01-01"')
+        expect(markup).toContain('data-calendar-date="0042-01-15"')
+        expect(markup).not.toContain('data-calendar-date="1942-01-')
     })
 })

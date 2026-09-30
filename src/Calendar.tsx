@@ -289,13 +289,17 @@ export function CustomCalendar({
             return
         }
 
+        const shouldFocusInitialDay = !wasOpenRef.current
         wasOpenRef.current = true
-        queueMicrotask(() => {
-            const initialDay = popoverRef.current?.querySelector<HTMLElement>(
-                '[data-calendar-day][tabindex="0"]',
-            )
-            ;(initialDay ?? popoverRef.current)?.focus()
-        })
+        if (shouldFocusInitialDay) {
+            queueMicrotask(() => {
+                const initialDay =
+                    popoverRef.current?.querySelector<HTMLElement>(
+                        '[data-calendar-day][tabindex="0"]',
+                    )
+                ;(initialDay ?? popoverRef.current)?.focus()
+            })
+        }
 
         function handleEscape(event: KeyboardEvent) {
             if (event.key !== 'Escape' || event.defaultPrevented) return
@@ -388,12 +392,52 @@ export function CustomCalendar({
 
     function handleFieldBlur(event: FocusEvent<HTMLDivElement>) {
         const nextTarget = event.relatedTarget
+        const nextTargetPortal =
+            nextTarget instanceof Element
+                ? nextTarget.closest('[data-calendar-dialog-portal]')
+                : null
+        const isRadixFocusGuard =
+            nextTarget instanceof Element &&
+            nextTarget.closest('[data-radix-focus-guard]') !== null
 
         if (
             nextTarget instanceof Node &&
             (event.currentTarget.contains(nextTarget) ||
-                popoverRef.current?.contains(nextTarget))
+                popoverRef.current?.contains(nextTarget) ||
+                nextTargetPortal?.getAttribute(
+                    'data-calendar-dialog-portal',
+                ) === dialogId)
         ) {
+            return
+        }
+
+        if (nextTarget === null || isRadixFocusGuard) {
+            const currentTarget = event.currentTarget
+
+            window.setTimeout(() => {
+                const activeTarget = document.activeElement
+                const activeTargetPortal =
+                    activeTarget instanceof Element
+                        ? activeTarget.closest('[data-calendar-dialog-portal]')
+                        : null
+
+                if (
+                    activeTarget instanceof Node &&
+                    (currentTarget.contains(activeTarget) ||
+                        popoverRef.current?.contains(activeTarget) ||
+                        activeTargetPortal?.getAttribute(
+                            'data-calendar-dialog-portal',
+                        ) === dialogId)
+                ) {
+                    return
+                }
+
+                Object.assign(event, {
+                    currentTarget,
+                    relatedTarget: activeTarget,
+                })
+                onBlur?.(event)
+            }, 0)
             return
         }
 

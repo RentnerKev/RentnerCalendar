@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { isCalendarDayWithinBounds } from '../Tools/CalendarDay.js'
+import {
+    addCalendarDays,
+    addCalendarMonths,
+    createCalendarDate,
+    getCalendarMonthDays,
+    isCalendarDayWithinBounds,
+} from '../Tools/CalendarDay.js'
 import { formatCalendarValue } from '../Tools/FormatFunctions.js'
 import { completeCalendarRange } from '../Tools/CalendarSelection.js'
 
@@ -81,5 +87,35 @@ describe('calendar-day ranges', () => {
         expect(
             isCalendarDayWithinBounds(new Date(2026, 3, 1), minDate, maxDate),
         ).toBe(false)
+    })
+
+    test('keeps years below 100 intact in month grids and navigation', () => {
+        const februaryYear42 = getCalendarMonthDays(42, 1, 1, 7)
+        const leapDayYear0 = getCalendarMonthDays(0, 1, 1, 7)
+        const marchYear42 = addCalendarMonths(createCalendarDate(42, 0, 31), 1)
+        const newCentury = addCalendarDays(createCalendarDate(99, 11, 31), 1)
+
+        expect(
+            februaryYear42
+                .filter(({ isCurrentMonth }) => isCurrentMonth)
+                .map(({ date }) => date.getFullYear()),
+        ).toEqual(Array(28).fill(42))
+        expect(
+            februaryYear42.some(({ date }) => date.getFullYear() === 1942),
+        ).toBe(false)
+        expect(
+            leapDayYear0.some(
+                ({ date }) =>
+                    date.getFullYear() === 0 &&
+                    date.getMonth() === 1 &&
+                    date.getDate() === 29,
+            ),
+        ).toBe(true)
+        expect(marchYear42.getFullYear()).toBe(42)
+        expect(marchYear42.getMonth()).toBe(1)
+        expect(marchYear42.getDate()).toBe(28)
+        expect(newCentury.getFullYear()).toBe(100)
+        expect(newCentury.getMonth()).toBe(0)
+        expect(newCentury.getDate()).toBe(1)
     })
 })

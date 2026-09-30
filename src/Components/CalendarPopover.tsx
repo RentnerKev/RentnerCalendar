@@ -44,6 +44,22 @@ interface CalendarPopoverProps {
     onApply: () => void
 }
 
+const focusableSelector =
+    'a[href], area[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex], [contenteditable="true"]'
+
+function getFocusableElements(root: HTMLElement) {
+    return Array.from(
+        root.querySelectorAll<HTMLElement>(focusableSelector),
+    ).filter(
+        (element) =>
+            element.tabIndex >= 0 &&
+            !element.matches(':disabled') &&
+            element.closest('[hidden], [inert], [aria-hidden="true"]') ===
+                null &&
+            element.getClientRects().length > 0,
+    )
+}
+
 export default function CalendarPopover({
     backdrop,
     onClose,
@@ -91,19 +107,27 @@ export default function CalendarPopover({
         }
 
         const dialog = event.currentTarget
-        const focusableElements = Array.from(
-            dialog.querySelectorAll<HTMLElement>(
-                'a[href], area[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex], [contenteditable="true"]',
+        const portalRoots = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                '[data-calendar-dialog-portal]',
             ),
-        ).filter((element) => {
-            return (
-                element.tabIndex >= 0 &&
-                !element.matches(':disabled') &&
-                element.closest('[hidden], [inert], [aria-hidden="true"]') ===
-                    null &&
-                element.getClientRects().length > 0
+        ).filter(
+            (element) =>
+                element.dataset.calendarDialogPortal === dialogId &&
+                element.getClientRects().length > 0,
+        )
+        const focusableElements = getFocusableElements(dialog)
+
+        for (const portalRoot of portalRoots) {
+            const portalStops = getFocusableElements(portalRoot)
+            const openerId = portalRoot.dataset.calendarPortalOpener
+            const openerIndex = focusableElements.findIndex(
+                (element) => element.id === openerId,
             )
-        })
+            const insertionIndex =
+                openerIndex === -1 ? focusableElements.length : openerIndex + 1
+            focusableElements.splice(insertionIndex, 0, ...portalStops)
+        }
 
         const firstElement = focusableElements[0]
         const lastElement = focusableElements.at(-1)
@@ -115,7 +139,39 @@ export default function CalendarPopover({
         }
 
         const activeElement = document.activeElement
-        const focusIsInDialog = dialog.contains(activeElement)
+        const activePortal = portalRoots.find((portalRoot) =>
+            portalRoot.contains(activeElement),
+        )
+        const focusIsInDialog =
+            dialog.contains(activeElement) || Boolean(activePortal)
+
+        if (activePortal) {
+            const activeIndex = focusableElements.findIndex(
+                (element) =>
+                    element === activeElement ||
+                    element.contains(activeElement),
+            )
+            const portalStops = getFocusableElements(activePortal)
+            const firstPortalIndex = focusableElements.indexOf(portalStops[0])
+            const lastPortalIndex = focusableElements.indexOf(
+                portalStops.at(-1)!,
+            )
+            const currentIndex =
+                activeIndex !== -1
+                    ? activeIndex
+                    : event.shiftKey
+                      ? firstPortalIndex
+                      : lastPortalIndex
+            const nextIndex =
+                (currentIndex +
+                    (event.shiftKey ? -1 : 1) +
+                    focusableElements.length) %
+                focusableElements.length
+
+            event.preventDefault()
+            focusableElements[nextIndex]?.focus()
+            return
+        }
 
         if (
             event.shiftKey &&
@@ -188,6 +244,7 @@ export default function CalendarPopover({
                 )}
 
                 <CalendarHeader
+                    dialogId={dialogId}
                     currentDate={currentDate}
                     onPrevMonth={onPrevMonth}
                     onNextMonth={onNextMonth}

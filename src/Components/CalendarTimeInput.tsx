@@ -4,6 +4,8 @@ import type { KeyboardEvent } from 'react'
 import type { CalendarCustomDesign, CalendarTimeInputProps } from '../types.js'
 import { resolveCalendarMessages } from '../messages.js'
 import { formatTimeToString } from '../Tools/FormatFunctions.js'
+import { updateCalendarTime } from '../Tools/CalendarTime.js'
+import { updateCalendarRangeBoundary } from '../Tools/CalendarSelection.js'
 
 function SingleTimeInput({
     date,
@@ -35,38 +37,20 @@ function SingleTimeInput({
     }
 
     function updateDate(newTimeStr: string) {
-        if (disabled || readOnly) {
-            return
-        }
+        if (disabled || readOnly) return false
 
-        let h = parseInt(newTimeStr.slice(0, 2), 10)
-        let m = parseInt(newTimeStr.slice(2, 4), 10)
-
-        const timeInMins = h * 60 + m
-
-        if (minTime) {
-            const [minH, minM] = minTime.split(':').map(Number)
-            if (timeInMins < minH * 60 + minM) {
-                h = minH
-                m = minM
-                newTimeStr = `${h.toString().padStart(2, '0')}${m.toString().padStart(2, '0')}`
-            }
-        }
-
-        if (maxTime) {
-            const [maxH, maxM] = maxTime.split(':').map(Number)
-            if (timeInMins > maxH * 60 + maxM) {
-                h = maxH
-                m = maxM
-                newTimeStr = `${h.toString().padStart(2, '0')}${m.toString().padStart(2, '0')}`
-            }
-        }
-
+        // Keep partially edited values local until all four digits form a
+        // valid time. This lets users replace an hour such as 19 with 23
+        // without briefly passing 29 to Date#setHours and rolling the day.
         setTimeStr(newTimeStr)
+        const update = updateCalendarTime(date, newTimeStr, minTime, maxTime)
+        if (!update) return false
 
-        const newDate = date ? new Date(date) : new Date()
-        newDate.setHours(h, m, 0, 0)
-        onChangeDate(newDate)
+        setTimeStr(update.time)
+        if (date?.getTime() === update.date.getTime()) return true
+
+        onChangeDate(update.date)
+        return true
     }
 
     function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
@@ -99,12 +83,6 @@ function SingleTimeInput({
             updateDate(newStr)
         } else if (/^[0-9]$/.test(e.key)) {
             e.preventDefault()
-            const val = parseInt(e.key, 10)
-
-            if (cursorPos === 0 && val > 2) return
-            if (cursorPos === 1 && parseInt(timeStr[0]) === 2 && val > 3) return
-            if (cursorPos === 2 && val > 5) return
-
             const newStr =
                 timeStr.substring(0, cursorPos) +
                 e.key +
@@ -139,7 +117,10 @@ function SingleTimeInput({
                         setCursorPos(0)
                     }
                 }}
-                onBlur={() => setCursorPos(null)}
+                onBlur={() => {
+                    setTimeStr(formatTimeToString(date))
+                    setCursorPos(null)
+                }}
                 className={`relative flex items-center justify-center bg-transparent border ${cd.borderColor} rounded-lg px-3 py-1.5 ${cd.primaryFocusBorder} ${cd.primaryRing} transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${disabled || readOnly ? 'cursor-not-allowed opacity-60' : 'cursor-text'}`}
             >
                 <div
@@ -231,56 +212,60 @@ export default function CalendarTimeInput({
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const messages = providedMessages ?? resolveCalendarMessages()
 
-    const handleUpdate = (index: number, newDate: Date) => {
+    const handleUpdate = (index: 0 | 1, newDate: Date) => {
         if (disabled || readOnly) {
             return
         }
 
-        if (enableRange && Array.isArray(value)) {
-            const newValue = [...value] as [Date | null, Date | null]
-            newValue[index] = newDate
-            onChange(newValue)
+        if (enableRange) {
+            const range = Array.isArray(value)
+                ? value
+                : ([null, null] as [null, null])
+            onChange(updateCalendarRangeBoundary(range, index, newDate))
         } else {
             onChange(newDate)
         }
     }
 
+    const rangeValue = Array.isArray(value) ? value : [null, null]
+    const singleDate = value instanceof Date ? value : null
+
     return (
         <div
             className={`mt-4 pt-4 border-t ${cd.borderColor} flex justify-around gap-4`}
         >
-            {enableRange && Array.isArray(value) ? (
+            {enableRange ? (
                 <>
                     <SingleTimeInput
-                        date={value[0]}
+                        date={rangeValue[0]}
                         label={messages.from}
                         onChangeDate={(d) => handleUpdate(0, d)}
                         cd={cd}
                         minTime={minTime}
                         maxTime={maxTime}
-                        disabled={disabled}
+                        disabled={disabled || !rangeValue[0]}
                         readOnly={readOnly}
                     />
                     <SingleTimeInput
-                        date={value[1]}
+                        date={rangeValue[1]}
                         label={messages.to}
                         onChangeDate={(d) => handleUpdate(1, d)}
                         cd={cd}
                         minTime={minTime}
                         maxTime={maxTime}
-                        disabled={disabled}
+                        disabled={disabled || !rangeValue[1]}
                         readOnly={readOnly}
                     />
                 </>
             ) : (
                 <SingleTimeInput
-                    date={value as Date}
+                    date={singleDate}
                     label={messages.time}
                     onChangeDate={(d) => handleUpdate(0, d)}
                     cd={cd}
                     minTime={minTime}
                     maxTime={maxTime}
-                    disabled={disabled}
+                    disabled={disabled || !singleDate}
                     readOnly={readOnly}
                 />
             )}

@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import type { CalendarValue } from '../types.js'
-import { isCalendarDayWithinBounds } from '../Tools/CalendarDay.js'
+import {
+    createCalendarDate,
+    getCalendarMonthDays,
+    isCalendarDayWithinBounds,
+} from '../Tools/CalendarDay.js'
 import { completeCalendarRange } from '../Tools/CalendarSelection.js'
 
 export default function useCalendarLogic(
@@ -38,7 +42,7 @@ export default function useCalendarLogic(
 
         if (selectedDate) {
             setViewDate(
-                new Date(
+                createCalendarDate(
                     selectedDate.getFullYear(),
                     selectedDate.getMonth(),
                     1,
@@ -49,66 +53,35 @@ export default function useCalendarLogic(
 
     function handlePrevMonth() {
         setViewDate(
-            new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1),
+            createCalendarDate(
+                viewDate.getFullYear(),
+                viewDate.getMonth() - 1,
+                1,
+            ),
         )
     }
 
     function handleNextMonth() {
         setViewDate(
-            new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1),
+            createCalendarDate(
+                viewDate.getFullYear(),
+                viewDate.getMonth() + 1,
+                1,
+            ),
         )
     }
 
     function handleViewDateChange(date: Date) {
-        setViewDate(new Date(date.getFullYear(), date.getMonth(), 1))
+        setViewDate(createCalendarDate(date.getFullYear(), date.getMonth(), 1))
     }
 
     function handleGetDaysInMonth() {
-        const year = viewDate.getFullYear()
-        const month = viewDate.getMonth()
-        const firstDayOfMonth = new Date(year, month, 1)
-
-        const jsFirstDay = firstDayOfMonth.getDay()
-        const isoFirstDay = jsFirstDay === 0 ? 7 : jsFirstDay
-
-        const startingDayIndex = (isoFirstDay - weekStartsOn + 7) % 7
-        const daysInMonth = new Date(year, month + 1, 0).getDate()
-
-        let days = []
-        const prevMonthDays = new Date(year, month, 0).getDate()
-
-        for (let i = startingDayIndex - 1; i >= 0; i--) {
-            days.push({
-                date: new Date(year, month - 1, prevMonthDays - i),
-                isCurrentMonth: false,
-            })
-        }
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            days.push({
-                date: new Date(year, month, i),
-                isCurrentMonth: true,
-            })
-        }
-
-        const remainingDays = 42 - days.length
-        for (let i = 1; i <= remainingDays; i++) {
-            days.push({
-                date: new Date(year, month + 1, i),
-                isCurrentMonth: false,
-            })
-        }
-
-        if (visibleDays < 7) {
-            days = days.filter((d) => {
-                const jsDay = d.date.getDay()
-                const isoDay = jsDay === 0 ? 7 : jsDay
-                const relDay = (isoDay - weekStartsOn + 7) % 7
-                return relDay < visibleDays
-            })
-        }
-
-        return days
+        return getCalendarMonthDays(
+            viewDate.getFullYear(),
+            viewDate.getMonth(),
+            weekStartsOn,
+            visibleDays,
+        )
     }
 
     function handleDateSelect(date: Date) {

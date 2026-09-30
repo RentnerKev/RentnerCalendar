@@ -4,6 +4,11 @@ import { defaultCalendarDesign } from '../types.js'
 import type { CalendarHeaderProps } from '../types.js'
 import { resolveCalendarMessages } from '../messages.js'
 import type { CalendarMessages } from '../messages.js'
+import { createCalendarDate } from '../Tools/CalendarDay.js'
+
+interface CalendarHeaderInternalProps extends CalendarHeaderProps {
+    dialogId: string
+}
 
 interface FastEditOption {
     value: string
@@ -19,6 +24,7 @@ interface FastEditSelectProps {
     ariaLabel: string
     disabled?: boolean
     readOnly?: boolean
+    portalOwnerId: string
 }
 
 function FastEditSelect({
@@ -30,6 +36,7 @@ function FastEditSelect({
     ariaLabel,
     disabled = false,
     readOnly = false,
+    portalOwnerId,
 }: FastEditSelectProps) {
     return (
         <div className={className}>
@@ -38,6 +45,7 @@ function FastEditSelect({
                 onValueChange={onChange}
                 options={options}
                 messages={messages}
+                portalOwnerId={portalOwnerId}
                 aria-label={ariaLabel}
                 disabled={disabled}
                 readOnly={readOnly}
@@ -59,6 +67,7 @@ function getYearOptions(currentYear: number): FastEditOption[] {
 }
 
 export default function CalendarHeader({
+    dialogId,
     currentDate,
     onPrevMonth,
     onNextMonth,
@@ -69,7 +78,7 @@ export default function CalendarHeader({
     monthHeadingId,
     disabled = false,
     readOnly = false,
-}: CalendarHeaderProps) {
+}: CalendarHeaderInternalProps) {
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const messages = providedMessages ?? resolveCalendarMessages()
     const currentMonth = currentDate.getMonth()
@@ -83,11 +92,11 @@ export default function CalendarHeader({
     const yearOptions = getYearOptions(currentYear)
 
     function handleMonthChange(value: string) {
-        onViewDateChange(new Date(currentYear, Number(value), 1))
+        onViewDateChange(createCalendarDate(currentYear, Number(value), 1))
     }
 
     function handleYearChange(value: string) {
-        onViewDateChange(new Date(Number(value), currentMonth, 1))
+        onViewDateChange(createCalendarDate(Number(value), currentMonth, 1))
     }
 
     return (
@@ -112,6 +121,7 @@ export default function CalendarHeader({
                         ariaLabel={messages.month}
                         disabled={disabled}
                         readOnly={readOnly}
+                        portalOwnerId={dialogId}
                         className="min-w-0 flex-[1.4_1_0]"
                     />
                     <FastEditSelect
@@ -122,6 +132,7 @@ export default function CalendarHeader({
                         ariaLabel={messages.year}
                         disabled={disabled}
                         readOnly={readOnly}
+                        portalOwnerId={dialogId}
                         className="min-w-0 flex-[0.8_1_0]"
                     />
                 </div>

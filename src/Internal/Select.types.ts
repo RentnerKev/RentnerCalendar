@@ -9,6 +9,7 @@ export interface Option {
 
 export interface CustomSelectProps {
     id?: string
+    portalOwnerId?: string
     name?: string
     value: string
     onValueChange: (value: string) => void

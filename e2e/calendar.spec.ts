@@ -84,20 +84,157 @@ test.describe('calendar playground', () => {
         await expect(page.getByText('Termin ist erforderlich.')).toBeVisible()
     })
 
+    test('keeps month and year portals inside the field and modal focus loop', async ({
+        page,
+    }) => {
+        await page.goto('/')
+
+        const trigger = page.locator('#appointment')
+        await trigger.click()
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+
+        const checkPortal = async (label: 'Monat' | 'Jahr') => {
+            await dialog.getByRole('combobox', { name: label }).click()
+            const search = page.getByRole('textbox', {
+                name: 'Optionen suchen',
+            })
+            await expect(search).toBeFocused()
+            await expect(
+                page.getByText('Termin ist erforderlich.'),
+            ).toHaveCount(0)
+
+            await page.keyboard.press('Tab')
+            await expect
+                .poll(() =>
+                    page.evaluate(() => {
+                        const active = document.activeElement
+                        return Boolean(
+                            active?.closest('[role="dialog"]') ||
+                            active?.closest('[data-calendar-dialog-portal]'),
+                        )
+                    }),
+                )
+                .toBe(true)
+            await expect(
+                page.getByText('Termin ist erforderlich.'),
+            ).toHaveCount(0)
+
+            await page.keyboard.press('Escape')
+            await expect(search).toBeHidden()
+            await expect(
+                dialog.getByRole('combobox', { name: label }),
+            ).toBeFocused()
+            await expect(
+                page.getByText('Termin ist erforderlich.'),
+            ).toHaveCount(0)
+        }
+
+        await checkPortal('Monat')
+        await checkPortal('Jahr')
+    })
+
+    test('does not create a date by editing time before selecting a day', async ({
+        page,
+    }) => {
+        await page.goto('/')
+
+        const trigger = page.locator('#appointment')
+        await trigger.click()
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        const timeInput = dialog.getByRole('textbox', { name: 'Zeit 00:00' })
+
+        await expect(timeInput).toHaveAttribute('aria-disabled', 'true')
+        await timeInput.focus()
+        await timeInput.pressSequentially('1234')
+
+        await expect(timeInput).toHaveAttribute('aria-label', 'Zeit 00:00')
+        await expect(page.locator('input[name="appointment"]')).toHaveValue('')
+    })
+
+    test('keeps an invalid hour draft from rolling into the next day', async ({
+        page,
+    }) => {
+        await page.goto('/')
+
+        const trigger = page.locator('#appointment')
+        await trigger.click()
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        const today = dialog.locator('[data-calendar-day][aria-current="date"]')
+        const dateKey = await today.getAttribute('data-calendar-date')
+        await today.click()
+
+        const timeInput = dialog.getByRole('textbox', { name: /Zeit / })
+        await timeInput.focus()
+        await timeInput.pressSequentially('1900')
+        await expect(timeInput).toHaveAttribute('aria-label', 'Zeit 19:00')
+
+        await timeInput.press('ArrowLeft')
+        await timeInput.press('ArrowLeft')
+        await timeInput.press('ArrowLeft')
+        await timeInput.press('2')
+        await expect(timeInput).toHaveAttribute('aria-label', 'Zeit 29:00')
+
+        await dialog.getByRole('button', { name: 'Anwenden' }).click()
+        const [year, month, day] = dateKey!.split('-').map(Number)
+        const expectedDate = new Date(year, month - 1, day).toLocaleDateString(
+            'de-DE',
+            { day: '2-digit', month: '2-digit', year: 'numeric' },
+        )
+        await expect(trigger).toContainText(expectedDate)
+        await expect(trigger).toContainText('19:00')
+    })
+
+    test('keeps edited range times in chronological order', async ({
+        page,
+    }) => {
+        await page.goto('/')
+
+        const trigger = page.locator('#appointment')
+        await trigger.click()
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        await dialog.getByRole('button', { name: 'Zeitraum' }).click()
+
+        const today = dialog.locator('[data-calendar-day][aria-current="date"]')
+        const dateKey = await today.getAttribute('data-calendar-date')
+        await today.click()
+        await dialog.locator(`[data-calendar-date="${dateKey}"]`).click()
+
+        const startTime = dialog.getByRole('textbox', { name: /Von / })
+        const endTime = dialog.getByRole('textbox', { name: /Bis / })
+        await startTime.focus()
+        await startTime.pressSequentially('1900')
+        await endTime.focus()
+        await endTime.pressSequentially('1800')
+
+        await expect(startTime).toHaveAttribute('aria-label', 'Von 19:00')
+        await expect(endTime).toHaveAttribute('aria-label', 'Bis 19:00')
+        await dialog.getByRole('button', { name: 'Anwenden' }).click()
+
+        const [year, month, day] = dateKey!.split('-').map(Number)
+        const expectedDate = new Date(year, month - 1, day).toLocaleDateString(
+            'de-DE',
+            { day: '2-digit', month: '2-digit', year: 'numeric' },
+        )
+        await expect(page.locator('input[name="appointment"]')).toHaveValue(
+            `${expectedDate} 19:00 - ${expectedDate} 19:00`,
+        )
+    })
+
     test('keeps the portal anchored to the trigger on a tall page', async ({
         page,
     }) => {
         await page.setViewportSize({ width: 900, height: 700 })
         await page.goto('/')
-        await page.evaluate(() => {
+        const trigger = page.locator('#appointment')
+        await expect(trigger).toBeVisible()
+        await trigger.evaluate((element) => {
             document.body.style.minHeight = '1600px'
-            const trigger = document.querySelector<HTMLElement>('#appointment')!
-            trigger.style.position = 'fixed'
-            trigger.style.top = '590px'
-            trigger.style.left = '300px'
+            const target = element as HTMLElement
+            target.style.position = 'fixed'
+            target.style.top = '590px'
+            target.style.left = '300px'
         })
 
-        const trigger = page.locator('#appointment')
         await trigger.click()
         const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
         await expect(dialog).toHaveCSS('position', 'fixed')

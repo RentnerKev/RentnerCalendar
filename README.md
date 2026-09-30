@@ -125,7 +125,10 @@ Selections commit immediately when `button` is `false`. `closeOnSelect` controls
 whether a completed selection closes the popover. When `button` is `true`, the
 Apply button commits the pending value. Without time input, a completed range
 always starts at 00:00 on the earlier local day and ends at 23:59:59.999 on
-the later local day, even when the later day is selected first.
+the later local day, even when the later day is selected first. With time input,
+the range stays chronological: an edit that would move one endpoint past the
+other is clamped to the other endpoint. A time control stays disabled until its
+date endpoint has been selected.
 
 With the default `backdrop={true}`, the picker is a modal dialog: focus stays
 inside it, Escape closes it and returns focus to the trigger, and the page
@@ -273,7 +276,9 @@ if (isCalendarRange(range)) {
 an accidental shift to the previous day. `parseCalendarISOString` accepts a
 full timestamp with a zone or offset. Their counterparts are
 `serializeCalendarISODate` and `serializeCalendarISOString`. Invalid values
-return `undefined` instead of throwing a `RangeError`.
+return `undefined` instead of throwing a `RangeError`. Four-digit local years
+from `0000` through `0099` remain those calendar years in the date grid and
+month navigation.
 
 ## Localization and messages
 

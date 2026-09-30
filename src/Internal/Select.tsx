@@ -1,13 +1,14 @@
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { CustomTooltip } from '@rentnerkev/tooltips'
 import { AlertCircle, Check, ChevronDown } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { InvalidEvent } from 'react'
 import type { CustomSelectProps } from './Select.types.js'
 import { resolveCalendarMessages } from '../messages.js'
 
 export function CustomSelect({
     id,
+    portalOwnerId,
     name,
     value,
     onValueChange,
@@ -25,6 +26,8 @@ export function CustomSelect({
     readOnly = false,
     'aria-label': ariaLabel,
 }: CustomSelectProps) {
+    const generatedId = useId()
+    const triggerId = id ?? generatedId
     const messages = providedMessages ?? resolveCalendarMessages()
     const isInteractionDisabled = disabled || readOnly
     const [open, setOpen] = useState(false)
@@ -209,7 +212,7 @@ export function CustomSelect({
                     </div>
                 )}
                 <SelectPrimitive.Trigger
-                    id={id}
+                    id={triggerId}
                     aria-label={ariaLabel}
                     disabled={isInteractionDisabled}
                     aria-readonly={readOnly || undefined}
@@ -249,6 +252,10 @@ export function CustomSelect({
 
             <SelectPrimitive.Portal>
                 <SelectPrimitive.Content
+                    data-calendar-dialog-portal={portalOwnerId}
+                    data-calendar-portal-opener={
+                        portalOwnerId ? triggerId : undefined
+                    }
                     position="popper"
                     sideOffset={4}
                     onFocusCapture={(event) => {
@@ -296,7 +303,10 @@ export function CustomSelect({
                                 }
                             }}
                             onKeyDown={(event) => {
-                                if (event.key !== 'Escape') {
+                                if (
+                                    event.key !== 'Escape' &&
+                                    event.key !== 'Tab'
+                                ) {
                                     event.stopPropagation()
                                 }
                             }}
