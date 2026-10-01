@@ -60,6 +60,12 @@ export default function CalendarGrid({
         isInteractionDisabled ||
         !isCalendarDayWithinBounds(date, minDate, maxDate) ||
         (enableTime && !hasCalendarTimeWithinBounds(date, minTime, maxTime))
+    const availabilityKey = [
+        minDate ? getCalendarDateKey(minDate) : '',
+        maxDate ? getCalendarDateKey(maxDate) : '',
+        enableTime ? (minTime ?? '') : '',
+        enableTime ? (maxTime ?? '') : '',
+    ].join('|')
 
     let preferredDate: Date | undefined
     if (Array.isArray(selectedDate)) {
@@ -86,6 +92,7 @@ export default function CalendarGrid({
         initialFocusDate,
         minDate,
         maxDate,
+        availabilityKey,
         isDateSelectable: (date) => !isDateDisabled(date),
         onViewDateChange,
     })

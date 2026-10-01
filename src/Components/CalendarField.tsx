@@ -121,11 +121,12 @@ export default function CalendarField({
                     aria-labelledby={ariaLabelledBy}
                     aria-describedby={ariaDescribedBy}
                     aria-disabled={
-                        disabled || ariaProps['aria-disabled'] || undefined
+                        disabled ||
+                        readOnly ||
+                        ariaProps['aria-disabled'] ||
+                        undefined
                     }
-                    aria-readonly={
-                        readOnly || ariaProps['aria-readonly'] || undefined
-                    }
+                    aria-readonly={undefined}
                     aria-expanded={isOpen}
                     aria-controls={
                         ariaProps['aria-controls'] ??

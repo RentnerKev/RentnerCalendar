@@ -14,6 +14,7 @@ interface CalendarGridNavigationOptions {
     initialFocusDate?: Date
     minDate?: Date
     maxDate?: Date
+    availabilityKey: string
     isDateSelectable?: (date: Date) => boolean
     onViewDateChange: (date: Date) => void
 }
@@ -81,18 +82,25 @@ export default function useCalendarGridNavigation({
     initialFocusDate,
     minDate,
     maxDate,
+    availabilityKey,
     isDateSelectable,
     onViewDateChange,
 }: CalendarGridNavigationOptions) {
     const gridRef = useRef<HTMLDivElement>(null)
     const pendingFocusDateKey = useRef<string | null>(null)
+    const focusedDateKey = useRef<string | null>(null)
+    const previousAvailabilityKey = useRef(availabilityKey)
     const [activeDateKey, setActiveDateKey] = useState(
         initialFocusDate ? getCalendarDateKey(initialFocusDate) : '',
     )
 
     function findDayButton(date: Date) {
+        return findDayButtonByKey(getCalendarDateKey(date))
+    }
+
+    function findDayButtonByKey(dateKey: string) {
         return gridRef.current?.querySelector<HTMLButtonElement>(
-            `[data-calendar-date="${getCalendarDateKey(date)}"]`,
+            `[data-calendar-date="${dateKey}"]`,
         )
     }
 
@@ -114,6 +122,37 @@ export default function useCalendarGridNavigation({
         }
     }, [currentDate])
 
+    useLayoutEffect(() => {
+        const availabilityChanged =
+            previousAvailabilityKey.current !== availabilityKey
+        previousAvailabilityKey.current = availabilityKey
+        if (!availabilityChanged) return
+
+        const previousFocusedDateKey = focusedDateKey.current
+        if (!previousFocusedDateKey) return
+
+        const previousFocusedDay = findDayButtonByKey(previousFocusedDateKey)
+        if (!previousFocusedDay?.disabled) return
+
+        if (
+            document.activeElement !== document.body &&
+            document.activeElement !== previousFocusedDay
+        ) {
+            return
+        }
+
+        const nextFocusableDay =
+            gridRef.current?.querySelector<HTMLButtonElement>(
+                '[data-calendar-day][tabindex="0"]:not(:disabled)',
+            )
+
+        if (nextFocusableDay) {
+            nextFocusableDay.focus()
+        } else {
+            gridRef.current?.closest<HTMLElement>('[role="dialog"]')?.focus()
+        }
+    }, [availabilityKey])
+
     function focusDate(date: Date) {
         const dateKey = getCalendarDateKey(date)
         setActiveDateKey(dateKey)
@@ -131,7 +170,9 @@ export default function useCalendarGridNavigation({
     }
 
     function handleDayFocus(date: Date) {
-        setActiveDateKey(getCalendarDateKey(date))
+        const dateKey = getCalendarDateKey(date)
+        focusedDateKey.current = dateKey
+        setActiveDateKey(dateKey)
     }
 
     function handleDayKeyDown(

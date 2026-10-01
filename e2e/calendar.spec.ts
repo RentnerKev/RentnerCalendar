@@ -402,6 +402,63 @@ test.describe('calendar playground', () => {
         await expect.poll(() => anchorAndDialogFit('above')).toBe(true)
     })
 
+    test('does not match a shadow class as a trigger width utility', async ({
+        page,
+    }) => {
+        await page.goto('/?calendar-width-test')
+
+        const trigger = page.locator('#appointment')
+        await expect(trigger).toHaveCSS('width', '512px')
+
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        await trigger.click()
+        await expect(dialog).toBeVisible()
+        await expect(dialog).toHaveCSS('width', '340px')
+
+        await page.keyboard.press('Escape')
+        await expect(dialog).toBeHidden()
+        await page.getByTestId('toggle-calendar-shadow-class').click()
+        await trigger.click()
+        await expect(dialog).toBeVisible()
+        await expect(dialog).toHaveCSS('width', '340px')
+
+        await page.keyboard.press('Escape')
+        const widthUtilityToggle = page.getByTestId(
+            'cycle-calendar-width-utility',
+        )
+        await widthUtilityToggle.click()
+        await expect(trigger).toHaveCSS('width', '512px')
+        await trigger.click()
+        await expect(dialog).toBeVisible()
+        await expect(dialog).toHaveCSS('width', '512px')
+
+        await page.keyboard.press('Escape')
+        await widthUtilityToggle.click()
+        await expect(trigger).toHaveCSS('width', '512px')
+        await trigger.click()
+        await expect(dialog).toBeVisible()
+        await expect(dialog).toHaveCSS('width', '512px')
+    })
+
+    test('exposes a read-only native trigger as disabled without aria-readonly', async ({
+        page,
+    }) => {
+        await page.goto('/?calendar-readonly-test')
+
+        const trigger = page.locator('#appointment')
+        await expect(trigger).toHaveAttribute('aria-disabled', 'true')
+        await expect(trigger).not.toHaveAttribute('aria-readonly')
+        await expect(trigger).toHaveJSProperty('tabIndex', 0)
+
+        const results = await new AxeBuilder({ page })
+            .include('#appointment')
+            .analyze()
+        expect(results.violations).toEqual([])
+
+        await trigger.evaluate((button: HTMLButtonElement) => button.click())
+        await expect(page.getByRole('dialog')).toHaveCount(0)
+    })
+
     test('exposes selected days and native form metadata', async ({ page }) => {
         await page.goto('/')
 
@@ -590,6 +647,104 @@ test.describe('calendar playground', () => {
                 '#appointment-dialog [data-calendar-day][aria-pressed="true"][tabindex="0"]',
             ),
         ).toBeFocused()
+    })
+
+    test('disables Apply when a dynamic date bound excludes the selected day', async ({
+        page,
+    }) => {
+        await page.goto('/')
+        await page.getByTestId('set-calendar-value').click()
+        await page.locator('#appointment').click()
+
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        const selectedDay = dialog.locator('[data-calendar-date="2030-12-24"]')
+        await expect(selectedDay).toBeFocused()
+
+        await page
+            .getByTestId('set-calendar-min-date')
+            .evaluate((button: HTMLButtonElement) => button.click())
+
+        await expect(selectedDay).toBeDisabled()
+        await expect(
+            dialog.getByRole('button', { name: 'Anwenden' }),
+        ).toBeDisabled()
+    })
+
+    test('moves focus to an available day when dynamic bounds disable the focused day', async ({
+        page,
+    }) => {
+        await page.goto('/')
+        await page.getByTestId('set-calendar-value').click()
+        await page.locator('#appointment').click()
+
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        const selectedDay = dialog.locator('[data-calendar-date="2030-12-24"]')
+        const nextAvailableDay = dialog.locator(
+            '[data-calendar-date="2030-12-25"]',
+        )
+        await expect(selectedDay).toBeFocused()
+
+        await page
+            .getByTestId('set-calendar-min-date')
+            .evaluate((button: HTMLButtonElement) => button.click())
+
+        await expect(selectedDay).toBeDisabled()
+        await expect(nextAvailableDay).toBeFocused()
+    })
+
+    test('keeps focus on a header control when updated bounds disable the last focused day', async ({
+        page,
+    }) => {
+        await page.goto('/')
+        await page.getByTestId('set-calendar-value').click()
+        await page.locator('#appointment').click()
+
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        const previousMonth = dialog.getByRole('button', {
+            name: 'Vorheriger Monat',
+        })
+        await previousMonth.focus()
+
+        await page
+            .getByTestId('set-calendar-min-date')
+            .evaluate((button: HTMLButtonElement) => button.click())
+
+        await expect(
+            dialog.locator('[data-calendar-date="2030-12-24"]'),
+        ).toBeDisabled()
+        await expect(previousMonth).toBeFocused()
+
+        const timeInput = dialog.getByRole('textbox', {
+            name: /^Zeit /,
+        })
+        await timeInput.focus()
+        await page
+            .getByTestId('set-calendar-min-date-after-view')
+            .evaluate((button: HTMLButtonElement) => button.click())
+
+        await expect(timeInput).toBeFocused()
+    })
+
+    test('focuses the dialog when changed bounds disable every visible day', async ({
+        page,
+    }) => {
+        await page.goto('/')
+        await page.getByTestId('set-calendar-value').click()
+        await page.locator('#appointment').click()
+
+        const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
+        await expect(
+            dialog.locator('[data-calendar-date="2030-12-24"]'),
+        ).toBeFocused()
+
+        await page
+            .getByTestId('set-calendar-min-date-after-view')
+            .evaluate((button: HTMLButtonElement) => button.click())
+
+        await expect(
+            dialog.locator('[data-calendar-day][tabindex="0"]'),
+        ).toHaveCount(0)
+        await expect(dialog).toBeFocused()
     })
 
     test('has no axe violations in the open picker flow', async ({ page }) => {

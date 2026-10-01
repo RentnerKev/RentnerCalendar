@@ -69,10 +69,12 @@ describe('calendar field contract rendering', () => {
                 name="appointment"
                 value={new Date(2026, 8, 21)}
                 readOnly
+                aria-readonly="true"
             />,
         )
 
-        expect(markup).toContain('aria-readonly="true"')
+        expect(markup).toContain('aria-disabled="true"')
+        expect(markup).not.toContain('aria-readonly=')
         expect(markup).toContain('name="appointment"')
         expect(markup).toContain('readOnly=""')
         expect(markup).not.toContain('name="appointment" disabled=""')

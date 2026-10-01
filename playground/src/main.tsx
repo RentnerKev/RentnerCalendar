@@ -74,8 +74,19 @@ function FieldError({ errors }: { errors: Array<unknown> }) {
 }
 
 function App() {
+    const isPopoverWidthTest = new URLSearchParams(window.location.search).has(
+        'calendar-width-test',
+    )
+    const isReadonlyAxeTest = new URLSearchParams(window.location.search).has(
+        'calendar-readonly-test',
+    )
     const [submittedValues, setSubmittedValues] =
         useState<PlaygroundFormValues | null>(null)
+    const [calendarMinDate, setCalendarMinDate] = useState<Date | undefined>()
+    const [calendarShadowClass, setCalendarShadowClass] = useState(false)
+    const [calendarWidthUtility, setCalendarWidthUtility] = useState<
+        'none' | 'typed' | 'responsive'
+    >('none')
 
     const form = useForm({
         defaultValues: {
@@ -216,7 +227,65 @@ function App() {
                                         >
                                             Extern auf Dez. 2030 setzen
                                         </button>
+                                        <button
+                                            type="button"
+                                            data-testid="set-calendar-min-date"
+                                            onClick={() =>
+                                                setCalendarMinDate(
+                                                    new Date(2030, 11, 25),
+                                                )
+                                            }
+                                            className="rounded px-2 py-1 text-[11px] font-bold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                        >
+                                            Min. Datum auf 25. Dez. 2030 setzen
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-testid="set-calendar-min-date-after-view"
+                                            onClick={() =>
+                                                setCalendarMinDate(
+                                                    new Date(2031, 1, 1),
+                                                )
+                                            }
+                                            className="rounded px-2 py-1 text-[11px] font-bold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                        >
+                                            Min. Datum auf 1. Feb. 2031 setzen
+                                        </button>
                                     </div>
+                                    {isPopoverWidthTest && (
+                                        <button
+                                            type="button"
+                                            data-testid="toggle-calendar-shadow-class"
+                                            onClick={() =>
+                                                setCalendarShadowClass(
+                                                    (hasShadow) => !hasShadow,
+                                                )
+                                            }
+                                            className="self-start rounded px-2 py-1 text-[11px] font-bold text-primary"
+                                        >
+                                            Toggle unrelated shadow class
+                                        </button>
+                                    )}
+                                    {isPopoverWidthTest && (
+                                        <button
+                                            type="button"
+                                            data-testid="cycle-calendar-width-utility"
+                                            onClick={() =>
+                                                setCalendarWidthUtility(
+                                                    (current) =>
+                                                        current === 'none'
+                                                            ? 'typed'
+                                                            : current ===
+                                                                'typed'
+                                                              ? 'responsive'
+                                                              : 'none',
+                                                )
+                                            }
+                                            className="self-start rounded px-2 py-1 text-[11px] font-bold text-primary"
+                                        >
+                                            Cycle typed width utility
+                                        </button>
+                                    )}
                                     <CustomCalendar
                                         id={field.name}
                                         name={field.name}
@@ -227,14 +296,25 @@ function App() {
                                         onBlur={field.handleBlur}
                                         placeholder="Termin auswählen"
                                         required
+                                        readOnly={isReadonlyAxeTest}
+                                        aria-readonly={
+                                            isReadonlyAxeTest
+                                                ? 'true'
+                                                : undefined
+                                        }
                                         enableTime
                                         closeOnSelect
                                         backdrop
                                         button
+                                        minDate={calendarMinDate}
                                         showHolidays
                                         switchMode
                                         isDeletable
-                                        className="h-11 w-60 rounded-md"
+                                        className={
+                                            isPopoverWidthTest
+                                                ? `h-11 rounded-md ${calendarWidthUtility === 'typed' ? 'w-[length:512px]' : calendarWidthUtility === 'responsive' ? 'md:w-[length:512px]' : 'calendar-consumer-wide-trigger'} ${calendarShadowClass ? 'shadow-lg' : ''}`
+                                                : 'h-11 w-60 rounded-md'
+                                        }
                                         icon={
                                             <CalendarClock className="h-4 w-4" />
                                         }

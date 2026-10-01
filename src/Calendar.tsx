@@ -13,6 +13,7 @@ import {
 import { formatCalendarValue } from './Tools/FormatFunctions.js'
 import { serializeCalendarValue } from './Tools/CalendarValue.js'
 import { calendarValueHasTimeWithinBounds } from './Tools/CalendarTime.js'
+import { calendarValueWithinDateBounds } from './Tools/CalendarDay.js'
 import {
     mergeAriaIds,
     resolveCalendarFieldError,
@@ -27,6 +28,40 @@ import { useCalendarDefaults } from './CalendarProvider.js'
 import { composeRefs } from './Tools/Refs.js'
 
 const calendarPopoverMinWidth = 340
+
+function hasWidthUtilityClass(className: string) {
+    return className.split(/\s+/).some((classToken) => {
+        let squareBracketDepth = 0
+        let roundBracketDepth = 0
+        let lastVariantSeparator = -1
+
+        for (let index = 0; index < classToken.length; index += 1) {
+            const character = classToken[index]
+
+            if (character === '\\') {
+                index += 1
+                continue
+            }
+
+            if (character === '[') squareBracketDepth += 1
+            else if (character === ']') {
+                squareBracketDepth = Math.max(0, squareBracketDepth - 1)
+            } else if (character === '(') roundBracketDepth += 1
+            else if (character === ')') {
+                roundBracketDepth = Math.max(0, roundBracketDepth - 1)
+            } else if (
+                character === ':' &&
+                squareBracketDepth === 0 &&
+                roundBracketDepth === 0
+            ) {
+                lastVariantSeparator = index
+            }
+        }
+
+        const utility = classToken.slice(lastVariantSeparator + 1)
+        return utility.replace(/^!/, '').startsWith('w-')
+    })
+}
 
 function hasCalendarValue(value?: CalendarValue) {
     if (!value) {
@@ -142,7 +177,7 @@ export function CustomCalendar({
     const { handler: positionHandler, state: positionState } =
         useCalendarPosition(triggerRef, {
             minWidth: calendarPopoverMinWidth,
-            matchTriggerWidth: className.match(/w-/) !== null,
+            matchTriggerWidth: hasWidthUtilityClass(className),
         })
     const { dropdownPosition, coords } = positionState
 
@@ -357,6 +392,10 @@ export function CustomCalendar({
 
     function handleApply() {
         if (disabled || readOnly) {
+            return
+        }
+
+        if (!calendarValueWithinDateBounds(tempValue, minDate, maxDate)) {
             return
         }
 

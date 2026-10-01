@@ -5,6 +5,7 @@ import CalendarTimeInput from './CalendarTimeInput.js'
 import type { CalendarMessages, CalendarLocale } from '../messages.js'
 import type { CalendarCustomDesign, CalendarValue } from '../types.js'
 import { calendarValueHasTimeWithinBounds } from '../Tools/CalendarTime.js'
+import { calendarValueWithinDateBounds } from '../Tools/CalendarDay.js'
 
 interface CalendarPopoverProps {
     backdrop: boolean
@@ -102,8 +103,9 @@ export default function CalendarPopover({
     const monthHeadingId = `${dialogId}-month-heading`
     const keyboardHelpId = `${dialogId}-keyboard-help`
     const applyDisabled =
-        enableTime &&
-        !calendarValueHasTimeWithinBounds(selectedDate, minTime, maxTime)
+        !calendarValueWithinDateBounds(selectedDate, minDate, maxDate) ||
+        (enableTime &&
+            !calendarValueHasTimeWithinBounds(selectedDate, minTime, maxTime))
 
     function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
         if (!backdrop || event.key !== 'Tab') {

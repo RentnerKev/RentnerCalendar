@@ -3,6 +3,10 @@
 @source "../../src/**/*.{ts,tsx}";
 @source "./**/*.{ts,tsx}";
 
+.calendar-consumer-wide-trigger {
+    width: 32rem;
+}
+
 @theme {
     --color-primary: #13ecd6;
     --color-primary-hover: #0fbdaa;

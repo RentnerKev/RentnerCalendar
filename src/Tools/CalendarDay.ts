@@ -1,3 +1,5 @@
+import type { CalendarValue } from '../types.js'
+
 export function compareCalendarDays(first: Date, second: Date) {
     const yearDifference = first.getFullYear() - second.getFullYear()
     if (yearDifference !== 0) return yearDifference
@@ -90,6 +92,23 @@ export function isCalendarDayWithinBounds(
     return (
         (!minDate || compareCalendarDays(date, minDate) >= 0) &&
         (!maxDate || compareCalendarDays(date, maxDate) <= 0)
+    )
+}
+
+export function calendarValueWithinDateBounds(
+    value: CalendarValue | undefined,
+    minDate?: Date,
+    maxDate?: Date,
+) {
+    const dates =
+        value instanceof Date
+            ? [value]
+            : Array.isArray(value)
+              ? value.filter((date): date is Date => date instanceof Date)
+              : []
+
+    return dates.every((date) =>
+        isCalendarDayWithinBounds(date, minDate, maxDate),
     )
 }
 

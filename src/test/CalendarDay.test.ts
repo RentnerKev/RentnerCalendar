@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
     addCalendarDays,
     addCalendarMonths,
+    calendarValueWithinDateBounds,
     createCalendarDate,
     getCalendarMonthDays,
     isCalendarDayWithinBounds,
@@ -91,6 +92,32 @@ describe('calendar-day ranges', () => {
         expect(
             isCalendarDayWithinBounds(new Date(2026, 3, 1), minDate, maxDate),
         ).toBe(false)
+    })
+
+    test('checks every selected endpoint against current date bounds', () => {
+        const minDate = new Date(2026, 8, 10, 23, 0)
+        const maxDate = new Date(2026, 8, 10, 1, 0)
+
+        expect(
+            calendarValueWithinDateBounds(
+                [new Date(2026, 8, 10, 0, 0), new Date(2026, 8, 10, 23, 59)],
+                minDate,
+                maxDate,
+            ),
+        ).toBe(true)
+        expect(
+            calendarValueWithinDateBounds(
+                [new Date(2026, 8, 10), new Date(2026, 8, 11)],
+                minDate,
+                maxDate,
+            ),
+        ).toBe(false)
+        expect(calendarValueWithinDateBounds(undefined, minDate, maxDate)).toBe(
+            true,
+        )
+        expect(
+            calendarValueWithinDateBounds([null, null], minDate, maxDate),
+        ).toBe(true)
     })
 
     test('keeps years below 100 intact in month grids and navigation', () => {

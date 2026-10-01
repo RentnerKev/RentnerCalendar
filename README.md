@@ -143,9 +143,11 @@ When selecting a different date with time enabled, the current wall time is
 preserved when possible. If that minute is missing on the chosen date, the
 calendar uses the closest representable minute allowed by the time bounds.
 
-Apply stays disabled while any selected endpoint is outside the current time
-bounds, including when those bounds change while the dialog is open. Adjust
-the time or select a date again before applying the selection.
+Apply stays disabled while any selected endpoint is outside the current date
+or time bounds, including when those bounds change while the dialog is open.
+Adjust the selection into the current bounds before applying it. If updated
+bounds disable the focused day, focus moves to an available day or to the
+dialog when no visible day is available.
 
 With the default `backdrop={true}`, the picker is a modal dialog: focus stays
 inside it, Escape closes it and returns focus to the trigger, and the page
