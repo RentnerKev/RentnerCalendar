@@ -1,0 +1,490 @@
+# @rentnerkev/calendar
+
+A controlled React date picker for single dates and ranges, with optional time
+input, native form validation, localization, and customizable Tailwind styling.
+
+## Requirements
+
+Use React 19 with React DOM 19, an ESM-capable build, and Tailwind CSS 4 for
+the documented styling. Import this package's `tailwind.css` entry into your
+Tailwind stylesheet. It uses `@source` for published classes and `@theme` for
+global tokens such as `--color-primary`. Check for token name collisions with
+your app and override them in a later `@theme` block if needed.
+
+In a React Server Components app, import and render the calendar from a module
+beginning with `'use client'`; define its state and callbacks there. See the
+[Tailwind directives](https://tailwindcss.com/docs/functions-and-directives)
+and [React client boundary](https://react.dev/reference/rsc/use-client) guides.
+
+## Installation
+
+With npm:
+
+```bash
+npm install @rentnerkev/calendar
+```
+
+Or with Bun:
+
+```bash
+bun add @rentnerkev/calendar
+```
+
+## Quick start
+
+Use `SingleCalendar` or `RangeCalendar` for new code. Their value and callback
+types stay narrow and do not require casts.
+
+```tsx
+import { useState } from 'react'
+import { SingleCalendar, type SingleCalendarValue } from '@rentnerkev/calendar'
+
+export function AppointmentField() {
+    const [appointment, setAppointment] = useState<SingleCalendarValue>()
+
+    return (
+        <SingleCalendar
+            id="appointment"
+            name="appointment"
+            label="Appointment"
+            value={appointment}
+            onChange={setAppointment}
+            placeholder="Choose a date"
+            required
+        />
+    )
+}
+```
+
+`CustomCalendar` remains available for backward compatibility, dynamic modes,
+and interfaces that let users switch between single-date and range selection.
+
+## Shared defaults
+
+Wrap related calendars in `CalendarProvider` to share a locale, message
+overrides, and Tailwind design classes. Nested providers inherit outer values;
+their values override matching keys. Props on an individual calendar override
+the provider defaults.
+
+```tsx
+import {
+    CalendarProvider,
+    RangeCalendar,
+    SingleCalendar,
+} from '@rentnerkev/calendar'
+
+export function LocalizedBookingFields() {
+    return (
+        <CalendarProvider
+            locale="en"
+            customDesign={{
+                primaryBg: 'bg-blue-600',
+                surfaceBackground: 'bg-slate-900',
+            }}
+            messages={{ required: 'Choose a date first' }}
+        >
+            <SingleCalendar label="Start" />
+            <RangeCalendar label="Period" locale="de" />
+        </CalendarProvider>
+    )
+}
+```
+
+`CalendarProviderProps` and `CalendarDefaults` are exported from the package
+root for typed provider helpers.
+
+## Single dates and ranges
+
+```tsx
+import { useState } from 'react'
+import {
+    RangeCalendar,
+    SingleCalendar,
+    type RangeCalendarValue,
+    type SingleCalendarValue,
+} from '@rentnerkev/calendar'
+
+export function CalendarFields() {
+    const [appointment, setAppointment] = useState<SingleCalendarValue>()
+    const [period, setPeriod] = useState<RangeCalendarValue>()
+
+    return (
+        <>
+            <SingleCalendar
+                value={appointment}
+                onChange={setAppointment}
+                enableTime
+            />
+            <RangeCalendar value={period} onChange={setPeriod} />
+        </>
+    )
+}
+```
+
+Selections commit immediately when `button` is `false`. `closeOnSelect` controls
+whether a completed selection closes the popover. When `button` is `true`, the
+Apply button commits the pending value. Without time input, a completed range
+always starts at 00:00 on the earlier local day and ends at 23:59:59.999 on
+the later local day, even when the later day is selected first. With time input,
+the range stays chronological: an edit that would move one endpoint past the
+other is clamped to the other endpoint. A time control stays disabled until its
+date endpoint has been selected.
+
+Time input uses local whole minutes. A typed time that falls in the spring
+clock-change gap is rejected, leaving the current selection unchanged. If a
+time bound clamps to a missing minute, the value moves inward to the nearest
+representable minute within the bounds: a maximum of `02:30` can clamp to
+`01:59`, and a minimum of `02:30` can clamp to `03:00`. If the allowed interval
+contains no representable minute on a date, that date is disabled and Apply
+cannot commit an endpoint on it. During the repeated autumn hour, an ambiguous
+minute uses its earlier occurrence.
+
+When selecting a different date with time enabled, the current wall time is
+preserved when possible. If that minute is missing on the chosen date, the
+calendar uses the closest representable minute allowed by the time bounds.
+
+Apply stays disabled while any selected endpoint is outside the current date
+or time bounds, including when those bounds change while the dialog is open.
+Adjust the selection into the current bounds before applying it. If updated
+bounds disable the focused day, focus moves to an available day or to the
+dialog when no visible day is available.
+
+With the default `backdrop={true}`, the picker is a modal dialog: focus stays
+inside it, Escape closes it and returns focus to the trigger, and the page
+does not scroll while it is open. Set `backdrop={false}` for a nonmodal picker.
+The date grid has one Tab stop. Arrow keys move by day or week, Home and End
+move within the visible week, Page Up and Page Down move by month, and Shift
+with Page Up or Page Down moves by year. Disabled days are skipped.
+
+## Form and accessibility contract
+
+`label` and `description` receive stable IDs and are connected to the visible
+trigger through `aria-labelledby` and `aria-describedby`. An external `error`
+overrides internal validation; `error={null}` explicitly clears it. Additional
+React `aria-*` attributes are forwarded to the trigger and merged with the
+component state.
+
+On an invalid native submit, the visible trigger receives focus. A disabled
+calendar is excluded from validation and form submission. A read-only calendar
+keeps its form value but prevents opening and changes.
+
+By default, native form submission uses the localized display text for
+compatibility. Set `formValueFormat="iso-date"` for a local `YYYY-MM-DD` date,
+or `formValueFormat="iso-datetime"` for a UTC ISO timestamp. The visible text
+remains localized:
+
+```tsx
+import { SingleCalendar } from '@rentnerkev/calendar'
+
+;<SingleCalendar
+    name="appointment"
+    value={appointment}
+    onChange={setAppointment}
+    formValueFormat="iso-date"
+/>
+```
+
+Range mode still submits one field. An ISO format submits a JSON array of two
+ISO strings or `null` for a missing bound. An empty range submits an empty
+string. `getFormValue` takes precedence over `formValueFormat` when your backend
+needs another representation. In `SingleCalendar`, its argument is a `Date`;
+in `RangeCalendar`, it is a `[Date | null, Date | null]` tuple. `CustomCalendar`
+retains the union value for its switchable mode.
+
+Use `onBlur` with a form library's field handler. It fires when focus leaves the
+calendar field, including its open popover, and not while focus moves within it:
+
+```tsx
+<SingleCalendar
+    value={field.state.value}
+    onChange={field.handleChange}
+    onBlur={field.handleBlur}
+    formValueFormat="iso-date"
+/>
+```
+
+```tsx
+<SingleCalendar
+    id="appointment"
+    name="appointment"
+    label="Appointment"
+    description="Choose an available time slot."
+    error={serverError ?? undefined}
+    aria-label="Choose an appointment"
+    triggerRef={triggerRef}
+    required
+/>
+```
+
+## Full configuration example
+
+```tsx
+import { Clock } from 'lucide-react'
+import { useState } from 'react'
+import {
+    CustomCalendar,
+    type CalendarCustomDesign,
+    type CalendarValue,
+} from '@rentnerkev/calendar'
+
+const calendarDesign: CalendarCustomDesign = {
+    primaryBg: 'bg-blue-600',
+    primaryHover: 'hover:bg-blue-700',
+    surfaceBackground: 'bg-slate-900',
+    borderColor: 'border-slate-700',
+}
+
+export function BookingRange() {
+    const [value, setValue] = useState<CalendarValue>([new Date(), null])
+
+    return (
+        <CustomCalendar
+            id="booking-range"
+            name="bookingRange"
+            value={value}
+            onChange={setValue}
+            required
+            enableRange
+            enableTime
+            button
+            backdrop
+            customDesign={calendarDesign}
+            icon={<Clock size={16} />}
+            placeholder="Choose a period"
+            className="h-20 w-120 rounded-lg"
+            closeOnSelect
+            minDate={new Date()}
+            maxDate={new Date('2026-12-31')}
+            minTime="08:00"
+            maxTime="18:00"
+            weekStartsOn={1}
+            visibleDays={5}
+            showHolidays
+            switchMode
+            isDeletable
+        />
+    )
+}
+```
+
+## Value parsing and serialization
+
+`parseCalendarValue` normalizes single values and ranges. Invalid range bounds
+become `null`; an invalid single value becomes `undefined`.
+`serializeCalendarValue` returns full UTC ISO timestamps by default. Pass
+`{ format: 'date' }` to produce local `YYYY-MM-DD` calendar dates.
+
+```ts
+import {
+    isCalendarRange,
+    parseCalendarValue,
+    serializeCalendarValue,
+} from '@rentnerkev/calendar'
+
+const value = parseCalendarValue('2026-09-21T14:30:00+02:00')
+const timestamp = serializeCalendarValue(value)
+const dateOnly = serializeCalendarValue(value, { format: 'date' })
+
+const range = parseCalendarValue(['2026-09-21', null])
+if (isCalendarRange(range)) {
+    const [from, to] = serializeCalendarValue(range)
+}
+```
+
+`parseCalendarISODate` treats `YYYY-MM-DD` as a local calendar date and avoids
+an accidental shift to the previous day. `parseCalendarISOString` accepts a
+full timestamp with a zone or offset. Their counterparts are
+`serializeCalendarISODate` and `serializeCalendarISOString`. Invalid values
+return `undefined` instead of throwing a `RangeError`. Four-digit local years
+from `0000` through `0099` remain those calendar years in the date grid and
+month navigation.
+
+String inputs accept local ISO dates (`YYYY-MM-DD`), local ISO date-times
+(`YYYY-MM-DDTHH:mm[:ss[.fraction]]`, with one to three fractional digits and
+an optional space in place of `T`), ISO date-times with `Z` or a numeric
+offset, and German dates (`D.M.YYYY`) with an optional time. Other string
+formats are rejected instead of being passed to the runtime's permissive date
+parser. Numeric inputs are Unix timestamps in milliseconds.
+
+## Localization and messages
+
+German remains the default for backward compatibility. Set `locale="en"` for
+the complete English UI, validation, ARIA text, and date formatting. Override
+individual messages with a typed `Partial<CalendarMessages>` object.
+
+```tsx
+<SingleCalendar
+    locale="en"
+    messages={{
+        apply: 'Save',
+        required: 'Please choose a date',
+    }}
+/>
+```
+
+`CalendarMessages`, `calendarMessageCatalog`, and `resolveCalendarMessages`
+are available from the root entry and `@rentnerkev/calendar/messages`.
+
+## Utilities
+
+| Function                                  | Description                                                       |
+| ----------------------------------------- | ----------------------------------------------------------------- |
+| `formatCalendarValue(value, locale?)`     | Formats a date or range as readable German or English text.       |
+| `parseCalendarValue(value)`               | Normalizes single and range input and rejects impossible dates.   |
+| `serializeCalendarValue(value, options?)` | Serializes values as timestamps or local calendar dates.          |
+| `isCalendarRange(value)`                  | Type-safe guard for valid calendar ranges.                        |
+| `parseCalendarISODate(value)`             | Reads a strict local `YYYY-MM-DD` date.                           |
+| `serializeCalendarISODate(value)`         | Writes a date as `YYYY-MM-DD` without a UTC shift.                |
+| `parseCalendarISOString(value)`           | Reads a complete timestamp with a zone or offset.                 |
+| `serializeCalendarISOString(value)`       | Safely writes a valid timestamp with `Date#toISOString()`.        |
+| `isSameDay(first, second)`                | Checks whether two inputs represent the same local calendar day.  |
+| `isToday(value)`                          | Checks whether an input represents today.                         |
+| `formatMonthName(date, locale?)`          | Formats a month and year in German or English.                    |
+| `getGermanHolidayName(date)`              | Returns the German name of a supported German holiday, or `null`. |
+
+Date helpers are also available from `@rentnerkev/calendar/date`; parsing and
+serialization helpers are available from `@rentnerkev/calendar/value`.
+
+## Custom design
+
+Pass `customDesign` to override individual Tailwind classes.
+
+```tsx
+import type { CalendarCustomDesign } from '@rentnerkev/calendar'
+
+const customDesign: CalendarCustomDesign = {
+    primaryBg: 'bg-blue-600',
+    primaryHover: 'hover:bg-blue-700',
+    surfaceBackground: 'bg-slate-900',
+    borderColor: 'border-slate-700',
+}
+```
+
+Common design fields include:
+
+| Field               | Description                           |
+| ------------------- | ------------------------------------- |
+| `primaryColor`      | Primary text color class.             |
+| `primaryBg`         | Selected-day background class.        |
+| `primaryHover`      | Hover background class for buttons.   |
+| `primaryBorder`     | Active-state border class.            |
+| `primaryRing`       | Focus-ring class.                     |
+| `surfaceBackground` | Popover background class.             |
+| `inputBackground`   | Trigger background class.             |
+| `borderColor`       | Default border class.                 |
+| `textColor`         | Main text class.                      |
+| `textMuted`         | Secondary text class.                 |
+| `textMutedDark`     | Lower-emphasis text class.            |
+| `textDay`           | Weekday and calendar-grid text class. |
+| `hoverBackground`   | Day hover background class.           |
+
+See the `CalendarCustomDesign` type for the complete list.
+
+## `CustomCalendar` props
+
+| Prop               | Type                                        | Default        | Description                                                          |
+| ------------------ | ------------------------------------------- | -------------- | -------------------------------------------------------------------- |
+| `id`               | `string`                                    | `undefined`    | ID for the visible trigger.                                          |
+| `name`             | `string`                                    | `undefined`    | Native form field name.                                              |
+| `value`            | `CalendarInputValue`                        | `undefined`    | Controlled date or range value.                                      |
+| `onChange`         | `(value: CalendarValue) => void`            | –              | Receives committed value changes exactly once.                       |
+| `getFormValue`     | `(value: CalendarValue) => string`          | `undefined`    | Overrides the built-in form serializer.                              |
+| `formValueFormat`  | `'display' \| 'iso-date' \| 'iso-datetime'` | `'display'`    | Built-in native form serialization; `getFormValue` takes precedence. |
+| `onBlur`           | `FocusEventHandler<HTMLDivElement>`         | `undefined`    | Fires when focus leaves the calendar field and popover.              |
+| `required`         | `boolean`                                   | `false`        | Enables native required validation.                                  |
+| `label`            | `ReactNode`                                 | `undefined`    | Visible, accessible field label.                                     |
+| `description`      | `ReactNode`                                 | `undefined`    | Help text included in `aria-describedby`.                            |
+| `error`            | `string \| null`                            | `undefined`    | External error; `null` clears validation errors.                     |
+| `disabled`         | `boolean`                                   | `false`        | Disables interaction and form submission.                            |
+| `readOnly`         | `boolean`                                   | `false`        | Prevents changes while retaining the form value.                     |
+| `triggerRef`       | `Ref<HTMLButtonElement>`                    | `undefined`    | Ref to the focusable visible trigger.                                |
+| `aria-label`       | `string`                                    | `undefined`    | Alternative accessible trigger label.                                |
+| `aria-labelledby`  | `string`                                    | `undefined`    | Additional accessible label IDs.                                     |
+| `aria-describedby` | `string`                                    | `undefined`    | Additional description IDs.                                          |
+| `enableTime`       | `boolean`                                   | `false`        | Enables time selection.                                              |
+| `enableRange`      | `boolean`                                   | `false`        | Enables range selection.                                             |
+| `customDesign`     | `CalendarCustomDesign`                      | Default design | Overrides design classes.                                            |
+| `placeholder`      | `string`                                    | Localized      | Trigger placeholder.                                                 |
+| `button`           | `boolean`                                   | `false`        | Requires the Apply button to commit changes.                         |
+| `backdrop`         | `boolean`                                   | `true`         | Modal backdrop, focus loop, and outside-click close.                 |
+| `icon`             | `ReactNode \| boolean`                      | `CalendarDays` | Custom icon, or `false` to hide it.                                  |
+| `className`        | `string`                                    | `''`           | Additional outer-container classes.                                  |
+| `closeOnSelect`    | `boolean`                                   | `false`        | Closes after a completed selection.                                  |
+| `minDate`          | `CalendarDateInput`                         | `undefined`    | Inclusive minimum selectable date.                                   |
+| `maxDate`          | `CalendarDateInput`                         | `undefined`    | Inclusive maximum selectable date.                                   |
+| `minTime`          | `string`                                    | `undefined`    | Earliest selectable `HH:mm` time.                                    |
+| `maxTime`          | `string`                                    | `undefined`    | Latest selectable `HH:mm` time.                                      |
+| `fastEdit`         | `boolean`                                   | `true`         | Shows fast month and year controls.                                  |
+| `weekStartsOn`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7`           | `1`            | First weekday, Monday through Sunday.                                |
+| `visibleDays`      | `number`                                    | `7`            | Number of visible days per week.                                     |
+| `showHolidays`     | `boolean`                                   | `false`        | Marks supported German holidays.                                     |
+| `locale`           | `'de' \| 'en'`                              | `'de'`         | UI, validation, ARIA, and formatting locale.                         |
+| `messages`         | `Partial<CalendarMessages>`                 | `undefined`    | Overrides localized messages.                                        |
+| `switchMode`       | `boolean`                                   | `false`        | Lets users switch between single and range modes.                    |
+| `isDeletable`      | `boolean`                                   | `false`        | Adds a button that clears the selected value.                        |
+
+## Tailwind CSS
+
+Import the package entry after Tailwind CSS in your main stylesheet:
+
+```css
+@import 'tailwindcss';
+@import '@rentnerkev/calendar/tailwind.css';
+```
+
+The entry scans only published JavaScript under `dist`. It provides the shared
+`primary`, `primary-hover`, `background-dark`, `surface-dark`, `input-dark`,
+`border-dark`, `secondary-text`, and `muted-foreground` theme tokens. Override
+them with a later `@theme` block when needed.
+
+## Public entry points
+
+- `@rentnerkev/calendar`
+- `@rentnerkev/calendar/calendar`
+- `@rentnerkev/calendar/single-calendar`
+- `@rentnerkev/calendar/range-calendar`
+- `@rentnerkev/calendar/value`
+- `@rentnerkev/calendar/format`
+- `@rentnerkev/calendar/date`
+- `@rentnerkev/calendar/messages`
+- `@rentnerkev/calendar/types`
+- `@rentnerkev/calendar/tailwind.css`
+
+## Development
+
+```bash
+bun install --frozen-lockfile
+bun install --cwd playground --frozen-lockfile
+bun run verify
+bun run test:e2e
+bun run playground:build
+```
+
+`bun run verify` checks types, Oxlint, Oxfmt, tests, the package build, and the
+published package contents.
+
+## License
+
+MIT
+
+## Source architecture
+
+The defining UI lives in `src/shared/Calendar/Components`, with one owning
+`use...Logic` orchestrator per complex component under `Hooks` and explicit
+props/result contracts under `Types`. Focused editing, validation, navigation,
+subscriptions and ref lifecycles remain separate hooks with named inputs.
+Templates consume `state`, `handler`, `setter` and `refs`; UI-free date, formatting
+and validation modules live in `src/lib/Calendar`. `src/config` contains declarative
+design data only.
+
+The root and historical component/subpath files are public npm compatibility
+facades. Internal modules import their defining owner directly. Existing npm
+exports, controlled-value callbacks and React peer ranges remain unchanged.
+Tests live in `src/tests`, mirroring shared and lib owners; package contracts
+stay at the package-test root.
+
+Oxlint includes React, accessibility and playground checks. Local accessibility
+exceptions preserve the existing composite ARIA grid/dialog/segmented controls
+and opt-in native contracts where replacing them with suggested HTML tags would
+change behavior. Focus and accessibility are also checked in Chromium, Firefox
+and WebKit.
