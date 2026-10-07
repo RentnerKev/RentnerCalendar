@@ -50,17 +50,17 @@
         "@axe-core/playwright": "^4.13.0",
         "@playwright/test": "^1.63.0",
         "@types/react": "^19.3.0",
-        "@types/react-dom": "^19.2.4",
-        "oxfmt": "^0.71.0",
-        "oxlint": "^1.79.0",
+        "@types/react-dom": "^19.3.0",
+        "oxfmt": "^0.72.0",
+        "oxlint": "^1.87.0",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "typescript": "^7.0.2"
     },
     "dependencies": {
-        "@radix-ui/react-select": "^2.3.7",
+        "@radix-ui/react-select": "^2.3.8",
         "@rentnerkev/tooltips": "^2.0.6",
-        "lucide-react": "^1.47.0"
+        "lucide-react": "^1.52.0"
     },
     "exports": {
         ".": {
