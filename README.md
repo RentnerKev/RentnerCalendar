@@ -17,9 +17,9 @@ Controlled single dates and ranges, time selection, localization and Tailwind de
 Requires React 19, React DOM 19 and Tailwind CSS 4.
 
 ```bash
-bun add @rentnerkev/calendar
-# npm alternative
 npm install @rentnerkev/calendar
+# or with Bun
+bun add @rentnerkev/calendar
 ```
 
 Import the package styles in your Tailwind stylesheet:
