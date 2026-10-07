@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Calendar shadow root regression</title>
+    </head>
+    <body>
+        <div id="scroll-ancestor" style="height: 300px; overflow: auto">
+            <div style="height: 160px"></div>
+            <div id="shadow-host"></div>
+            <div style="height: 800px"></div>
+        </div>
+        <script type="module" src="/src/calendar-shadow.tsx"></script>
+    </body>
+</html>

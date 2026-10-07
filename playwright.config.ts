@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 const baseURL = 'http://127.0.0.1:4173'
 
 export default defineConfig({
-    testDir: './e2e',
+    testDir: './src/tests/shared/Calendar/Components/browser',
     testMatch: '**/*.spec.ts',
     fullyParallel: true,
     forbidOnly: Boolean(process.env.CI),

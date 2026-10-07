@@ -1,15 +1,18 @@
-export { CustomCalendar } from './Calendar.js'
-export { SingleCalendar } from './SingleCalendar.js'
-export { RangeCalendar } from './RangeCalendar.js'
-export { CalendarProvider } from './CalendarProvider.js'
+export { CustomCalendar } from './shared/Calendar/Components/Calendar.js'
+export { SingleCalendar } from './shared/Calendar/Components/SingleCalendar.js'
+export { RangeCalendar } from './shared/Calendar/Components/RangeCalendar.js'
+export { CalendarProvider } from './shared/Calendar/Components/CalendarProvider.js'
 export { defaultCalendarDesign } from './types.js'
-export { calendarMessageCatalog, resolveCalendarMessages } from './messages.js'
+export {
+    calendarMessageCatalog,
+    resolveCalendarMessages,
+} from './lib/Calendar/messages.js'
 export { getGermanHolidayName, isSameDay, isToday } from './date.js'
 export {
     formatCalendarValue,
     formatMonthName,
     formatTimeToString,
-} from './Tools/FormatFunctions.js'
+} from './lib/Calendar/FormatFunctions.js'
 export {
     isCalendarRange,
     parseCalendarDate,
@@ -19,7 +22,7 @@ export {
     serializeCalendarISODate,
     serializeCalendarISOString,
     serializeCalendarValue,
-} from './Tools/CalendarValue.js'
+} from './lib/Calendar/CalendarValue.js'
 export type {
     CalendarSerializationFormat,
     SerializeCalendarValueOptions,
@@ -27,7 +30,7 @@ export type {
     SerializedCalendarValue,
     SerializedRangeCalendarValue,
     SerializedSingleCalendarValue,
-} from './Tools/CalendarValue.js'
+} from './lib/Calendar/CalendarValue.js'
 export type {
     CalendarDateInput,
     CalendarCustomDesign,
@@ -51,9 +54,9 @@ export type {
 export type {
     CalendarDefaults,
     CalendarProviderProps,
-} from './CalendarProvider.js'
+} from './shared/Calendar/Components/CalendarProvider.js'
 export type {
     CalendarHolidayName,
     CalendarLocale,
     CalendarMessages,
-} from './messages.js'
+} from './lib/Calendar/messages.js'
