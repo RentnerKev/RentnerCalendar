@@ -20,7 +20,7 @@ export default function useCalendarLogic(
     minTime?: string,
     maxTime?: string,
 ) {
-    const [viewDate, setViewDate] = useState(
+    const [viewDate, setViewDate] = useState(() =>
         Array.isArray(value) && value[0]
             ? value[0]
             : value instanceof Date
