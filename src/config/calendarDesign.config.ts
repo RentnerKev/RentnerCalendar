@@ -1,0 +1,25 @@
+import type { CalendarCustomDesign } from '../shared/Calendar/Types/Calendar.types.js'
+
+export const defaultCalendarDesign: Required<CalendarCustomDesign> = {
+    primaryColor: 'text-primary',
+    primaryColorFocusWithin: 'group-focus-within:text-primary',
+    primaryBg: 'bg-primary',
+    primaryHover: 'hover:bg-primary-hover',
+    primaryBorder: 'border-primary',
+    primaryFocusBorder: 'focus:border-primary',
+    primaryRing: 'focus:ring-primary/50',
+    primaryBgSubtle: 'bg-primary/20',
+    surfaceBackground: 'bg-surface-dark',
+    inputBackground: 'bg-input-dark',
+    borderColor: 'border-border-dark',
+    borderTransparent: 'border-transparent',
+    textColor: 'text-white',
+    textMuted: 'text-gray-400',
+    textMutedDark: 'text-gray-400',
+    textDisabled: 'text-gray-400',
+    textDay: 'text-gray-300',
+    textBackground: 'text-background-dark',
+    hoverBackground: 'hover:bg-white/5',
+    hoverText: 'hover:text-white',
+    hoverTextMuted: 'hover:text-gray-500',
+}

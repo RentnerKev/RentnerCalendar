@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CustomCalendar, formatCalendarValue } from '../../src'
 import type { CalendarValue } from '../../src'
+// oxlint-disable-next-line import/no-unassigned-import -- Playground CSS entry.
 import './index.css'
 
 type PlaygroundInputProps = {
@@ -206,9 +207,9 @@ function App() {
                             {(field) => (
                                 <div className="flex flex-col gap-2">
                                     <div className="flex items-center justify-between gap-3">
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                                        <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                                             Termin
-                                        </label>
+                                        </span>
                                         <button
                                             type="button"
                                             data-testid="set-calendar-value"

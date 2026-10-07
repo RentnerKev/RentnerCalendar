@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RangeCalendar, SingleCalendar } from '../../src/index.js'
 import type { RangeCalendarValue } from '../../src/index.js'
+// oxlint-disable-next-line import/no-unassigned-import -- Playground CSS entry.
 import './index.css'
+
+const pad = (value: number) => String(value).padStart(2, '0')
 
 function formatLocalDateTime(date: Date | null | undefined) {
     if (!date) return ''
 
-    const pad = (value: number) => String(value).padStart(2, '0')
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 

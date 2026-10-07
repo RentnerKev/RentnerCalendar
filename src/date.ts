@@ -2,4 +2,4 @@ export {
     getGermanHolidayName,
     isSameDay,
     isToday,
-} from './Tools/InternalOnlyFunctions.js'
+} from './lib/Calendar/date.js'

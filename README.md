@@ -466,3 +466,25 @@ published package contents.
 ## License
 
 MIT
+
+## Source architecture
+
+The defining UI lives in `src/shared/Calendar/Components`, with one owning
+`use...Logic` orchestrator per complex component under `Hooks` and explicit
+props/result contracts under `Types`. Focused editing, validation, navigation,
+subscriptions and ref lifecycles remain separate hooks with named inputs.
+Templates consume `state`, `handler`, `setter` and `refs`; UI-free date, formatting
+and validation modules live in `src/lib/Calendar`. `src/config` contains declarative
+design data only.
+
+The root and historical component/subpath files are public npm compatibility
+facades. Internal modules import their defining owner directly. Existing npm
+exports, controlled-value callbacks and React peer ranges remain unchanged.
+Tests live in `src/tests`, mirroring shared and lib owners; package contracts
+stay at the package-test root.
+
+Oxlint includes React, accessibility and playground checks. Local accessibility
+exceptions preserve the existing composite ARIA grid/dialog/segmented controls
+and opt-in native contracts where replacing them with suggested HTML tags would
+change behavior. Focus and accessibility are also checked in Chromium, Firefox
+and WebKit.

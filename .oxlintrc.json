@@ -12,13 +12,25 @@
         "unicorn",
         "promise",
         "node",
-        "oxc"
+        "oxc",
+        "jsx-a11y"
     ],
     "ignorePatterns": [
         "dist/**",
         "build/**",
         "node_modules/**",
-        "playground/**"
+        "drizzle/**",
+        "**/drizzle/**",
+        ".env",
+        "**/.env",
+        "**/.env.*",
+        "playground/dist/**",
+        "playground/node_modules/**",
+        "test-results/**",
+        "playwright-report/**",
+        "**/routeTree.gen.*",
+        "**/bindings/**",
+        "target/**"
     ],
     "rules": {
         "typescript/no-explicit-any": "warn",
