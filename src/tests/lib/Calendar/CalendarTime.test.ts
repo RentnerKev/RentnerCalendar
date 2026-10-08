@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { updateCalendarRangeBoundary } from '../../../lib/Calendar/CalendarSelection.js'
+import { updateCalendarRangeBoundary } from '../../../lib/Calendar/CalendarSelection.ts'
 import {
     calendarValueHasTimeWithinBounds,
     constrainCalendarTime,
     hasCalendarTimeWithinBounds,
     updateCalendarTime,
-} from '../../../lib/Calendar/CalendarTime.js'
+} from '../../../lib/Calendar/CalendarTime.ts'
 
 function withTimeZone<T>(timeZone: string, run: () => T) {
     const previousTimeZone = process.env.TZ

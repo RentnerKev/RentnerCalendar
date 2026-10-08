@@ -1,8 +1,8 @@
-import type { CalendarTimeInputLogicResult } from '../Types/CalendarTimeInputLogicResult.types.js'
-import { defaultCalendarDesign } from '../../../config/calendarDesign.config.js'
-import type { CalendarTimeInputProps } from '../Types/Calendar.types.js'
-import { resolveCalendarMessages } from '../../../lib/Calendar/messages.js'
-import { updateCalendarRangeBoundary } from '../../../lib/Calendar/CalendarSelection.js'
+import type { CalendarTimeInputLogicResult } from '../Types/CalendarTimeInputLogicResult.types.ts'
+import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
+import type { CalendarTimeInputProps } from '../Types/Calendar.types.ts'
+import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
+import { updateCalendarRangeBoundary } from '../../../lib/Calendar/CalendarSelection.ts'
 
 export default function useCalendarTimeInputLogic({
     value,

@@ -1,9 +1,9 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- This ARIA grid uses roving date-button focus and CSS rows; native table tags would change the existing composite widget. */
-import { defaultCalendarDesign } from '../../../config/calendarDesign.config.js'
+import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
 import { CustomTooltip } from '@rentnerkev/tooltips'
-import { getCalendarDateKey } from '../../../lib/Calendar/CalendarDay.js'
-import useCalendarGridLogic from '../Hooks/useCalendarGridLogic.js'
-import type { CalendarGridInternalProps } from '../Types/CalendarGrid.types.js'
+import { getCalendarDateKey } from '../../../lib/Calendar/CalendarDay.ts'
+import useCalendarGridLogic from '../Hooks/useCalendarGridLogic.ts'
+import type { CalendarGridInternalProps } from '../Types/CalendarGrid.types.ts'
 
 export default function CalendarGrid({
     handleGetDaysInMonth,

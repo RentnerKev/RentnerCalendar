@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import type { CalendarValue } from '../Types/Calendar.types.js'
+import type { CalendarValue } from '../Types/Calendar.types.ts'
 import {
     createCalendarDate,
     getCalendarMonthDays,
     isCalendarDayWithinBounds,
-} from '../../../lib/Calendar/CalendarDay.js'
-import { createCalendarDateSelection } from '../../../lib/Calendar/CalendarSelection.js'
-import { hasCalendarTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.js'
+} from '../../../lib/Calendar/CalendarDay.ts'
+import { createCalendarDateSelection } from '../../../lib/Calendar/CalendarSelection.ts'
+import { hasCalendarTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.ts'
 
 export default function useCalendarSelection(
     value?: CalendarValue,

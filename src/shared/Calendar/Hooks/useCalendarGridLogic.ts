@@ -1,26 +1,26 @@
-import type { CalendarGridLogicResult } from '../Types/CalendarGridLogicResult.types.js'
-import { getCalendarDateFormatters } from '../../../lib/Calendar/CalendarDateFormat.js'
-import { defaultCalendarDesign } from '../../../config/calendarDesign.config.js'
-import { resolveCalendarMessages } from '../../../lib/Calendar/messages.js'
+import type { CalendarGridLogicResult } from '../Types/CalendarGridLogicResult.types.ts'
+import { getCalendarDateFormatters } from '../../../lib/Calendar/CalendarDateFormat.ts'
+import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
+import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
 import {
     compareCalendarDays,
     getCalendarDateKey,
     isCalendarDayWithinBounds,
-} from '../../../lib/Calendar/CalendarDay.js'
-import { hasCalendarTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.js'
+} from '../../../lib/Calendar/CalendarDay.ts'
+import { hasCalendarTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.ts'
 import {
     getGermanHolidayName,
     isSameDay,
     isToday,
-} from '../../../lib/Calendar/date.js'
-import useCalendarGridNavigation from './useCalendarGridNavigation.js'
+} from '../../../lib/Calendar/date.ts'
+import useCalendarGridNavigation from './useCalendarGridNavigation.ts'
 
 function formatLongWeekday(formatter: Intl.DateTimeFormat, isoDay: number) {
     const date = new Date(2023, 0, 2 + isoDay - 1)
     return formatter.format(date)
 }
 
-import type { CalendarGridInternalProps } from '../Types/CalendarGrid.types.js'
+import type { CalendarGridInternalProps } from '../Types/CalendarGrid.types.ts'
 export default function useCalendarGridLogic({
     handleGetDaysInMonth,
     selectedDate,

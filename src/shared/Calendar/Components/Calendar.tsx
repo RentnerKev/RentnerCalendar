@@ -1,7 +1,7 @@
-import CalendarPopover from './CalendarPopover.js'
-import CalendarField from './CalendarField.js'
-import useCustomCalendarLogic from '../Hooks/useCustomCalendarLogic.js'
-import type { CalendarProps } from '../Types/Calendar.types.js'
+import CalendarPopover from './CalendarPopover.tsx'
+import CalendarField from './CalendarField.tsx'
+import useCustomCalendarLogic from '../Hooks/useCustomCalendarLogic.ts'
+import type { CalendarProps } from '../Types/Calendar.types.ts'
 
 export function CustomCalendar(props: CalendarProps) {
     const { state, handler, setter, refs } = useCustomCalendarLogic(props)

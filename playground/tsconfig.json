@@ -5,12 +5,13 @@
         "lib": ["ESNext", "DOM", "DOM.Iterable"],
         "skipLibCheck": true,
         "moduleResolution": "Bundler",
-        "allowImportingTsExtensions": false,
+        "allowImportingTsExtensions": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
-        "strict": true
+        "strict": true,
+        "rewriteRelativeImportExtensions": true
     },
     "include": ["src"]
 }

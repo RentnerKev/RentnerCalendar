@@ -3,7 +3,7 @@ import type {
     CalendarDefaults,
     CalendarProviderProps,
     CalendarProviderLogicResult,
-} from '../Types/CalendarProvider.types.js'
+} from '../Types/CalendarProvider.types.ts'
 
 export const CalendarContext = createContext<CalendarDefaults>({})
 

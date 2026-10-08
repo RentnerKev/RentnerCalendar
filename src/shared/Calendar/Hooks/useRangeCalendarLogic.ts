@@ -1,9 +1,9 @@
-import type { RangeCalendarLogicResult } from '../Types/RangeCalendarLogicResult.types.js'
-import { isCalendarRange } from '../../../lib/Calendar/CalendarValue.js'
+import type { RangeCalendarLogicResult } from '../Types/RangeCalendarLogicResult.types.ts'
+import { isCalendarRange } from '../../../lib/Calendar/CalendarValue.ts'
 import type {
     CalendarValue,
     RangeCalendarProps,
-} from '../Types/Calendar.types.js'
+} from '../Types/Calendar.types.ts'
 
 export default function useRangeCalendarLogic({
     mode: _mode,

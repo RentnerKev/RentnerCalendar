@@ -1,10 +1,10 @@
 import { createRef } from 'react'
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import CalendarPopover from '../../../../shared/Calendar/Components/CalendarPopover.js'
-import { getCalendarMonthDays } from '../../../../lib/Calendar/CalendarDay.js'
-import { defaultCalendarDesign } from '../../../../types.js'
-import { resolveCalendarMessages } from '../../../../lib/Calendar/messages.js'
+import CalendarPopover from '../../../../shared/Calendar/Components/CalendarPopover.tsx'
+import { getCalendarMonthDays } from '../../../../lib/Calendar/CalendarDay.ts'
+import { defaultCalendarDesign } from '../../../../config/calendarDesign.config.ts'
+import { resolveCalendarMessages } from '../../../../lib/Calendar/messages.ts'
 
 function withTimeZone<T>(timeZone: string, run: () => T) {
     const previousTimeZone = process.env.TZ

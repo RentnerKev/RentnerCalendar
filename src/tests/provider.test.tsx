@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { CalendarProvider, SingleCalendar } from '../index.js'
+import { CalendarProvider, SingleCalendar } from '../index.ts'
 
 describe('calendar provider defaults', () => {
     test('inherits locale and design through nested providers', () => {

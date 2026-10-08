@@ -1,18 +1,3 @@
-import type { CSSProperties } from 'react'
-
-export function getTooltipStyle(
-    index: number,
-    visibleDays: number,
-): CSSProperties {
-    const col = index % visibleDays
-    if (col <= 1) {
-        return { left: '0', transform: 'none' }
-    } else if (col >= visibleDays - 2) {
-        return { right: '0', left: 'auto', transform: 'none' }
-    }
-    return { left: '50%', transform: 'translateX(-50%)' }
-}
-
 const roundedMap: Record<string, string> = {
     'rounded-sm': '0.125rem',
     'rounded-md': '0.375rem',
@@ -32,4 +17,38 @@ export function extractRadius(className: string): string | null {
         }
     }
     return null
+}
+
+export function hasWidthUtilityClass(className: string) {
+    return className.split(/\s+/).some((classToken) => {
+        let squareBracketDepth = 0
+        let roundBracketDepth = 0
+        let lastVariantSeparator = -1
+
+        for (let index = 0; index < classToken.length; index += 1) {
+            const character = classToken[index]
+
+            if (character === '\\') {
+                index += 1
+                continue
+            }
+
+            if (character === '[') squareBracketDepth += 1
+            else if (character === ']') {
+                squareBracketDepth = Math.max(0, squareBracketDepth - 1)
+            } else if (character === '(') roundBracketDepth += 1
+            else if (character === ')') {
+                roundBracketDepth = Math.max(0, roundBracketDepth - 1)
+            } else if (
+                character === ':' &&
+                squareBracketDepth === 0 &&
+                roundBracketDepth === 0
+            ) {
+                lastVariantSeparator = index
+            }
+        }
+
+        const utility = classToken.slice(lastVariantSeparator + 1)
+        return utility.replace(/^!/, '').startsWith('w-')
+    })
 }

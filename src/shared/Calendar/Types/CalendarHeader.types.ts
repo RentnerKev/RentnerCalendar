@@ -1,5 +1,5 @@
-import type { CalendarHeaderProps } from './Calendar.types.js'
-import type { CalendarMessages } from '../../../lib/Calendar/messages.js'
+import type { CalendarHeaderProps } from './Calendar.types.ts'
+import type { CalendarMessages } from '../../../lib/Calendar/Types/Messages.types.ts'
 export interface CalendarHeaderInternalProps extends CalendarHeaderProps {
     dialogId: string
 }

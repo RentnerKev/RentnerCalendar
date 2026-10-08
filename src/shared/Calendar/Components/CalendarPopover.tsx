@@ -1,9 +1,9 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- The portal dialog owns its existing focus trap and backdrop; native dialog top-layer behavior is not equivalent. */
-import useCalendarPopoverLogic from '../Hooks/useCalendarPopoverLogic.js'
-import type { CalendarPopoverProps } from '../Types/CalendarPopover.types.js'
-import CalendarGrid from './CalendarGrid.js'
-import CalendarHeader from './CalendarHeader.js'
-import CalendarTimeInput from './CalendarTimeInput.js'
+import useCalendarPopoverLogic from '../Hooks/useCalendarPopoverLogic.ts'
+import type { CalendarPopoverProps } from '../Types/CalendarPopover.types.ts'
+import CalendarGrid from './CalendarGrid.tsx'
+import CalendarHeader from './CalendarHeader.tsx'
+import CalendarTimeInput from './CalendarTimeInput.tsx'
 
 export default function CalendarPopover({
     backdrop,

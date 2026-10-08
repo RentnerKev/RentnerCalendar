@@ -11,7 +11,7 @@ import {
     serializeCalendarISOString,
     serializeCalendarValue,
     SingleCalendar,
-} from '../../../index.js'
+} from '../../../index.ts'
 
 describe('calendar value parsing', () => {
     test('parses ISO date-only values as strict local calendar dates', () => {
@@ -28,7 +28,7 @@ describe('calendar value parsing', () => {
 
     test('accepts a date with a midnight gap while keeping local datetimes strict', () => {
         const moduleUrl = new URL(
-            '../../../Tools/CalendarValue.ts',
+            '../../../lib/Calendar/CalendarValue.ts',
             import.meta.url,
         ).href
         const source = `

@@ -1,8 +1,8 @@
-import type { SingleTimeInputLogicResult } from '../Types/SingleTimeInputLogicResult.types.js'
+import type { SingleTimeInputLogicResult } from '../Types/SingleTimeInputLogicResult.types.ts'
 import { useRef, useState, type KeyboardEvent } from 'react'
-import { formatTimeToString } from '../../../lib/Calendar/FormatFunctions.js'
-import { updateCalendarTime } from '../../../lib/Calendar/CalendarTime.js'
-import type { SingleTimeInputProps } from '../Types/CalendarTimeInput.types.js'
+import { formatTimeToString } from '../../../lib/Calendar/FormatFunctions.ts'
+import { updateCalendarTime } from '../../../lib/Calendar/CalendarTime.ts'
+import type { SingleTimeInputProps } from '../Types/CalendarTimeInput.types.ts'
 
 export default function useSingleTimeInputLogic({
     date,

@@ -1,11 +1,11 @@
-import useCalendarHeaderLogic from '../Hooks/useCalendarHeaderLogic.js'
+import useCalendarHeaderLogic from '../Hooks/useCalendarHeaderLogic.ts'
 import type {
     CalendarHeaderInternalProps,
     FastEditSelectProps,
-} from '../Types/CalendarHeader.types.js'
-import { CustomSelect } from './Internal/Select.js'
+} from '../Types/CalendarHeader.types.ts'
+import { CustomSelect } from './Internal/Select.tsx'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { defaultCalendarDesign } from '../../../config/calendarDesign.config.js'
+import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
 
 function FastEditSelect({
     value,

@@ -1,18 +1,18 @@
 import type {
     CalendarRange,
     CalendarValue,
-} from '../../shared/Calendar/Types/Calendar.types.js'
+} from '../../shared/Calendar/Types/Calendar.types.ts'
 import {
     compareCalendarDays,
     endOfCalendarDay,
     isCalendarDayWithinBounds,
     startOfCalendarDay,
-} from './CalendarDay.js'
+} from './CalendarDay.ts'
 import {
     constrainCalendarTime,
     hasCalendarTimeWithinBounds,
     resolveCalendarSelectionTime,
-} from './CalendarTime.js'
+} from './CalendarTime.ts'
 
 export function completeCalendarRange(
     firstDate: Date,

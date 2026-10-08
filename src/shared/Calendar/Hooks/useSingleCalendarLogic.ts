@@ -1,8 +1,8 @@
-import type { SingleCalendarLogicResult } from '../Types/SingleCalendarLogicResult.types.js'
+import type { SingleCalendarLogicResult } from '../Types/SingleCalendarLogicResult.types.ts'
 import type {
     CalendarValue,
     SingleCalendarProps,
-} from '../Types/Calendar.types.js'
+} from '../Types/Calendar.types.ts'
 
 export default function useSingleCalendarLogic({
     mode: _mode,

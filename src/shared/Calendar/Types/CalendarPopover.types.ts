@@ -2,8 +2,8 @@ import type { CSSProperties, RefObject } from 'react'
 import type {
     CalendarMessages,
     CalendarLocale,
-} from '../../../lib/Calendar/messages.js'
-import type { CalendarCustomDesign, CalendarValue } from './Calendar.types.js'
+} from '../../../lib/Calendar/Types/Messages.types.ts'
+import type { CalendarCustomDesign, CalendarValue } from './Calendar.types.ts'
 export interface CalendarPopoverProps {
     backdrop: boolean
     onClose: () => void

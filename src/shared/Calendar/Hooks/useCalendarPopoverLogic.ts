@@ -1,8 +1,8 @@
-import type { CalendarPopoverLogicResult } from '../Types/CalendarPopoverLogicResult.types.js'
+import type { CalendarPopoverLogicResult } from '../Types/CalendarPopoverLogicResult.types.ts'
 import type { KeyboardEvent, MouseEvent } from 'react'
-import type { CalendarPopoverProps } from '../Types/CalendarPopover.types.js'
-import { calendarValueHasTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.js'
-import { calendarValueWithinDateBounds } from '../../../lib/Calendar/CalendarDay.js'
+import type { CalendarPopoverProps } from '../Types/CalendarPopover.types.ts'
+import { calendarValueHasTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.ts'
+import { calendarValueWithinDateBounds } from '../../../lib/Calendar/CalendarDay.ts'
 const focusableSelector =
     'a[href], area[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex], [contenteditable="true"]'
 

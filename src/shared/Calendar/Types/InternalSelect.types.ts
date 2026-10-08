@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { CalendarMessages } from '../../../lib/Calendar/messages.js'
+import type { CalendarMessages } from '../../../lib/Calendar/Types/Messages.types.ts'
 
 export interface Option {
     value: string

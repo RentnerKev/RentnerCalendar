@@ -2,11 +2,11 @@ import { describe, expect, test } from 'bun:test'
 import {
     calendarMessageCatalog,
     resolveCalendarMessages,
-} from '../lib/Calendar/messages.js'
+} from '../lib/Calendar/messages.ts'
 import {
     formatCalendarValue,
     formatMonthName,
-} from '../lib/Calendar/FormatFunctions.js'
+} from '../lib/Calendar/FormatFunctions.ts'
 
 describe('calendar messages', () => {
     test('keeps German defaults', () => {

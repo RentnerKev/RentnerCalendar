@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from 'bun:test'
 import {
     commitCalendarSelection,
     shouldCloseCalendarAfterSelection,
-} from '../../../lib/Calendar/CalendarCommit.js'
+} from '../../../lib/Calendar/CalendarCommit.ts'
 
 describe('calendar selection commits', () => {
     test.each([

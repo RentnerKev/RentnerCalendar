@@ -1,5 +1,5 @@
-import type { CalendarValue } from '../../shared/Calendar/Types/Calendar.types.js'
-import { parseCalendarDate, parseCalendarValue } from './CalendarValue.js'
+import type { CalendarValue } from '../../shared/Calendar/Types/Calendar.types.ts'
+import { parseCalendarDate, parseCalendarValue } from './CalendarValue.ts'
 
 export function toSafeDate(input: unknown): Date | null {
     return parseCalendarDate(input) ?? null

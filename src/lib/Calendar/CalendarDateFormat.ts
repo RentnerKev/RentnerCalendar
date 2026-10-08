@@ -1,4 +1,4 @@
-import type { CalendarLocale } from './messages.js'
+import type { CalendarLocale } from './Types/Messages.types.ts'
 
 const cache = new Map<string, ReturnType<typeof createFormatters>>()
 

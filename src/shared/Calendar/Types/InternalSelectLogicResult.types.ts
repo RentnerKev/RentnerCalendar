@@ -9,7 +9,7 @@ import type {
 export type InternalSelectLogicResult = {
     state: {
         triggerId: string
-        messages: import('../../../lib/Calendar/messages.js').CalendarMessages
+        messages: import('../../../lib/Calendar/Types/Messages.types.ts').CalendarMessages
         isInteractionDisabled: boolean
         open: boolean
         searchValue: string
@@ -17,8 +17,8 @@ export type InternalSelectLogicResult = {
         error: string | null
         hasError: boolean
         hasLeftIcon: boolean
-        filteredOptions: import('./InternalSelect.types.js').Option[]
-        selectedOptions: import('./InternalSelect.types.js').Option[]
+        filteredOptions: import('./InternalSelect.types.ts').Option[]
+        selectedOptions: import('./InternalSelect.types.ts').Option[]
     }
     handler: {
         handleValueChange: (nextValue: string) => void

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { getGermanHolidayName, isSameDay, isToday } from '../index.js'
+import { getGermanHolidayName, isSameDay, isToday } from '../index.ts'
 
 interface PackageContract {
     exports: Record<string, unknown>
@@ -36,7 +36,7 @@ describe('published package contract', () => {
         ])
     })
 
-    test('documents npm before Bun installation', () => {
+    test('documents Bun and npm installation', () => {
         const npmInstallPosition = readme.indexOf(
             'npm install @rentnerkev/calendar',
         )
@@ -45,7 +45,7 @@ describe('published package contract', () => {
         )
 
         expect(npmInstallPosition).toBeGreaterThan(-1)
-        expect(bunInstallPosition).toBeGreaterThan(npmInstallPosition)
+        expect(bunInstallPosition).toBeGreaterThan(-1)
     })
 
     test('exports the documented date helpers', () => {

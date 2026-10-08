@@ -1,9 +1,5 @@
-import {
-    CalendarProvider,
-    RangeCalendar,
-    SingleCalendar,
-} from '../src/index.js'
-import type { CalendarRange } from '../src/index.js'
+import { CalendarProvider, RangeCalendar, SingleCalendar } from '../../index.ts'
+import type { CalendarRange } from '../../index.ts'
 
 const single = (
     <SingleCalendar

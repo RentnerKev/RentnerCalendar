@@ -1,4 +1,4 @@
-import type { CalendarCustomDesign } from '../shared/Calendar/Types/Calendar.types.js'
+import type { CalendarCustomDesign } from '../shared/Calendar/Types/Calendar.types.ts'
 
 export const defaultCalendarDesign: Required<CalendarCustomDesign> = {
     primaryColor: 'text-primary',

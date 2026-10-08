@@ -1,7 +1,7 @@
 import type {
     CalendarGridNavigationOptions,
     CalendarGridNavigationResult,
-} from '../Types/CalendarGridNavigation.types.js'
+} from '../Types/CalendarGridNavigation.types.ts'
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import {
@@ -9,7 +9,7 @@ import {
     addCalendarMonths,
     getCalendarDateKey,
     isCalendarDayWithinBounds,
-} from '../../../lib/Calendar/CalendarDay.js'
+} from '../../../lib/Calendar/CalendarDay.ts'
 
 function getTargetDate(
     key: string,

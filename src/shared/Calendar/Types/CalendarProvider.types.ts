@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 import type {
     CalendarLocale,
     CalendarMessages,
-} from '../../../lib/Calendar/messages.js'
-import type { CalendarCustomDesign } from './Calendar.types.js'
+} from '../../../lib/Calendar/Types/Messages.types.ts'
+import type { CalendarCustomDesign } from './Calendar.types.ts'
 
 export interface CalendarProviderProps {
     children: ReactNode

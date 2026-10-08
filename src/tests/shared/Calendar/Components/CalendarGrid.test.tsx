@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import CalendarGrid from '../../../../shared/Calendar/Components/CalendarGrid.js'
+import CalendarGrid from '../../../../shared/Calendar/Components/CalendarGrid.tsx'
 import {
     createCalendarDate,
     getCalendarMonthDays,
-} from '../../../../lib/Calendar/CalendarDay.js'
+} from '../../../../lib/Calendar/CalendarDay.ts'
 
 function withTimeZone<T>(timeZone: string, run: () => T) {
     const previousTimeZone = process.env.TZ

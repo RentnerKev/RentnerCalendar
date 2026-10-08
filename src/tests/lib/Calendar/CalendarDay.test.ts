@@ -6,9 +6,9 @@ import {
     createCalendarDate,
     getCalendarMonthDays,
     isCalendarDayWithinBounds,
-} from '../../../lib/Calendar/CalendarDay.js'
-import { formatCalendarValue } from '../../../lib/Calendar/FormatFunctions.js'
-import { completeCalendarRange } from '../../../lib/Calendar/CalendarSelection.js'
+} from '../../../lib/Calendar/CalendarDay.ts'
+import { formatCalendarValue } from '../../../lib/Calendar/FormatFunctions.ts'
+import { completeCalendarRange } from '../../../lib/Calendar/CalendarSelection.ts'
 
 describe('calendar-day ranges', () => {
     test('normalizes backward date-only selections to inclusive day boundaries', () => {

@@ -1,4 +1,4 @@
-import type { CalendarValue } from '../../shared/Calendar/Types/Calendar.types.js'
+import type { CalendarValue } from '../../shared/Calendar/Types/Calendar.types.ts'
 
 interface CalendarCommitOptions {
     backdrop: boolean

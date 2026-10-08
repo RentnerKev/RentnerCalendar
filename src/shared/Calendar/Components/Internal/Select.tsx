@@ -1,8 +1,8 @@
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { CustomTooltip } from '@rentnerkev/tooltips'
 import { AlertCircle, Check, ChevronDown } from 'lucide-react'
-import type { CustomSelectProps } from '../../Types/InternalSelect.types.js'
-import useInternalSelectLogic from '../../Hooks/useInternalSelectLogic.js'
+import type { CustomSelectProps } from '../../Types/InternalSelect.types.ts'
+import useInternalSelectLogic from '../../Hooks/useInternalSelectLogic.ts'
 
 export function CustomSelect(props: CustomSelectProps) {
     const {

@@ -1,6 +1,6 @@
-import { CustomCalendar } from './Calendar.js'
-import useSingleCalendarLogic from '../Hooks/useSingleCalendarLogic.js'
-import type { SingleCalendarProps } from '../Types/Calendar.types.js'
+import { CustomCalendar } from './Calendar.tsx'
+import useSingleCalendarLogic from '../Hooks/useSingleCalendarLogic.ts'
+import type { SingleCalendarProps } from '../Types/Calendar.types.ts'
 
 export function SingleCalendar(inputProps: SingleCalendarProps) {
     const {

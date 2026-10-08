@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test'
 import type { RefCallback } from 'react'
-import { composeRefs } from '../../../shared/Calendar/Hooks/composeRefs.js'
+import { composeRefs } from '../../../shared/Calendar/Hooks/composeRefs.ts'
 
 describe('composed React refs', () => {
     test('runs React 19 callback cleanup and clears object and legacy refs', () => {

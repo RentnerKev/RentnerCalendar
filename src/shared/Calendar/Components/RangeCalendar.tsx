@@ -1,6 +1,6 @@
-import { CustomCalendar } from './Calendar.js'
-import useRangeCalendarLogic from '../Hooks/useRangeCalendarLogic.js'
-import type { RangeCalendarProps } from '../Types/Calendar.types.js'
+import { CustomCalendar } from './Calendar.tsx'
+import useRangeCalendarLogic from '../Hooks/useRangeCalendarLogic.ts'
+import type { RangeCalendarProps } from '../Types/Calendar.types.ts'
 
 export function RangeCalendar(inputProps: RangeCalendarProps) {
     const {

@@ -1,6 +1,6 @@
-import { getCalendarDateFormatters } from './CalendarDateFormat.js'
-import { toSafeDate } from './date.js'
-import type { CalendarLocale } from './messages.js'
+import { getCalendarDateFormatters } from './CalendarDateFormat.ts'
+import { toSafeDate } from './date.ts'
+import type { CalendarLocale } from './Types/Messages.types.ts'
 
 function formatSingle(
     dateInput: unknown,

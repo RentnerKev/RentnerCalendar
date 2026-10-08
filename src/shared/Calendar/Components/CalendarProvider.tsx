@@ -1,13 +1,13 @@
 import {
     CalendarContext,
     useCalendarProviderLogic,
-} from '../Hooks/useCalendarDefaults.js'
-import type { CalendarProviderProps } from '../Types/CalendarProvider.types.js'
+} from '../Hooks/useCalendarDefaults.ts'
+import type { CalendarProviderProps } from '../Types/CalendarProvider.types.ts'
 export type {
     CalendarProviderProps,
     CalendarDefaults,
-} from '../Types/CalendarProvider.types.js'
-export { useCalendarDefaults } from '../Hooks/useCalendarDefaults.js'
+} from '../Types/CalendarProvider.types.ts'
+export { useCalendarDefaults } from '../Hooks/useCalendarDefaults.ts'
 
 export function CalendarProvider(props: CalendarProviderProps) {
     const { state } = useCalendarProviderLogic(props)

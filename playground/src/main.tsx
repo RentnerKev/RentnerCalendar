@@ -1,70 +1,17 @@
-import { useForm } from '@tanstack/react-form'
-import { CalendarClock, Mail, MessageSquareText, UserRound } from 'lucide-react'
-import { useState } from 'react'
+import { usePlaygroundLogic } from './Hooks/usePlaygroundLogic.ts'
+import { CalendarClock } from 'lucide-react'
 import { createRoot } from 'react-dom/client'
-import { CustomCalendar, formatCalendarValue } from '../../src'
-import type { CalendarValue } from '../../src'
+import { CustomCalendar } from '../../src/shared/Calendar/Components/Calendar.tsx'
+import { formatCalendarValue } from '../../src/lib/Calendar/FormatFunctions.ts'
+import {
+    requiredValidator,
+    requiredCalendarValidator,
+} from './lib/Form/validation.ts'
+import type { FieldErrorProps } from './Types/Playground.types.ts'
 // oxlint-disable-next-line import/no-unassigned-import -- Playground CSS entry.
 import './index.css'
 
-type PlaygroundInputProps = {
-    id?: string
-    value: string
-    placeholder?: string
-    required?: boolean
-    minLength?: number
-    maxLength?: number
-    className?: string
-    type?: React.HTMLInputTypeAttribute | 'textarea'
-    rows?: number
-    icon?: React.ReactNode
-    showLength?: boolean
-    customDesign?: unknown
-    showPasswordStrength?: boolean
-    minValue?: number
-    maxValue?: number
-    minuteStep?: number
-    onChange: (
-        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) => void
-}
-
-function CustomInput({
-    type = 'text',
-    rows,
-    icon: _icon,
-    showLength: _showLength,
-    customDesign: _customDesign,
-    showPasswordStrength: _showPasswordStrength,
-    minValue: _minValue,
-    maxValue: _maxValue,
-    minuteStep: _minuteStep,
-    onChange,
-    ...props
-}: PlaygroundInputProps) {
-    if (type === 'textarea') {
-        return <textarea {...props} rows={rows} onChange={onChange} />
-    }
-
-    return <input {...props} type={type} onChange={onChange} />
-}
-
-type PlaygroundFormValues = {
-    firstName: string
-    email: string
-    appointment: CalendarValue
-    message: string
-}
-
-const requiredValidator =
-    (label: string) =>
-    ({ value }: { value: string }) =>
-        value.trim().length === 0 ? `${label} ist erforderlich.` : undefined
-
-const requiredCalendarValidator = ({ value }: { value: CalendarValue }) =>
-    value ? undefined : 'Termin ist erforderlich.'
-
-function FieldError({ errors }: { errors: Array<unknown> }) {
+function FieldError({ errors }: FieldErrorProps) {
     if (errors.length === 0) {
         return null
     }
@@ -75,32 +22,25 @@ function FieldError({ errors }: { errors: Array<unknown> }) {
 }
 
 function App() {
-    const isPopoverWidthTest = new URLSearchParams(window.location.search).has(
-        'calendar-width-test',
-    )
-    const isReadonlyAxeTest = new URLSearchParams(window.location.search).has(
-        'calendar-readonly-test',
-    )
-    const [submittedValues, setSubmittedValues] =
-        useState<PlaygroundFormValues | null>(null)
-    const [calendarMinDate, setCalendarMinDate] = useState<Date | undefined>()
-    const [calendarShadowClass, setCalendarShadowClass] = useState(false)
-    const [calendarWidthUtility, setCalendarWidthUtility] = useState<
-        'none' | 'typed' | 'responsive'
-    >('none')
-
-    const form = useForm({
-        defaultValues: {
-            firstName: '',
-            email: '',
-            appointment: undefined,
-            message: '',
-        } as PlaygroundFormValues,
-        onSubmit: ({ value }) => {
-            setSubmittedValues(value)
+    const {
+        state: {
+            isPopoverWidthTest,
+            isReadonlyAxeTest,
+            submittedValues,
+            calendarMinDate,
+            calendarShadowClass,
+            calendarWidthUtility,
         },
-    })
-
+        handler: {
+            handleSubmit,
+            handleSetValue,
+            handleSetMinimum,
+            handleSetLaterMinimum,
+            handleToggleShadow,
+            handleCycleWidth,
+        },
+        form,
+    } = usePlaygroundLogic()
     return (
         <main className="min-h-screen bg-[#101419] px-6 py-10 text-gray-200">
             <div className="mx-auto flex max-w-5xl flex-col gap-8">
@@ -119,11 +59,7 @@ function App() {
 
                 <form
                     className="grid gap-6 md:grid-cols-[minmax(0,1fr)_20rem]"
-                    onSubmit={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        void form.handleSubmit()
-                    }}
+                    onSubmit={handleSubmit}
                 >
                     <section className="grid gap-5 rounded-lg border border-border-dark bg-surface-dark p-5">
                         <div className="grid gap-5 md:grid-cols-2">
@@ -141,7 +77,7 @@ function App() {
                                         >
                                             Name
                                         </label>
-                                        <CustomInput
+                                        <input
                                             id={field.name}
                                             value={field.state.value}
                                             onChange={(event) =>
@@ -151,9 +87,6 @@ function App() {
                                             }
                                             placeholder="Dein Name"
                                             required
-                                            icon={
-                                                <UserRound className="h-4 w-4" />
-                                            }
                                         />
                                         <FieldError
                                             errors={field.state.meta.errors}
@@ -176,7 +109,7 @@ function App() {
                                         >
                                             E-Mail
                                         </label>
-                                        <CustomInput
+                                        <input
                                             id={field.name}
                                             value={field.state.value}
                                             onChange={(event) =>
@@ -187,7 +120,6 @@ function App() {
                                             placeholder="mail@beispiel.de"
                                             type="email"
                                             required
-                                            icon={<Mail className="h-4 w-4" />}
                                         />
                                         <FieldError
                                             errors={field.state.meta.errors}
@@ -213,17 +145,7 @@ function App() {
                                         <button
                                             type="button"
                                             data-testid="set-calendar-value"
-                                            onClick={() =>
-                                                field.handleChange(
-                                                    new Date(
-                                                        2030,
-                                                        11,
-                                                        24,
-                                                        12,
-                                                        0,
-                                                    ),
-                                                )
-                                            }
+                                            onClick={handleSetValue}
                                             className="rounded px-2 py-1 text-[11px] font-bold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                                         >
                                             Extern auf Dez. 2030 setzen
@@ -231,11 +153,7 @@ function App() {
                                         <button
                                             type="button"
                                             data-testid="set-calendar-min-date"
-                                            onClick={() =>
-                                                setCalendarMinDate(
-                                                    new Date(2030, 11, 25),
-                                                )
-                                            }
+                                            onClick={handleSetMinimum}
                                             className="rounded px-2 py-1 text-[11px] font-bold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                                         >
                                             Min. Datum auf 25. Dez. 2030 setzen
@@ -243,11 +161,7 @@ function App() {
                                         <button
                                             type="button"
                                             data-testid="set-calendar-min-date-after-view"
-                                            onClick={() =>
-                                                setCalendarMinDate(
-                                                    new Date(2031, 1, 1),
-                                                )
-                                            }
+                                            onClick={handleSetLaterMinimum}
                                             className="rounded px-2 py-1 text-[11px] font-bold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                                         >
                                             Min. Datum auf 1. Feb. 2031 setzen
@@ -257,11 +171,7 @@ function App() {
                                         <button
                                             type="button"
                                             data-testid="toggle-calendar-shadow-class"
-                                            onClick={() =>
-                                                setCalendarShadowClass(
-                                                    (hasShadow) => !hasShadow,
-                                                )
-                                            }
+                                            onClick={handleToggleShadow}
                                             className="self-start rounded px-2 py-1 text-[11px] font-bold text-primary"
                                         >
                                             Toggle unrelated shadow class
@@ -271,17 +181,7 @@ function App() {
                                         <button
                                             type="button"
                                             data-testid="cycle-calendar-width-utility"
-                                            onClick={() =>
-                                                setCalendarWidthUtility(
-                                                    (current) =>
-                                                        current === 'none'
-                                                            ? 'typed'
-                                                            : current ===
-                                                                'typed'
-                                                              ? 'responsive'
-                                                              : 'none',
-                                                )
-                                            }
+                                            onClick={handleCycleWidth}
                                             className="self-start rounded px-2 py-1 text-[11px] font-bold text-primary"
                                         >
                                             Cycle typed width utility
@@ -311,13 +211,13 @@ function App() {
                                         showHolidays
                                         switchMode
                                         isDeletable
+                                        icon={
+                                            <CalendarClock className="h-4 w-4" />
+                                        }
                                         className={
                                             isPopoverWidthTest
                                                 ? `h-11 rounded-md ${calendarWidthUtility === 'typed' ? 'w-[length:512px]' : calendarWidthUtility === 'responsive' ? 'md:w-[length:512px]' : 'calendar-consumer-wide-trigger'} ${calendarShadowClass ? 'shadow-lg' : ''}`
                                                 : 'h-11 w-60 rounded-md'
-                                        }
-                                        icon={
-                                            <CalendarClock className="h-4 w-4" />
                                         }
                                     />
                                     <FieldError
@@ -341,7 +241,7 @@ function App() {
                                     >
                                         Nachricht
                                     </label>
-                                    <CustomInput
+                                    <textarea
                                         id={field.name}
                                         value={field.state.value}
                                         onChange={(event) =>
@@ -350,14 +250,10 @@ function App() {
                                             )
                                         }
                                         placeholder="Schreibe eine kurze Nachricht"
-                                        type="textarea"
+
                                         rows={5}
                                         required
-                                        showLength
                                         maxLength={280}
-                                        icon={
-                                            <MessageSquareText className="h-4 w-4" />
-                                        }
                                     />
                                     <FieldError
                                         errors={field.state.meta.errors}

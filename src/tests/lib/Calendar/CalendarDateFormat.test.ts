@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { getCalendarDateFormatters } from '../../../lib/Calendar/CalendarDateFormat.js'
+import { getCalendarDateFormatters } from '../../../lib/Calendar/CalendarDateFormat.ts'
 
 test('cached calendar formats exactly match native labels across locales and DST dates', () => {
     for (const locale of ['de', 'en'] as const) {

@@ -2,7 +2,7 @@ import type {
     CalendarPosition,
     CalendarPositionOptions,
     CalendarPositionResult,
-} from '../Types/CalendarPosition.types.js'
+} from '../Types/CalendarPosition.types.ts'
 import { useCallback, useState } from 'react'
 import type { RefObject } from 'react'
 

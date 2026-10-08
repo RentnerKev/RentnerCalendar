@@ -1,4 +1,19 @@
 import type {
+    SerializeCalendarValueOptions,
+    SerializedCalendarRange,
+    SerializedSingleCalendarValue,
+    SerializedRangeCalendarValue,
+    SerializedCalendarValue,
+} from './Types/CalendarValue.types.ts'
+export type {
+    CalendarSerializationFormat,
+    SerializeCalendarValueOptions,
+    SerializedCalendarRange,
+    SerializedSingleCalendarValue,
+    SerializedRangeCalendarValue,
+    SerializedCalendarValue,
+} from './Types/CalendarValue.types.ts'
+import type {
     CalendarInputValue,
     CalendarRange,
     CalendarValue,
@@ -6,8 +21,8 @@ import type {
     RangeCalendarValue,
     SingleCalendarInputValue,
     SingleCalendarValue,
-} from '../../shared/Calendar/Types/Calendar.types.js'
-import { compareCalendarDays } from './CalendarDay.js'
+} from '../../shared/Calendar/Types/Calendar.types.ts'
+import { compareCalendarDays } from './CalendarDay.ts'
 
 const isoDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/
 const localIsoDateTimePattern =
@@ -16,19 +31,6 @@ const zonedIsoDateTimePattern =
     /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|([+-])(\d{2}):(\d{2}))$/i
 const germanDatePattern =
     /^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)?$/
-
-export type CalendarSerializationFormat = 'date' | 'datetime'
-
-export interface SerializeCalendarValueOptions {
-    format?: CalendarSerializationFormat
-}
-
-export type SerializedCalendarRange = [string | null, string | null]
-export type SerializedSingleCalendarValue = string | undefined
-export type SerializedRangeCalendarValue = SerializedCalendarRange | undefined
-export type SerializedCalendarValue =
-    | SerializedSingleCalendarValue
-    | SerializedRangeCalendarValue
 
 function isLeapYear(year: number) {
     return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
@@ -325,4 +327,16 @@ export function serializeCalendarValue(
     }
 
     return serializeDate(value)
+}
+
+export function hasCalendarValue(value?: CalendarValue) {
+    if (!value) {
+        return false
+    }
+
+    if (Array.isArray(value)) {
+        return Boolean(value[0] && value[1])
+    }
+
+    return true
 }

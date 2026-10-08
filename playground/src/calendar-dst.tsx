@@ -1,43 +1,37 @@
-import { useState } from 'react'
+import { useCalendarDstLogic } from './Hooks/useCalendarDstLogic.ts'
 import { createRoot } from 'react-dom/client'
-import { RangeCalendar, SingleCalendar } from '../../src/index.js'
-import type { RangeCalendarValue } from '../../src/index.js'
+import { RangeCalendar } from '../../src/shared/Calendar/Components/RangeCalendar.tsx'
+import { SingleCalendar } from '../../src/shared/Calendar/Components/SingleCalendar.tsx'
+import {
+    formatLocalDateTime,
+    formatRange,
+} from './lib/Calendar/calendarDateTime.ts'
 // oxlint-disable-next-line import/no-unassigned-import -- Playground CSS entry.
 import './index.css'
 
-const pad = (value: number) => String(value).padStart(2, '0')
-
-function formatLocalDateTime(date: Date | null | undefined) {
-    if (!date) return ''
-
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
-
-function formatRange(value: RangeCalendarValue) {
-    return value
-        ? `${formatLocalDateTime(value[0])}|${formatLocalDateTime(value[1])}`
-        : ''
-}
-
 function App() {
-    const [minimumSelection, setMinimumSelection] = useState<Date>()
-    const [boundedRange, setBoundedRange] = useState<RangeCalendarValue>()
-    const [carriedTime, setCarriedTime] = useState(
-        () => new Date(2026, 2, 28, 2, 30),
-    )
-    const [availableRange, setAvailableRange] = useState<RangeCalendarValue>([
-        new Date(2026, 2, 28, 2, 30),
-        null,
-    ])
-    const [invalidRange, setInvalidRange] = useState<RangeCalendarValue>([
-        new Date(2026, 2, 29, 3, 0),
-        null,
-    ])
-    const [boundedValue, setBoundedValue] = useState(
-        () => new Date(2026, 2, 28, 12, 0),
-    )
-    const [minimum, setMinimum] = useState('00:00')
-
+    const {
+        state: {
+            minimumSelection,
+            boundedRange,
+            carriedTime,
+            availableRange,
+            invalidRange,
+            boundedValue,
+            minimum,
+        },
+        setter: {
+            setMinimumSelection,
+            setBoundedRange,
+            setAvailableRange,
+            setInvalidRange,
+        },
+        handler: {
+            handleCarriedTime,
+            handleBoundedValue,
+            handleTightenMinimum,
+        },
+    } = useCalendarDstLogic()
     return (
         <main className="min-h-screen bg-[#101419] p-8 text-gray-200">
             <div className="mx-auto grid max-w-3xl gap-6">
@@ -85,7 +79,7 @@ function App() {
                         label="Carried time"
                         locale="en"
                         value={carriedTime}
-                        onChange={(value) => value && setCarriedTime(value)}
+                        onChange={handleCarriedTime}
                         enableTime
                         button
                     />
@@ -133,7 +127,7 @@ function App() {
                         id="tighten-minimum"
                         type="button"
                         className="fixed top-4 right-4 z-[10000] w-fit rounded border border-gray-600 bg-[#101419] px-3 py-2"
-                        onClick={() => setMinimum('13:00')}
+                        onClick={handleTightenMinimum}
                     >
                         Tighten minimum to 13:00
                     </button>
@@ -142,7 +136,7 @@ function App() {
                         label="Dynamic bounds"
                         locale="en"
                         value={boundedValue}
-                        onChange={(value) => value && setBoundedValue(value)}
+                        onChange={handleBoundedValue}
                         enableTime
                         minTime={minimum}
                         maxTime="18:00"

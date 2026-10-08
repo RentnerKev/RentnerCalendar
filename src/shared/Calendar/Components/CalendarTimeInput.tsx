@@ -1,11 +1,11 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- The segmented textbox handles digit navigation in one custom focus target; a native input would change its keyboard contract. */
-import useCalendarTimeInputLogic from '../Hooks/useCalendarTimeInputLogic.js'
+import useCalendarTimeInputLogic from '../Hooks/useCalendarTimeInputLogic.ts'
 import type {
     SingleTimeInputProps,
     CalendarTimeDigitProps,
-} from '../Types/CalendarTimeInput.types.js'
-import useSingleTimeInputLogic from '../Hooks/useSingleTimeInputLogic.js'
-import type { CalendarTimeInputProps } from '../Types/Calendar.types.js'
+} from '../Types/CalendarTimeInput.types.ts'
+import useSingleTimeInputLogic from '../Hooks/useSingleTimeInputLogic.ts'
+import type { CalendarTimeInputProps } from '../Types/Calendar.types.ts'
 
 function SingleTimeInput({
     date,

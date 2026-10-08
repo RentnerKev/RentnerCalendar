@@ -17,17 +17,17 @@
     "scripts": {
         "build": "bun -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true })\" && tsc",
         "test": "bun test",
-        "typecheck": "tsc --noEmit && tsc --project tsconfig.type-tests.json && bun run typecheck:automation",
+        "typecheck": "tsc --noEmit && tsc --project tsconfig.type-tests.json && tsc --project playground/tsconfig.json --noEmit && bun run typecheck:automation",
         "prepare": "bun run build",
         "pack:check": "bun pm pack --dry-run",
-        "pack:consumer": "node scripts/verify-package.mjs",
+        "pack:consumer": "node scripts/consumer/verify.mjs",
         "test:e2e": "playwright test",
         "playground:dev": "bun --cwd playground dev",
         "playground:build": "bun --cwd playground build",
-        "lint": "oxlint src scripts type-tests playground/src playwright.config.ts .github/scripts",
-        "lint:fix": "oxlint --fix src scripts type-tests playground/src playwright.config.ts .github/scripts",
-        "format": "oxfmt src scripts type-tests playground README.md package.json tailwind.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
-        "format:check": "oxfmt --check src scripts type-tests playground README.md package.json tailwind.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
+        "lint": "oxlint --deny-warnings src scripts playground/src playwright.config.ts .github/scripts",
+        "lint:fix": "oxlint --fix --deny-warnings src scripts playground/src playwright.config.ts .github/scripts",
+        "format": "oxfmt src scripts playground README.md docs package.json tailwind.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
+        "format:check": "oxfmt --check src scripts playground README.md docs package.json tailwind.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
         "verify": "bun run typecheck && bun run lint && bun run format:check && bun run test && bun run build && bun run pack:check && bun run pack:consumer && bun run test:e2e",
         "typecheck:automation": "tsc --noEmit -p .github/scripts/tsconfig.json"
     },
@@ -50,6 +50,7 @@
     "devDependencies": {
         "@axe-core/playwright": "^4.13.0",
         "@playwright/test": "^1.63.0",
+        "@types/bun": "^1.4.2",
         "@types/node": "^24.19.1",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
@@ -71,32 +72,32 @@
         },
         "./tailwind.css": "./tailwind.css",
         "./calendar": {
-            "import": "./dist/Calendar.js",
-            "types": "./dist/Calendar.d.ts"
+            "import": "./dist/shared/Calendar/Components/Calendar.js",
+            "types": "./dist/shared/Calendar/Components/Calendar.d.ts"
         },
         "./single-calendar": {
-            "import": "./dist/SingleCalendar.js",
-            "types": "./dist/SingleCalendar.d.ts"
+            "import": "./dist/shared/Calendar/Components/SingleCalendar.js",
+            "types": "./dist/shared/Calendar/Components/SingleCalendar.d.ts"
         },
         "./range-calendar": {
-            "import": "./dist/RangeCalendar.js",
-            "types": "./dist/RangeCalendar.d.ts"
+            "import": "./dist/shared/Calendar/Components/RangeCalendar.js",
+            "types": "./dist/shared/Calendar/Components/RangeCalendar.d.ts"
         },
         "./value": {
-            "import": "./dist/Tools/CalendarValue.js",
-            "types": "./dist/Tools/CalendarValue.d.ts"
+            "import": "./dist/lib/Calendar/CalendarValue.js",
+            "types": "./dist/lib/Calendar/CalendarValue.d.ts"
         },
         "./format": {
-            "import": "./dist/Tools/FormatFunctions.js",
-            "types": "./dist/Tools/FormatFunctions.d.ts"
+            "import": "./dist/lib/Calendar/FormatFunctions.js",
+            "types": "./dist/lib/Calendar/FormatFunctions.d.ts"
         },
         "./date": {
-            "import": "./dist/date.js",
-            "types": "./dist/date.d.ts"
+            "import": "./dist/lib/Calendar/date.js",
+            "types": "./dist/lib/Calendar/date.d.ts"
         },
         "./messages": {
-            "import": "./dist/messages.js",
-            "types": "./dist/messages.d.ts"
+            "import": "./dist/lib/Calendar/messages.js",
+            "types": "./dist/lib/Calendar/messages.d.ts"
         },
         "./types": {
             "import": "./dist/types.js",

@@ -1,4 +1,4 @@
-import type { CalendarCustomDesign } from './Calendar.types.js'
+import type { CalendarCustomDesign } from './Calendar.types.ts'
 
 export interface SingleTimeInputProps {
     date: Date | null

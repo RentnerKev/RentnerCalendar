@@ -1,6 +1,6 @@
-import type { CustomCalendarLogicResult } from '../Types/CustomCalendarLogicResult.types.js'
+import type { CustomCalendarLogicResult } from '../Types/CustomCalendarLogicResult.types.ts'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import { defaultCalendarDesign } from '../../../config/calendarDesign.config.js'
+import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
 import type {
     CSSProperties,
     FocusEvent,
@@ -8,74 +8,32 @@ import type {
     MouseEvent,
     RefCallback,
 } from 'react'
-import type { CalendarProps, CalendarValue } from '../Types/Calendar.types.js'
-import { resolveCalendarMessages } from '../../../lib/Calendar/messages.js'
-import useCalendarPosition from './useCalendarPosition.js'
-import useCalendarSelection from './useCalendarSelection.js'
+import type { CalendarProps, CalendarValue } from '../Types/Calendar.types.ts'
+import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
+import useCalendarPosition from './useCalendarPosition.ts'
+import useCalendarSelection from './useCalendarSelection.ts'
 import {
     commitCalendarSelection,
     shouldCloseCalendarAfterSelection,
-} from '../../../lib/Calendar/CalendarCommit.js'
-import { formatCalendarValue } from '../../../lib/Calendar/FormatFunctions.js'
-import { serializeCalendarValue } from '../../../lib/Calendar/CalendarValue.js'
-import { calendarValueHasTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.js'
-import { calendarValueWithinDateBounds } from '../../../lib/Calendar/CalendarDay.js'
+} from '../../../lib/Calendar/CalendarCommit.ts'
+import { formatCalendarValue } from '../../../lib/Calendar/FormatFunctions.ts'
+import { serializeCalendarValue } from '../../../lib/Calendar/CalendarValue.ts'
+import { calendarValueHasTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.ts'
+import { calendarValueWithinDateBounds } from '../../../lib/Calendar/CalendarDay.ts'
 import {
     mergeAriaIds,
     resolveCalendarFieldError,
-} from '../../../lib/Calendar/CalendarField.js'
-import { extractRadius } from '../../../lib/Calendar/design.js'
-import { normalizeValue, parseToDate } from '../../../lib/Calendar/date.js'
-import { useCalendarDefaults } from './useCalendarDefaults.js'
-import { composeRefs } from './composeRefs.js'
+} from '../../../lib/Calendar/CalendarField.ts'
+import {
+    extractRadius,
+    hasWidthUtilityClass,
+} from '../../../lib/Calendar/design.ts'
+import { hasCalendarValue } from '../../../lib/Calendar/CalendarValue.ts'
+import { normalizeValue, parseToDate } from '../../../lib/Calendar/date.ts'
+import { useCalendarDefaults } from './useCalendarDefaults.ts'
+import { composeRefs } from './composeRefs.ts'
 
 const calendarPopoverMinWidth = 340
-
-function hasWidthUtilityClass(className: string) {
-    return className.split(/\s+/).some((classToken) => {
-        let squareBracketDepth = 0
-        let roundBracketDepth = 0
-        let lastVariantSeparator = -1
-
-        for (let index = 0; index < classToken.length; index += 1) {
-            const character = classToken[index]
-
-            if (character === '\\') {
-                index += 1
-                continue
-            }
-
-            if (character === '[') squareBracketDepth += 1
-            else if (character === ']') {
-                squareBracketDepth = Math.max(0, squareBracketDepth - 1)
-            } else if (character === '(') roundBracketDepth += 1
-            else if (character === ')') {
-                roundBracketDepth = Math.max(0, roundBracketDepth - 1)
-            } else if (
-                character === ':' &&
-                squareBracketDepth === 0 &&
-                roundBracketDepth === 0
-            ) {
-                lastVariantSeparator = index
-            }
-        }
-
-        const utility = classToken.slice(lastVariantSeparator + 1)
-        return utility.replace(/^!/, '').startsWith('w-')
-    })
-}
-
-function hasCalendarValue(value?: CalendarValue) {
-    if (!value) {
-        return false
-    }
-
-    if (Array.isArray(value)) {
-        return Boolean(value[0] && value[1])
-    }
-
-    return true
-}
 
 export default function useCustomCalendarLogic({
     id,

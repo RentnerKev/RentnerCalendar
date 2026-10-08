@@ -7,8 +7,8 @@ import type {
     RefObject,
     InvalidEvent,
 } from 'react'
-import type { CalendarMessages } from '../../../lib/Calendar/messages.js'
-import type { CalendarCustomDesign } from './Calendar.types.js'
+import type { CalendarMessages } from '../../../lib/Calendar/Types/Messages.types.ts'
+import type { CalendarCustomDesign } from './Calendar.types.ts'
 
 export interface CalendarFieldProps {
     ariaLabel?: string

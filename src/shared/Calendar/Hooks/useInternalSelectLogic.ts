@@ -1,4 +1,4 @@
-import type { InternalSelectLogicResult } from '../Types/InternalSelectLogicResult.types.js'
+import type { InternalSelectLogicResult } from '../Types/InternalSelectLogicResult.types.ts'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type {
     InvalidEvent,
@@ -7,8 +7,8 @@ import type {
     ChangeEvent,
     PointerEvent,
 } from 'react'
-import type { CustomSelectProps } from '../Types/InternalSelect.types.js'
-import { resolveCalendarMessages } from '../../../lib/Calendar/messages.js'
+import type { CustomSelectProps } from '../Types/InternalSelect.types.ts'
+import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
 
 function handleSearchPointerDownCapture(event: PointerEvent<HTMLInputElement>) {
     event.stopPropagation()

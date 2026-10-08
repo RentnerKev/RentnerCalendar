@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { AlertCircle, CalendarDays, X } from 'lucide-react'
 import { CustomTooltip } from '@rentnerkev/tooltips'
 
-import type { CalendarFieldProps } from '../Types/CalendarField.types.js'
+import type { CalendarFieldProps } from '../Types/CalendarField.types.ts'
 
 export default function CalendarField({
     ariaLabel,

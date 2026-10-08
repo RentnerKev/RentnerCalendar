@@ -163,7 +163,7 @@ try {
         join(consumerRoot, 'Consumer.tsx'),
         `
         import { useEffect } from 'react'
-        import { App } from './App.js'
+        import { App } from './App.tsx'
         export function Consumer() {
             useEffect(() => { document.documentElement.dataset.hydrated = 'true' }, [])
             return <main><h1>Packaged consumer</h1><App /></main>
@@ -210,6 +210,7 @@ try {
                 jsx: 'react-jsx',
                 strict: true,
                 noEmit: true,
+                allowImportingTsExtensions: true,
                 skipLibCheck: false,
             },
             include: ['*.ts', '*.tsx'],

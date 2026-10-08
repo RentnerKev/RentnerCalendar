@@ -1,11 +1,11 @@
-import type { CalendarHeaderLogicResult } from '../Types/CalendarHeaderLogicResult.types.js'
-import { defaultCalendarDesign } from '../../../config/calendarDesign.config.js'
-import { resolveCalendarMessages } from '../../../lib/Calendar/messages.js'
-import { createCalendarDate } from '../../../lib/Calendar/CalendarDay.js'
+import type { CalendarHeaderLogicResult } from '../Types/CalendarHeaderLogicResult.types.ts'
+import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
+import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
+import { createCalendarDate } from '../../../lib/Calendar/CalendarDay.ts'
 import type {
     CalendarHeaderInternalProps,
     FastEditOption,
-} from '../Types/CalendarHeader.types.js'
+} from '../Types/CalendarHeader.types.ts'
 function getYearOptions(currentYear: number): FastEditOption[] {
     const startYear = currentYear - 50
     return Array.from({ length: 101 }, (_, index) => {

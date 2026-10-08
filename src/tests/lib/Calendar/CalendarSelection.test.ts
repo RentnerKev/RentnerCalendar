@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createCalendarDateSelection } from '../../../lib/Calendar/CalendarSelection.js'
+import { createCalendarDateSelection } from '../../../lib/Calendar/CalendarSelection.ts'
 
 function withTimeZone<T>(timeZone: string, run: () => T) {
     const previousTimeZone = process.env.TZ

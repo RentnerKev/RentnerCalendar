@@ -1,4 +1,4 @@
-import type { CalendarValue } from '../../shared/Calendar/Types/Calendar.types.js'
+import type { CalendarValue } from '../../shared/Calendar/Types/Calendar.types.ts'
 
 export function compareCalendarDays(first: Date, second: Date) {
     const yearDifference = first.getFullYear() - second.getFullYear()

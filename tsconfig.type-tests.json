@@ -4,5 +4,6 @@
         "noEmit": true,
         "rootDir": "."
     },
-    "include": ["type-tests/**/*.tsx"]
+    "include": ["src/tests/types/**/*.tsx"],
+    "exclude": ["node_modules", "dist"]
 }

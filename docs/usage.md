@@ -477,9 +477,10 @@ Templates consume `state`, `handler`, `setter` and `refs`; UI-free date, formatt
 and validation modules live in `src/lib/Calendar`. `src/config` contains declarative
 design data only.
 
-The root and historical component/subpath files are public npm compatibility
-facades. Internal modules import their defining owner directly. Existing npm
-exports, controlled-value callbacks and React peer ranges remain unchanged.
+The package root aggregates the public API; component and utility subpaths map
+directly to their defining built modules. The public `types` entry keeps its
+existing contract without importing the UI. Internal modules import their
+defining owner directly. Controlled callbacks and React peer ranges stay stable.
 Tests live in `src/tests`, mirroring shared and lib owners; package contracts
 stay at the package-test root.
 

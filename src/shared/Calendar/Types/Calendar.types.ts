@@ -2,7 +2,7 @@ import type { AriaAttributes, FocusEventHandler, ReactNode, Ref } from 'react'
 import type {
     CalendarLocale,
     CalendarMessages,
-} from '../../../lib/Calendar/messages.js'
+} from '../../../lib/Calendar/Types/Messages.types.ts'
 
 export type CalendarRange = [Date | null, Date | null]
 export type SingleCalendarValue = Date | undefined

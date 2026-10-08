@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
-import { CustomCalendar } from '../../src/Calendar.js'
-import { formatCalendarValue } from '../../src/Tools/FormatFunctions.js'
+import { CustomCalendar } from '../../src/shared/Calendar/Components/Calendar.tsx'
+import { formatCalendarValue } from '../../src/lib/Calendar/FormatFunctions.ts'
 // oxlint-disable-next-line import/no-unassigned-import -- Playground CSS entry.
 import './index.css'
 

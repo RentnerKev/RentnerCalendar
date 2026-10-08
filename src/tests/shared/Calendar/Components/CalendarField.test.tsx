@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { CustomCalendar } from '../../../../shared/Calendar/Components/Calendar.js'
-import { RangeCalendar } from '../../../../shared/Calendar/Components/RangeCalendar.js'
-import { SingleCalendar } from '../../../../shared/Calendar/Components/SingleCalendar.js'
-import { serializeCalendarISODate } from '../../../../lib/Calendar/CalendarValue.js'
+import { CustomCalendar } from '../../../../shared/Calendar/Components/Calendar.tsx'
+import { RangeCalendar } from '../../../../shared/Calendar/Components/RangeCalendar.tsx'
+import { SingleCalendar } from '../../../../shared/Calendar/Components/SingleCalendar.tsx'
+import { serializeCalendarISODate } from '../../../../lib/Calendar/CalendarValue.ts'
 import {
     mergeAriaIds,
     resolveCalendarFieldError,
-} from '../../../../lib/Calendar/CalendarField.js'
+} from '../../../../lib/Calendar/CalendarField.ts'
 
 describe('calendar field helpers', () => {
     test('external errors take precedence and null suppresses validation', () => {
