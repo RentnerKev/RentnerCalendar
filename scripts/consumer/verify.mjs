@@ -137,10 +137,25 @@ try {
         '--input-type=module',
         '--eval',
         `
+        import assert from 'node:assert/strict'
         import { readFileSync } from 'node:fs'
+        import { toSafeDate, parseToDate, normalizeValue } from '${manifest.name}/date'
+        import { hasCalendarValue } from '${manifest.name}/value'
         for (const entry of ${JSON.stringify(entryPoints)}) await import(entry)
         const css = import.meta.resolve('${manifest.name}/tailwind.css')
         if (!readFileSync(new URL(css), 'utf8').trim()) throw new Error('CSS export is empty')
+        for (const parse of [toSafeDate, parseToDate]) {
+            assert.equal(parse('2026-02-30'), null)
+            assert.equal(parse('invalid'), null)
+            const date = parse('2026-10-08')
+            assert.ok(date instanceof Date)
+            assert.deepEqual([date.getFullYear(), date.getMonth(), date.getDate()], [2026, 9, 8])
+        }
+        const range = normalizeValue(['2026-10-08', '2026-10-09'])
+        assert.ok(Array.isArray(range) && range.every(date => date instanceof Date))
+        assert.equal(hasCalendarValue(range), true)
+        assert.equal(hasCalendarValue([range[0], null]), false)
+        assert.equal(hasCalendarValue(normalizeValue('invalid')), false)
     `,
     ])
     writeFileSync(
@@ -150,6 +165,16 @@ try {
                 (entry, index) =>
                     `type Entry${index} = typeof import('${entry}')`,
             )
+            .concat(`
+                import { toSafeDate, parseToDate, normalizeValue } from '${manifest.name}/date'
+                import { hasCalendarValue } from '${manifest.name}/value'
+                import type { CalendarValue } from '${manifest.name}'
+                const safe: Date | null = toSafeDate('2026-10-08')
+                const parsed: Date | null = parseToDate('2026-10-08')
+                const value: CalendarValue = normalizeValue(['2026-10-08', null])
+                const complete: boolean = hasCalendarValue(value)
+                void [safe, parsed, value, complete]
+            `)
             .join('\n'),
     )
     writeFileSync(
@@ -217,6 +242,24 @@ try {
         }),
     )
     const tsc = join(consumerRoot, 'node_modules/typescript/bin/tsc')
+    writeFileSync(
+        join(consumerRoot, 'tsconfig.exports.json'),
+        JSON.stringify({
+            extends: './tsconfig.json',
+            compilerOptions: { allowImportingTsExtensions: false },
+            include: ['smoke.ts'],
+        }),
+    )
+    runNode([tsc, '--project', 'tsconfig.exports.json'])
+    runNode([
+        tsc,
+        '--project',
+        'tsconfig.exports.json',
+        '--module',
+        'NodeNext',
+        '--moduleResolution',
+        'NodeNext',
+    ])
     runNode([tsc, '--project', consumerRoot])
     // NodeNext catches declaration-resolution problems hidden by bundler mode.
     runNode([

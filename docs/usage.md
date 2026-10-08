@@ -345,6 +345,13 @@ are available from the root entry and `@rentnerkev/calendar/messages`.
 Date helpers are also available from `@rentnerkev/calendar/date`; parsing and
 serialization helpers are available from `@rentnerkev/calendar/value`.
 
+The `/date` entry additionally exports `toSafeDate(input)` and
+`parseToDate(input)`, which return a valid `Date` or `null`, and
+`normalizeValue(input)`, which parses a single date or range as `CalendarValue`.
+The `/value` entry exports `hasCalendarValue(value)` to check whether a parsed
+selection contains a single date or both bounds of a range. These four helpers are
+available through their named subpaths.
+
 ## Custom design
 
 Pass `customDesign` to override individual Tailwind classes.
