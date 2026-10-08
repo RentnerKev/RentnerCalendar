@@ -33,6 +33,7 @@ describe('published package contract', () => {
             './messages',
             './types',
             './package.json',
+            './ai',
         ])
     })
 
