@@ -59,7 +59,7 @@ export function Appointment() {
 | **English dates and time**                                                                                                                                                                                                                                                | **Searchable month navigation**                                                                                                                                                                                                                                                                |
 | [![English dates and time](https://raw.githubusercontent.com/RentnerKev/RentnerCalendar/main/assets/readme/screenshots/english-date-and-time.png)](https://raw.githubusercontent.com/RentnerKev/RentnerCalendar/main/assets/readme/screenshots/english-date-and-time.png) | [![Searchable month navigation](https://raw.githubusercontent.com/RentnerKev/RentnerCalendar/main/assets/readme/screenshots/month-navigation-and-holidays.png)](https://raw.githubusercontent.com/RentnerKev/RentnerCalendar/main/assets/readme/screenshots/month-navigation-and-holidays.png) |
 
-[Full API and usage guide](https://github.com/RentnerKev/RentnerCalendar/blob/main/docs/usage.md) · [Local Playground](./playground) · [MIT license](./LICENSE)
+[Full API and usage guide](https://npm.rentner.dev/docs/calendar) · [Local Playground](./playground) · [MIT license](./LICENSE)
 
 Run the Playground from the repository root:
 
