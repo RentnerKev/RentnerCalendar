@@ -218,7 +218,7 @@ export default function CalendarPopover({
                         type="button"
                         onClick={onApply}
                         disabled={disabled || readOnly || applyDisabled}
-                        className={`mt-4 w-full cursor-pointer rounded-lg py-2 font-medium text-rentner-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 ${customDesign.primaryBg} ${customDesign.primaryHover}`}
+                        className={`mt-4 w-full cursor-pointer rounded-lg py-2 font-medium text-rentner-accent-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 ${customDesign.primaryBg} ${customDesign.primaryHover}`}
                     >
                         {messages.apply}
                     </button>
