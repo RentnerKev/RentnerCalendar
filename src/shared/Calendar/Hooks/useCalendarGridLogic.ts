@@ -7,6 +7,7 @@ import {
     getCalendarDateKey,
     isCalendarDayWithinBounds,
 } from '../../../lib/Calendar/CalendarDay.ts'
+import { constrainCalendarDateTime } from '../../../lib/Calendar/CalendarDateTime.ts'
 import { hasCalendarTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.ts'
 import {
     getGermanHolidayName,
@@ -30,6 +31,8 @@ export default function useCalendarGridLogic({
     customDesign = defaultCalendarDesign,
     minDate,
     maxDate,
+    minDateTime,
+    maxDateTime,
     minTime,
     maxTime,
     visibleDays = 7,
@@ -49,9 +52,18 @@ export default function useCalendarGridLogic({
     const dayItems = handleGetDaysInMonth()
     const isDateDisabled = (date: Date) =>
         isInteractionDisabled ||
+        !constrainCalendarDateTime(
+            date,
+            minDateTime,
+            maxDateTime,
+            enableTime ? minTime : undefined,
+            enableTime ? maxTime : undefined,
+        ) ||
         !isCalendarDayWithinBounds(date, minDate, maxDate) ||
         (enableTime && !hasCalendarTimeWithinBounds(date, minTime, maxTime))
     const availabilityKey = [
+        String(minDateTime ?? ''),
+        String(maxDateTime ?? ''),
         minDate ? getCalendarDateKey(minDate) : '',
         maxDate ? getCalendarDateKey(maxDate) : '',
         enableTime ? (minTime ?? '') : '',
@@ -174,7 +186,7 @@ export default function useCalendarGridLogic({
 
             const isCurrentDay = isToday(dayObj.date)
             let buttonClass =
-                'h-9 w-9 rounded-lg flex items-center justify-center text-sm transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 '
+                'h-9 w-9 rounded-lg flex items-center justify-center text-sm transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 '
 
             if (dayDisabled) {
                 buttonClass += `opacity-30 cursor-not-allowed ${cd.textDisabled} `

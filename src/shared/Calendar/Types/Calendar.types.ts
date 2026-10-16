@@ -45,7 +45,33 @@ export interface CalendarCustomDesign {
     hoverTextMuted?: string
 }
 
-export interface CalendarProps extends AriaAttributes {
+export interface CalendarAppearance {
+    controlSize?: 'sm' | 'md' | 'lg'
+    classNames?: CalendarClassNames
+    portalContainer?: Element | DocumentFragment | null
+    portalClassName?: string
+    portalZIndex?: number
+}
+
+export interface CalendarClassNames {
+    root?: string
+    label?: string
+    description?: string
+    error?: string
+    control?: string
+    leading?: string
+    trailing?: string
+    header?: string
+    selectTrigger?: string
+    selectContent?: string
+    selectSearch?: string
+    selectOption?: string
+    time?: string
+    portal?: string
+}
+
+export interface CalendarInternalProps
+    extends AriaAttributes, CalendarAppearance {
     id?: string
     name?: string
     value?: CalendarInputValue
@@ -73,6 +99,8 @@ export interface CalendarProps extends AriaAttributes {
     closeOnSelect?: boolean
     minDate?: CalendarDateInput
     maxDate?: CalendarDateInput
+    minDateTime?: CalendarDateInput
+    maxDateTime?: CalendarDateInput
     minTime?: string
     maxTime?: string
     fastEdit?: boolean
@@ -84,29 +112,60 @@ export interface CalendarProps extends AriaAttributes {
 }
 
 export type CalendarSharedProps = Omit<
-    CalendarProps,
+    CalendarInternalProps,
     'value' | 'onChange' | 'getFormValue' | 'enableRange' | 'switchMode'
 >
 
-export type SingleCalendarProps = CalendarSharedProps & {
+type SingleDateCalendarProps = CalendarSharedProps & {
     mode?: 'single'
     value?: SingleCalendarInputValue
     onChange?: (value: SingleCalendarValue) => void
     getFormValue?: (value: Date) => string
 }
 
-export type RangeCalendarProps = CalendarSharedProps & {
+type RangeDateCalendarProps = CalendarSharedProps & {
     mode?: 'range'
     value?: RangeCalendarInputValue
     onChange?: (value: RangeCalendarValue) => void
     getFormValue?: (value: CalendarRange) => string
 }
 
+export type CalendarValueFormat = 'date' | 'iso-date' | 'iso-datetime'
+export type SerializedCalendarSelection =
+    | string
+    | [string | null, string | null]
+    | undefined
+
+type SerializedProps = { valueFormat: 'iso-date' | 'iso-datetime' }
+export type CalendarProps =
+    | (CalendarInternalProps & { valueFormat?: 'date' })
+    | (Omit<CalendarInternalProps, 'value' | 'onChange'> &
+          SerializedProps & {
+              value?: string | readonly [string | null, string | null] | null
+              onChange?: (value: SerializedCalendarSelection) => void
+          })
+export type SingleCalendarProps =
+    | (SingleDateCalendarProps & { valueFormat?: 'date' })
+    | (Omit<SingleDateCalendarProps, 'value' | 'onChange'> &
+          SerializedProps & {
+              value?: string | null
+              onChange?: (value: string | undefined) => void
+          })
+export type RangeCalendarProps =
+    | (RangeDateCalendarProps & { valueFormat?: 'date' })
+    | (Omit<RangeDateCalendarProps, 'value' | 'onChange'> &
+          SerializedProps & {
+              value?: readonly [string | null, string | null] | null
+              onChange?: (
+                  value: [string | null, string | null] | undefined,
+              ) => void
+          })
+
 export type CalendarModeProps =
     | (SingleCalendarProps & { mode: 'single' })
     | (RangeCalendarProps & { mode: 'range' })
 
-export interface CalendarHeaderProps {
+export interface CalendarHeaderProps extends CalendarAppearance {
     currentDate: Date
     onPrevMonth: () => void
     onNextMonth: () => void
@@ -128,6 +187,8 @@ export interface CalendarGridProps {
     customDesign?: CalendarCustomDesign
     minDate?: Date
     maxDate?: Date
+    minDateTime?: CalendarDateInput
+    maxDateTime?: CalendarDateInput
     minTime?: string
     maxTime?: string
     weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7
@@ -139,11 +200,13 @@ export interface CalendarGridProps {
     readOnly?: boolean
 }
 
-export interface CalendarTimeInputProps {
+export interface CalendarTimeInputProps extends CalendarAppearance {
     value?: CalendarValue
     onChange: (value: CalendarValue) => void
     enableRange?: boolean
     customDesign?: CalendarCustomDesign
+    minDateTime?: CalendarDateInput
+    maxDateTime?: CalendarDateInput
     minTime?: string
     maxTime?: string
     messages?: CalendarMessages

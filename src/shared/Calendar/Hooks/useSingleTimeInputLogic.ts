@@ -1,12 +1,15 @@
 import type { SingleTimeInputLogicResult } from '../Types/SingleTimeInputLogicResult.types.ts'
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { formatTimeToString } from '../../../lib/Calendar/FormatFunctions.ts'
+import { constrainCalendarDateTime } from '../../../lib/Calendar/CalendarDateTime.ts'
 import { updateCalendarTime } from '../../../lib/Calendar/CalendarTime.ts'
 import type { SingleTimeInputProps } from '../Types/CalendarTimeInput.types.ts'
 
 export default function useSingleTimeInputLogic({
     date,
     onChangeDate,
+    minDateTime,
+    maxDateTime,
     minTime,
     maxTime,
     disabled = false,
@@ -32,6 +35,16 @@ export default function useSingleTimeInputLogic({
         const update = updateCalendarTime(date, newTimeStr, minTime, maxTime)
         if (!update) return false
 
+        const constrained = constrainCalendarDateTime(
+            update.date,
+            minDateTime,
+            maxDateTime,
+            minTime,
+            maxTime,
+        )
+        if (!constrained) return false
+        update.date = constrained
+        update.time = formatTimeToString(constrained)
         setTimeStr(update.time)
         if (date?.getTime() === update.date.getTime()) return true
 

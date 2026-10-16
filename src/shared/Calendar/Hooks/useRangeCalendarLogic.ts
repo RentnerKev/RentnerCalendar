@@ -1,3 +1,4 @@
+import { serializeCalendarValue } from '../../../lib/Calendar/CalendarValue.ts'
 import type { RangeCalendarLogicResult } from '../Types/RangeCalendarLogicResult.types.ts'
 import { isCalendarRange } from '../../../lib/Calendar/CalendarValue.ts'
 import type {
@@ -5,16 +6,38 @@ import type {
     RangeCalendarProps,
 } from '../Types/Calendar.types.ts'
 
-export default function useRangeCalendarLogic({
-    mode: _mode,
-    onChange,
-    getFormValue,
-    ...props
-}: RangeCalendarProps): RangeCalendarLogicResult {
+export default function useRangeCalendarLogic(
+    inputProps: RangeCalendarProps,
+): RangeCalendarLogicResult {
+    const {
+        mode: _mode,
+        onChange,
+        getFormValue,
+        valueFormat: _valueFormat,
+        ...props
+    } = inputProps
     void _mode
+    void _valueFormat
 
     function handleChange(value: CalendarValue) {
-        onChange?.(isCalendarRange(value) ? value : undefined)
+        const selected = isCalendarRange(value) ? value : undefined
+        if (
+            inputProps.valueFormat === undefined ||
+            inputProps.valueFormat === 'date'
+        )
+            inputProps.onChange?.(selected)
+        if (
+            inputProps.valueFormat === 'iso-date' ||
+            inputProps.valueFormat === 'iso-datetime'
+        )
+            inputProps.onChange?.(
+                serializeCalendarValue(selected, {
+                    format:
+                        inputProps.valueFormat === 'iso-date'
+                            ? 'date'
+                            : 'datetime',
+                }),
+            )
     }
 
     function handleGetFormValue(value: CalendarValue) {

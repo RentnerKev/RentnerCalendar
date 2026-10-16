@@ -1,3 +1,4 @@
+import { getCalendarFieldProps } from '../../src/form.ts'
 import { usePlaygroundLogic } from './Hooks/usePlaygroundLogic.ts'
 import { CalendarClock } from 'lucide-react'
 import { createRoot } from 'react-dom/client'
@@ -189,12 +190,10 @@ function App() {
                                     )}
                                     <CustomCalendar
                                         id={field.name}
-                                        name={field.name}
-                                        value={field.state.value}
-                                        onChange={(value) =>
-                                            field.handleChange(value)
-                                        }
-                                        onBlur={field.handleBlur}
+                                        {...getCalendarFieldProps(field)}
+                                        classNames={{
+                                            error: 'text-sm font-medium text-rentner-danger',
+                                        }}
                                         placeholder="Termin auswählen"
                                         required
                                         readOnly={isReadonlyAxeTest}
@@ -219,9 +218,6 @@ function App() {
                                                 ? `h-11 rounded-md ${calendarWidthUtility === 'typed' ? 'w-[length:512px]' : calendarWidthUtility === 'responsive' ? 'md:w-[length:512px]' : 'calendar-consumer-wide-trigger'} ${calendarShadowClass ? 'shadow-lg' : ''}`
                                                 : 'h-11 w-60 rounded-md'
                                         }
-                                    />
-                                    <FieldError
-                                        errors={field.state.meta.errors}
                                     />
                                 </div>
                             )}

@@ -1,3 +1,7 @@
+import {
+    constrainCalendarDateTime,
+    calendarValueWithinDateTimeBounds,
+} from '../../../lib/Calendar/CalendarDateTime.ts'
 import { useState } from 'react'
 import type { CalendarValue } from '../Types/Calendar.types.ts'
 import {
@@ -19,6 +23,8 @@ export default function useCalendarSelection(
     maxDate?: Date,
     minTime?: string,
     maxTime?: string,
+    minDateTime?: Date,
+    maxDateTime?: Date,
 ) {
     const [viewDate, setViewDate] = useState(() =>
         Array.isArray(value) && value[0]
@@ -101,14 +107,39 @@ export default function useCalendarSelection(
             enableTime,
             minDate,
             maxDate,
+            minDateTime,
+            maxDateTime,
             minTime,
             maxTime,
         })
-        onChange?.(newValue, 'date')
+        const clamp = (boundary: Date) =>
+            constrainCalendarDateTime(
+                boundary,
+                minDateTime,
+                maxDateTime,
+                enableTime ? minTime : undefined,
+                enableTime ? maxTime : undefined,
+            )
+        if (Array.isArray(newValue)) {
+            const start = newValue[0] ? clamp(newValue[0]) : null
+            const end = newValue[1] ? clamp(newValue[1]) : null
+            if (start === undefined || end === undefined) return
+            onChange?.([start, end], 'date')
+        } else if (newValue) {
+            const next = clamp(newValue)
+            if (next) onChange?.(next, 'date')
+        }
     }
 
     function handleTimeChange(newValue: CalendarValue) {
-        onChange?.(newValue, 'time')
+        if (
+            calendarValueWithinDateTimeBounds(
+                newValue,
+                minDateTime,
+                maxDateTime,
+            )
+        )
+            onChange?.(newValue, 'time')
     }
 
     return {

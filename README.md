@@ -107,3 +107,5 @@ information, API declarations, usage guides, examples, and search, without
 accounts, write operations, or access to private project files. The installed
 `/ai` entry works locally without that service. Always use the documentation and
 declarations for the version installed in your project.
+
+Typed ISO callbacks, combined instant bounds, shared theme tokens, provider/local sizing, typed slots, configurable portals and the optional UI-free `@rentnerkev/calendar/form` adapter are described in [the usage guide](docs/usage.md). Existing Date defaults remain compatible.

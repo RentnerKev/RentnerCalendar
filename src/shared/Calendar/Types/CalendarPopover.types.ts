@@ -3,8 +3,12 @@ import type {
     CalendarMessages,
     CalendarLocale,
 } from '../../../lib/Calendar/Types/Messages.types.ts'
-import type { CalendarCustomDesign, CalendarValue } from './Calendar.types.ts'
-export interface CalendarPopoverProps {
+import type {
+    CalendarAppearance,
+    CalendarCustomDesign,
+    CalendarValue,
+} from './Calendar.types.ts'
+export interface CalendarPopoverProps extends CalendarAppearance {
     backdrop: boolean
     onClose: () => void
     dialogId: string
@@ -37,6 +41,8 @@ export interface CalendarPopoverProps {
     locale: CalendarLocale
     enableTime: boolean
     onTimeChange: (value: CalendarValue) => void
+    minDateTime?: Date
+    maxDateTime?: Date
     minTime?: string
     maxTime?: string
     button: boolean

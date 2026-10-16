@@ -8,7 +8,10 @@ import type {
     MouseEvent,
     RefCallback,
 } from 'react'
-import type { CalendarProps, CalendarValue } from '../Types/Calendar.types.ts'
+import type {
+    CalendarInternalProps,
+    CalendarValue,
+} from '../Types/Calendar.types.ts'
 import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
 import useCalendarPosition from './useCalendarPosition.ts'
 import useCalendarSelection from './useCalendarSelection.ts'
@@ -19,6 +22,7 @@ import {
 import { formatCalendarValue } from '../../../lib/Calendar/FormatFunctions.ts'
 import { serializeCalendarValue } from '../../../lib/Calendar/CalendarValue.ts'
 import { calendarValueHasTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.ts'
+import { calendarValueWithinDateTimeBounds } from '../../../lib/Calendar/CalendarDateTime.ts'
 import { calendarValueWithinDateBounds } from '../../../lib/Calendar/CalendarDay.ts'
 import {
     mergeAriaIds,
@@ -36,6 +40,11 @@ import { composeRefs } from './composeRefs.ts'
 const calendarPopoverMinWidth = 340
 
 export default function useCustomCalendarLogic({
+    controlSize: providedControlSize,
+    classNames: providedClassNames,
+    portalContainer: providedPortalContainer,
+    portalClassName: providedPortalClassName,
+    portalZIndex: providedPortalZIndex,
     id,
     name,
     value: rawValue,
@@ -57,6 +66,8 @@ export default function useCustomCalendarLogic({
     closeOnSelect = false,
     minDate: rawMinDate,
     maxDate: rawMaxDate,
+    minDateTime: rawMinDateTime,
+    maxDateTime: rawMaxDateTime,
     minTime,
     maxTime,
     fastEdit = true,
@@ -75,8 +86,16 @@ export default function useCustomCalendarLogic({
     'aria-describedby': ariaDescribedBy,
     triggerRef: forwardedTriggerRef,
     ...ariaProps
-}: CalendarProps): CustomCalendarLogicResult {
+}: CalendarInternalProps): CustomCalendarLogicResult {
     const defaults = useCalendarDefaults()
+    const controlSize = providedControlSize ?? defaults.controlSize
+    const classNames = { ...defaults.classNames, ...providedClassNames }
+    const portalContainer =
+        providedPortalContainer === undefined
+            ? defaults.portalContainer
+            : providedPortalContainer
+    const portalClassName = providedPortalClassName ?? defaults.portalClassName
+    const portalZIndex = providedPortalZIndex ?? defaults.portalZIndex
     const locale = providedLocale ?? defaults.locale ?? 'de'
     const messageOverrides = useMemo(
         () => ({
@@ -116,6 +135,15 @@ export default function useCustomCalendarLogic({
     const maxDate = useMemo(
         () => parseToDate(rawMaxDate) || undefined,
         [rawMaxDate],
+    )
+
+    const minDateTime = useMemo(
+        () => parseToDate(rawMinDateTime) || undefined,
+        [rawMinDateTime],
+    )
+    const maxDateTime = useMemo(
+        () => parseToDate(rawMaxDateTime) || undefined,
+        [rawMaxDateTime],
     )
 
     const [tempValue, setTempValue] = useState(normalizedValue)
@@ -175,30 +203,46 @@ export default function useCustomCalendarLogic({
         maxHeight: `${coords.maxHeight}px`,
         borderRadius: resolvedRadius,
         borderWidth: '1px',
+        zIndex: portalZIndex,
     }
 
     const inputClasses = [
-        'relative flex items-center px-4 gap-3 shadow-sm transition-colors cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-        hasError
-            ? 'border-red-500 focus:ring-2 focus:ring-red-500/50'
-            : cd.borderColor,
-        cd.inputBackground,
-        hasError ? '' : cd.primaryColorFocusWithin,
-        hasError ? '' : cd.primaryFocusBorder,
-        hasError ? '' : cd.primaryRing,
+        'relative flex items-center px-4 gap-3 transition-colors cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50',
+        classNames.control ??
+            [
+                'shadow-sm',
+                hasError
+                    ? 'border-rentner-danger focus:ring-rentner-danger'
+                    : cd.borderColor,
+                cd.inputBackground,
+                hasError ? '' : cd.primaryColorFocusWithin,
+                hasError ? '' : cd.primaryFocusBorder,
+                hasError ? '' : cd.primaryRing,
+            ].join(' '),
         disabled ? 'cursor-not-allowed opacity-60' : '',
         readOnly ? 'cursor-default' : '',
-        !className.includes('h-') ? 'h-[2.75rem]' : '',
-        !className.includes('rounded') ? 'rounded-[0.75rem]' : '',
+        controlSize
+            ? {
+                  sm: 'h-rentner-control-sm',
+                  md: 'h-rentner-control-md',
+                  lg: 'h-rentner-control-lg',
+              }[controlSize]
+            : !className.includes('h-')
+              ? 'h-[2.75rem]'
+              : '',
+        !classNames.control && !className.includes('rounded')
+            ? 'rounded-rentner-control'
+            : '',
         className,
     ]
         .filter(Boolean)
         .join(' ')
 
     const popoverClasses = [
-        'z-[9000] p-4 shadow-xl overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200',
-        cd.surfaceBackground,
-        cd.borderColor,
+        'z-[var(--rentner-overlay-z,9000)] p-4 overflow-y-auto',
+        classNames.portal ??
+            `shadow-xl ${cd.surfaceBackground} ${cd.borderColor}`,
+        portalClassName,
         dropdownPosition === 'top'
             ? 'slide-in-from-bottom-2 origin-bottom'
             : 'slide-in-from-top-2 origin-top',
@@ -338,6 +382,10 @@ export default function useCustomCalendarLogic({
             return
         }
 
+        if (
+            !calendarValueWithinDateTimeBounds(newVal, minDateTime, maxDateTime)
+        )
+            return
         setTempValue(newVal)
         commitCalendarSelection(newVal, onChange, {
             backdrop,
@@ -368,6 +416,8 @@ export default function useCustomCalendarLogic({
         maxDate,
         minTime,
         maxTime,
+        minDateTime,
+        maxDateTime,
     )
 
     function handleApply() {
@@ -386,6 +436,14 @@ export default function useCustomCalendarLogic({
             return
         }
 
+        if (
+            !calendarValueWithinDateTimeBounds(
+                tempValue,
+                minDateTime,
+                maxDateTime,
+            )
+        )
+            return
         onChange?.(tempValue)
         closeCalendar()
     }
@@ -486,6 +544,8 @@ export default function useCustomCalendarLogic({
     return {
         state: {
             field: {
+                classNames,
+                portalContainer,
                 ariaLabel,
                 ariaLabelledBy: labelledBy,
                 ariaDescribedBy: describedBy,
@@ -517,6 +577,11 @@ export default function useCustomCalendarLogic({
                     required && !disabled && externalError === undefined,
             },
             popover: {
+                classNames,
+                controlSize,
+                portalContainer,
+                portalClassName,
+                portalZIndex,
                 backdrop,
                 dialogId,
                 className: popoverClasses,
@@ -540,6 +605,8 @@ export default function useCustomCalendarLogic({
                 showHolidays,
                 locale,
                 enableTime,
+                minDateTime,
+                maxDateTime,
                 minTime,
                 maxTime,
                 button,

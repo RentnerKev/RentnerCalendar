@@ -6,6 +6,11 @@ import CalendarHeader from './CalendarHeader.tsx'
 import CalendarTimeInput from './CalendarTimeInput.tsx'
 
 export default function CalendarPopover({
+    classNames,
+    controlSize,
+    portalContainer,
+    portalClassName,
+    portalZIndex,
     backdrop,
     onClose,
     dialogId,
@@ -38,6 +43,8 @@ export default function CalendarPopover({
     locale,
     enableTime,
     onTimeChange,
+    minDateTime,
+    maxDateTime,
     minTime,
     maxTime,
     button,
@@ -76,6 +83,8 @@ export default function CalendarPopover({
         locale,
         enableTime,
         onTimeChange,
+        minDateTime,
+        maxDateTime,
         minTime,
         maxTime,
         button,
@@ -89,7 +98,12 @@ export default function CalendarPopover({
                 <div
                     role="presentation"
                     aria-hidden="true"
-                    className="fixed inset-0 z-[8999]"
+                    className="fixed inset-0 z-[var(--rentner-backdrop-z,8999)]"
+                    style={
+                        portalZIndex === undefined
+                            ? undefined
+                            : { zIndex: portalZIndex - 1 }
+                    }
                     onClick={handler.handleBackdropClick}
                 />
             )}
@@ -109,14 +123,14 @@ export default function CalendarPopover({
                 onClick={(event) => event.stopPropagation()}
             >
                 {switchMode && (
-                    <div className="mb-4 flex items-center justify-between rounded-lg border bg-black/20 p-1">
+                    <div className="mb-4 flex items-center justify-between rounded-lg border bg-rentner-control p-1">
                         <button
                             type="button"
                             onClick={() => onRangeModeChange(false)}
                             aria-label={messages.day}
                             aria-pressed={!isRangeMode}
                             disabled={disabled || readOnly}
-                            className={`flex-1 cursor-pointer rounded-md py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${!isRangeMode ? `${customDesign.primaryBg} ${customDesign.textBackground} shadow-sm` : `${customDesign.textMuted} ${customDesign.hoverText} hover:bg-white/5`}`}
+                            className={`flex-1 cursor-pointer rounded-md py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 ${!isRangeMode ? `${customDesign.primaryBg} ${customDesign.textBackground} shadow-sm` : `${customDesign.textMuted} ${customDesign.hoverText} hover:bg-rentner-accent/10`}`}
                         >
                             {messages.day}
                         </button>
@@ -126,7 +140,7 @@ export default function CalendarPopover({
                             aria-label={messages.range}
                             aria-pressed={isRangeMode}
                             disabled={disabled || readOnly}
-                            className={`flex-1 cursor-pointer rounded-md py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${isRangeMode ? `${customDesign.primaryBg} ${customDesign.textBackground} shadow-sm` : `${customDesign.textMuted} ${customDesign.hoverText} hover:bg-white/5`}`}
+                            className={`flex-1 cursor-pointer rounded-md py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 ${isRangeMode ? `${customDesign.primaryBg} ${customDesign.textBackground} shadow-sm` : `${customDesign.textMuted} ${customDesign.hoverText} hover:bg-rentner-accent/10`}`}
                         >
                             {messages.range}
                         </button>
@@ -134,6 +148,11 @@ export default function CalendarPopover({
                 )}
 
                 <CalendarHeader
+                    classNames={classNames}
+                    controlSize={controlSize}
+                    portalContainer={portalContainer}
+                    portalClassName={portalClassName}
+                    portalZIndex={portalZIndex}
                     dialogId={dialogId}
                     currentDate={currentDate}
                     onPrevMonth={onPrevMonth}
@@ -155,6 +174,8 @@ export default function CalendarPopover({
                     customDesign={customDesign}
                     minDate={minDate}
                     maxDate={maxDate}
+                    minDateTime={minDateTime}
+                    maxDateTime={maxDateTime}
                     minTime={minTime}
                     maxTime={maxTime}
                     weekStartsOn={weekStartsOn}
@@ -171,6 +192,10 @@ export default function CalendarPopover({
                 />
                 {enableTime && (
                     <CalendarTimeInput
+                        controlSize={controlSize}
+                        classNames={classNames}
+                        minDateTime={minDateTime}
+                        maxDateTime={maxDateTime}
                         value={selectedDate}
                         onChange={onTimeChange}
                         enableRange={isRangeMode}
@@ -193,7 +218,7 @@ export default function CalendarPopover({
                         type="button"
                         onClick={onApply}
                         disabled={disabled || readOnly || applyDisabled}
-                        className={`mt-4 w-full cursor-pointer rounded-lg py-2 font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${customDesign.primaryBg} ${customDesign.primaryHover}`}
+                        className={`mt-4 w-full cursor-pointer rounded-lg py-2 font-medium text-rentner-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 ${customDesign.primaryBg} ${customDesign.primaryHover}`}
                     >
                         {messages.apply}
                     </button>

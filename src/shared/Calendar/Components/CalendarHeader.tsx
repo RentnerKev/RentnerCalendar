@@ -8,6 +8,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
 
 function FastEditSelect({
+    classNames,
+    controlSize,
+    portalContainer,
+    portalClassName,
+    portalZIndex,
+    customDesign,
     value,
     options,
     className = '',
@@ -21,6 +27,12 @@ function FastEditSelect({
     return (
         <div className={className}>
             <CustomSelect
+                classNames={classNames}
+                controlSize={controlSize}
+                portalContainer={portalContainer}
+                portalClassName={portalClassName}
+                portalZIndex={portalZIndex}
+                customDesign={customDesign}
                 value={value}
                 onValueChange={onChange}
                 options={options}
@@ -29,13 +41,18 @@ function FastEditSelect({
                 aria-label={ariaLabel}
                 disabled={disabled}
                 readOnly={readOnly}
-                className="h-9 w-full !min-w-0 rounded-lg !py-2 !pl-3 !pr-8"
+                className="w-full !min-w-0 !py-2 !pl-3 !pr-8"
             />
         </div>
     )
 }
 
 export default function CalendarHeader({
+    classNames,
+    controlSize,
+    portalContainer,
+    portalClassName,
+    portalZIndex,
     dialogId,
     currentDate,
     onPrevMonth,
@@ -72,12 +89,12 @@ export default function CalendarHeader({
     const { handleMonthChange, handleYearChange } = handler
     return (
         <div
-            className={`sticky top-0 z-10 flex items-center justify-between mb-4 px-1 ${cd.surfaceBackground}`}
+            className={`sticky top-0 z-10 flex items-center justify-between mb-4 px-1 ${classNames?.header ?? cd.surfaceBackground}`}
         >
             <button
                 onClick={onPrevMonth}
                 aria-label={messages.previousMonth}
-                className={`p-2 rounded-xl cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${cd.hoverBackground} ${cd.hoverText} motion-safe:active:scale-95`}
+                className={`p-2 rounded-xl cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 ${cd.hoverBackground} ${cd.hoverText} motion-safe:active:scale-95`}
                 type="button"
                 disabled={disabled || readOnly}
             >
@@ -87,6 +104,12 @@ export default function CalendarHeader({
             {fastEdit ? (
                 <div className="flex min-w-0 flex-1 items-center justify-center gap-1 px-1">
                     <FastEditSelect
+                        classNames={classNames}
+                        controlSize={controlSize}
+                        portalContainer={portalContainer}
+                        portalClassName={portalClassName}
+                        portalZIndex={portalZIndex}
+                        customDesign={cd}
                         value={currentMonth.toString()}
                         onChange={handleMonthChange}
                         options={monthOptions}
@@ -98,6 +121,12 @@ export default function CalendarHeader({
                         className="min-w-0 flex-[1.4_1_0]"
                     />
                     <FastEditSelect
+                        classNames={classNames}
+                        controlSize={controlSize}
+                        portalContainer={portalContainer}
+                        portalClassName={portalClassName}
+                        portalZIndex={portalZIndex}
+                        customDesign={cd}
                         value={currentYear.toString()}
                         onChange={handleYearChange}
                         options={yearOptions}
@@ -134,7 +163,7 @@ export default function CalendarHeader({
             <button
                 onClick={onNextMonth}
                 aria-label={messages.nextMonth}
-                className={`p-2 rounded-xl cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${cd.hoverBackground} ${cd.hoverText} motion-safe:active:scale-95`}
+                className={`p-2 rounded-xl cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 ${cd.hoverBackground} ${cd.hoverText} motion-safe:active:scale-95`}
                 type="button"
                 disabled={disabled || readOnly}
             >

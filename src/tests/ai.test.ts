@@ -41,6 +41,15 @@ describe('read-only AI package context', () => {
         const api = getPackageApi()
         expect(Object.keys(api.subpaths)).toContain('.')
         expect(api.subpaths).not.toHaveProperty('./ai')
+        expect(Object.keys(api.subpaths)).toContain('./form')
+        expect(
+            getPackageApi({
+                subpath: './form',
+                symbol: 'getCalendarFieldProps',
+            }).declarations.some((file) =>
+                file.content.includes('CalendarFormField'),
+            ),
+        ).toBe(true)
         expect(api.declarations.length).toBeGreaterThan(1)
         expect(
             api.declarations.every(

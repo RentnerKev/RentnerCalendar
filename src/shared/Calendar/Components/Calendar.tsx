@@ -1,10 +1,13 @@
 import CalendarPopover from './CalendarPopover.tsx'
 import CalendarField from './CalendarField.tsx'
+import { createCalendarValueBridge } from '../../../lib/Calendar/CalendarValueBridge.ts'
 import useCustomCalendarLogic from '../Hooks/useCustomCalendarLogic.ts'
 import type { CalendarProps } from '../Types/Calendar.types.ts'
 
 export function CustomCalendar(props: CalendarProps) {
-    const { state, handler, setter, refs } = useCustomCalendarLogic(props)
+    const { state, handler, setter, refs } = useCustomCalendarLogic(
+        createCalendarValueBridge(props),
+    )
     const popoverContent = state.field.isOpen ? (
         <CalendarPopover
             {...state.popover}

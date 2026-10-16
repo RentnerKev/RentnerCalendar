@@ -12,6 +12,10 @@ function SingleTimeInput({
     label,
     onChangeDate,
     cd,
+    minDateTime,
+    maxDateTime,
+    classNames,
+    controlSize,
     minTime,
     maxTime,
     disabled = false,
@@ -20,6 +24,8 @@ function SingleTimeInput({
     const { state, handler, setter, refs } = useSingleTimeInputLogic({
         date,
         onChangeDate,
+        minDateTime,
+        maxDateTime,
         minTime,
         maxTime,
         disabled,
@@ -50,7 +56,7 @@ function SingleTimeInput({
                 onKeyDown={handleKeyDown}
                 onFocus={handler.handleFocus}
                 onBlur={handler.handleBlur}
-                className={`relative flex items-center justify-center bg-transparent border ${cd.borderColor} rounded-lg px-3 py-1.5 ${cd.primaryFocusBorder} ${cd.primaryRing} transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${disabled || readOnly ? 'cursor-not-allowed opacity-60' : 'cursor-text'}`}
+                className={`relative flex items-center justify-center border px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 ${controlSize ? { sm: 'h-rentner-control-sm', md: 'h-rentner-control-md', lg: 'h-rentner-control-lg' }[controlSize] : ''} ${classNames?.time ?? `bg-transparent ${cd.borderColor} rounded-lg ${cd.primaryFocusBorder} ${cd.primaryRing} shadow-sm`} ${disabled || readOnly ? 'cursor-not-allowed opacity-60' : 'cursor-text'}`}
             >
                 <div
                     className={`flex items-center ${cd.textColor} text-[15px] font-medium gap-0.5`}
@@ -146,6 +152,10 @@ export default function CalendarTimeInput(props: CalendarTimeInputProps) {
                         label={messages.from}
                         onChangeDate={(d) => handleUpdate(0, d)}
                         cd={cd}
+                        minDateTime={props.minDateTime}
+                        maxDateTime={props.maxDateTime}
+                        classNames={props.classNames}
+                        controlSize={props.controlSize}
                         minTime={minTime}
                         maxTime={maxTime}
                         disabled={disabled || !rangeValue[0]}
@@ -156,6 +166,10 @@ export default function CalendarTimeInput(props: CalendarTimeInputProps) {
                         label={messages.to}
                         onChangeDate={(d) => handleUpdate(1, d)}
                         cd={cd}
+                        minDateTime={props.minDateTime}
+                        maxDateTime={props.maxDateTime}
+                        classNames={props.classNames}
+                        controlSize={props.controlSize}
                         minTime={minTime}
                         maxTime={maxTime}
                         disabled={disabled || !rangeValue[1]}
@@ -168,6 +182,10 @@ export default function CalendarTimeInput(props: CalendarTimeInputProps) {
                     label={messages.time}
                     onChangeDate={(d) => handleUpdate(0, d)}
                     cd={cd}
+                    minDateTime={props.minDateTime}
+                    maxDateTime={props.maxDateTime}
+                    classNames={props.classNames}
+                    controlSize={props.controlSize}
                     minTime={minTime}
                     maxTime={maxTime}
                     disabled={disabled || !singleDate}

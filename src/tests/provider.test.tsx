@@ -48,3 +48,33 @@ describe('calendar provider defaults', () => {
         expect(markup).not.toContain('bg-project-input')
     })
 })
+
+test('merges provider slots and preserves local replacement defaults during SSR', () => {
+    const markup = renderToStaticMarkup(
+        <CalendarProvider
+            controlSize="lg"
+            classNames={{
+                label: 'provider-label',
+                control: 'provider-control',
+            }}
+        >
+            <CalendarProvider
+                classNames={{ description: 'nested-description' }}
+            >
+                <SingleCalendar
+                    label="Date"
+                    description="Details"
+                    controlSize="sm"
+                    classNames={{ control: 'local-control' }}
+                />
+            </CalendarProvider>
+        </CalendarProvider>,
+    )
+    expect(markup).toContain('provider-label')
+    expect(markup).toContain('nested-description')
+    expect(markup).toContain('local-control')
+    expect(markup).toContain('h-rentner-control-sm')
+    expect(markup).not.toContain('provider-control')
+    expect(markup).not.toContain('bg-rentner-control')
+    expect(markup).not.toContain('h-rentner-control-lg')
+})

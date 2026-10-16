@@ -2,7 +2,10 @@ import type { CalendarValue, RangeCalendarProps } from './Calendar.types.ts'
 
 export type RangeCalendarLogicResult = {
     state: {
-        props: Omit<RangeCalendarProps, 'mode' | 'onChange' | 'getFormValue'>
+        props: Omit<
+            RangeCalendarProps,
+            'mode' | 'onChange' | 'getFormValue' | 'valueFormat'
+        >
     }
     handler: {
         onChange: ((value: CalendarValue) => void) | undefined

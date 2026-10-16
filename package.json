@@ -11,10 +11,12 @@
         "dist",
         "tailwind.css",
         "README.md",
-        "docs/usage.md"
+        "docs/usage.md",
+        "theme.css"
     ],
     "sideEffects": [
-        "./tailwind.css"
+        "./tailwind.css",
+        "./theme.css"
     ],
     "scripts": {
         "build": "bun -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true })\" && tsc",
@@ -28,8 +30,8 @@
         "playground:build": "bun --cwd playground build",
         "lint": "oxlint --deny-warnings src scripts playground/src playwright.config.ts .github/scripts",
         "lint:fix": "oxlint --fix --deny-warnings src scripts playground/src playwright.config.ts .github/scripts",
-        "format": "oxfmt src scripts playground README.md docs package.json tailwind.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
-        "format:check": "oxfmt --check src scripts playground README.md docs package.json tailwind.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
+        "format": "oxfmt src scripts playground README.md docs package.json tailwind.css theme.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
+        "format:check": "oxfmt --check src scripts playground README.md docs package.json tailwind.css theme.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
         "verify": "bun run typecheck && bun run lint && bun run format:check && bun run test && bun run build && bun run pack:check && bun run pack:consumer && bun run test:e2e",
         "typecheck:automation": "tsc --noEmit -p .github/scripts/tsconfig.json"
     },
@@ -109,6 +111,11 @@
         "./ai": {
             "types": "./dist/ai.d.ts",
             "import": "./dist/ai.js"
+        },
+        "./theme.css": "./theme.css",
+        "./form": {
+            "types": "./dist/form.d.ts",
+            "import": "./dist/form.js"
         }
     },
     "packageManager": "bun@1.4.2"

@@ -1,4 +1,8 @@
-import type { CalendarHeaderProps } from './Calendar.types.ts'
+import type {
+    CalendarAppearance,
+    CalendarCustomDesign,
+    CalendarHeaderProps,
+} from './Calendar.types.ts'
 import type { CalendarMessages } from '../../../lib/Calendar/Types/Messages.types.ts'
 export interface CalendarHeaderInternalProps extends CalendarHeaderProps {
     dialogId: string
@@ -9,7 +13,8 @@ export interface FastEditOption {
     label: string
 }
 
-export interface FastEditSelectProps {
+export interface FastEditSelectProps extends CalendarAppearance {
+    customDesign?: CalendarCustomDesign
     value: string
     options: FastEditOption[]
     className?: string

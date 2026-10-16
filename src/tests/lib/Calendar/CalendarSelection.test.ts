@@ -210,3 +210,23 @@ describe('calendar date selections with bounds', () => {
         })
     })
 })
+
+test('restarts a partial range after instant bounds invalidate its previous start', () => {
+    const originalStart = new Date(2026, 9, 16, 10)
+    const clickedDay = new Date(2026, 9, 18)
+    const minDateTime = new Date(2026, 9, 17, 9)
+    const selected = createCalendarDateSelection(
+        clickedDay,
+        [originalStart, null],
+        { enableRange: true, enableTime: true, minDateTime },
+    )
+    expect(selected).toEqual([clickedDay, null])
+    const maximum = new Date(2026, 9, 15, 23)
+    expect(
+        createCalendarDateSelection(
+            new Date(2026, 9, 14),
+            [originalStart, null],
+            { enableRange: true, enableTime: true, maxDateTime: maximum },
+        ),
+    ).toEqual([new Date(2026, 9, 14), null])
+})

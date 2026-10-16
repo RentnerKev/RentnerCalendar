@@ -8,9 +8,12 @@ import type {
     InvalidEvent,
 } from 'react'
 import type { CalendarMessages } from '../../../lib/Calendar/Types/Messages.types.ts'
-import type { CalendarCustomDesign } from './Calendar.types.ts'
+import type {
+    CalendarAppearance,
+    CalendarCustomDesign,
+} from './Calendar.types.ts'
 
-export interface CalendarFieldProps {
+export interface CalendarFieldProps extends CalendarAppearance {
     ariaLabel?: string
     ariaLabelledBy?: string
     ariaDescribedBy?: string

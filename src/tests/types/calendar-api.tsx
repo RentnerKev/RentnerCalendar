@@ -60,3 +60,54 @@ void [
     invalidRangeBounds,
     withDefaults,
 ]
+
+const isoSingle = (
+    <SingleCalendar
+        valueFormat="iso-date"
+        value="2026-10-16"
+        onChange={(value) => {
+            const check: string | undefined = value
+            void check
+        }}
+    />
+)
+const isoRange = (
+    <RangeCalendar
+        valueFormat="iso-datetime"
+        value={['2026-10-16T10:00:00Z', null]}
+        onChange={(value) => {
+            const check: [string | null, string | null] | undefined = value
+            void check
+        }}
+    />
+)
+const invalidSerializedChange = (
+    // @ts-expect-error Serialized values reject Date callbacks.
+    <SingleCalendar
+        valueFormat="iso-date"
+        onChange={(_value: Date | undefined) => {}}
+    />
+)
+const invalidSerializedRange = (
+    // @ts-expect-error Serialized range input must be a tuple.
+    <RangeCalendar valueFormat="iso-date" value="2026-10-16" />
+)
+const invalidSerializedValue = (
+    // @ts-expect-error Date input is incompatible with serialized mode.
+    <SingleCalendar valueFormat="iso-datetime" value={new Date()} />
+)
+const invalidSerializedRangeChange = (
+    // @ts-expect-error Serialized callback requires a string tuple.
+    <RangeCalendar
+        valueFormat="iso-date"
+        onChange={(_value: CalendarRange | undefined) => {}}
+    />
+)
+void [
+    isoSingle,
+    isoRange,
+    invalidSerializedChange,
+    invalidSerializedRange,
+    invalidSerializedValue,
+    invalidSerializedRangeChange,
+]

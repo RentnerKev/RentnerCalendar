@@ -2,6 +2,7 @@ import type { CalendarPopoverLogicResult } from '../Types/CalendarPopoverLogicRe
 import type { KeyboardEvent, MouseEvent } from 'react'
 import type { CalendarPopoverProps } from '../Types/CalendarPopover.types.ts'
 import { calendarValueHasTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.ts'
+import { calendarValueWithinDateTimeBounds } from '../../../lib/Calendar/CalendarDateTime.ts'
 import { calendarValueWithinDateBounds } from '../../../lib/Calendar/CalendarDay.ts'
 const focusableSelector =
     'a[href], area[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex], [contenteditable="true"]'
@@ -27,12 +28,19 @@ export default function useCalendarPopoverLogic({
     minDate,
     maxDate,
     enableTime,
+    minDateTime,
+    maxDateTime,
     minTime,
     maxTime,
 }: CalendarPopoverProps): CalendarPopoverLogicResult {
     const monthHeadingId = `${dialogId}-month-heading`
     const keyboardHelpId = `${dialogId}-keyboard-help`
     const applyDisabled =
+        !calendarValueWithinDateTimeBounds(
+            selectedDate,
+            minDateTime,
+            maxDateTime,
+        ) ||
         !calendarValueWithinDateBounds(selectedDate, minDate, maxDate) ||
         (enableTime &&
             !calendarValueHasTimeWithinBounds(selectedDate, minTime, maxTime))

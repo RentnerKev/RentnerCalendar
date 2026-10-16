@@ -12,6 +12,11 @@ export function useCalendarDefaults(): CalendarDefaults {
 }
 
 export function useCalendarProviderLogic({
+    controlSize,
+    classNames,
+    portalContainer,
+    portalClassName,
+    portalZIndex,
     locale,
     messages,
     customDesign,
@@ -19,6 +24,14 @@ export function useCalendarProviderLogic({
     const parent = useCalendarDefaults()
     const value = useMemo<CalendarDefaults>(
         () => ({
+            controlSize: controlSize ?? parent.controlSize,
+            classNames: { ...parent.classNames, ...classNames },
+            portalContainer:
+                portalContainer === undefined
+                    ? parent.portalContainer
+                    : portalContainer,
+            portalClassName: portalClassName ?? parent.portalClassName,
+            portalZIndex: portalZIndex ?? parent.portalZIndex,
             locale: locale ?? parent.locale,
             messages: {
                 ...parent.messages,
@@ -30,7 +43,17 @@ export function useCalendarProviderLogic({
             },
             customDesign: { ...parent.customDesign, ...customDesign },
         }),
-        [parent, locale, messages, customDesign],
+        [
+            parent,
+            locale,
+            messages,
+            customDesign,
+            controlSize,
+            classNames,
+            portalContainer,
+            portalClassName,
+            portalZIndex,
+        ],
     )
     return { state: { value } }
 }

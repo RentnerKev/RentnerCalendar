@@ -24,6 +24,8 @@ describe('published package contract', () => {
         expect(Object.keys(packageJson.exports)).toContainAllValues([
             '.',
             './tailwind.css',
+            './theme.css',
+            './form',
             './calendar',
             './single-calendar',
             './range-calendar',

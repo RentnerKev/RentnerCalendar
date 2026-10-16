@@ -1,3 +1,4 @@
+import { calendarValueWithinDateTimeBounds } from './CalendarDateTime.ts'
 import type {
     CalendarRange,
     CalendarValue,
@@ -63,6 +64,8 @@ export function createCalendarDateSelection(
     options: {
         enableRange?: boolean
         enableTime?: boolean
+        minDateTime?: Date
+        maxDateTime?: Date
         minDate?: Date
         maxDate?: Date
         minTime?: string
@@ -74,6 +77,8 @@ export function createCalendarDateSelection(
         enableTime = false,
         minDate,
         maxDate,
+        minDateTime,
+        maxDateTime,
         minTime,
         maxTime,
     } = options
@@ -90,6 +95,11 @@ export function createCalendarDateSelection(
         const validStart =
             start !== null &&
             isCalendarDayWithinBounds(start, minDate, maxDate) &&
+            calendarValueWithinDateTimeBounds(
+                start,
+                minDateTime,
+                maxDateTime,
+            ) &&
             (!enableTime ||
                 hasCalendarTimeWithinBounds(start, minTime, maxTime))
 

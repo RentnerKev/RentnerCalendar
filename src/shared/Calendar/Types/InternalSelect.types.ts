@@ -1,3 +1,7 @@
+import type {
+    CalendarAppearance,
+    CalendarCustomDesign,
+} from './Calendar.types.ts'
 import type { ReactNode } from 'react'
 import type { CalendarMessages } from '../../../lib/Calendar/Types/Messages.types.ts'
 
@@ -7,7 +11,8 @@ export interface Option {
     subOption?: string
 }
 
-export interface CustomSelectProps {
+export interface CustomSelectProps extends CalendarAppearance {
+    customDesign?: CalendarCustomDesign
     id?: string
     portalOwnerId?: string
     name?: string

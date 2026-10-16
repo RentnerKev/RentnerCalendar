@@ -6,6 +6,8 @@ import { CustomTooltip } from '@rentnerkev/tooltips'
 import type { CalendarFieldProps } from '../Types/CalendarField.types.ts'
 
 export default function CalendarField({
+    classNames,
+    portalContainer,
     ariaLabel,
     ariaLabelledBy,
     ariaDescribedBy,
@@ -43,9 +45,12 @@ export default function CalendarField({
     validationRequired,
 }: CalendarFieldProps) {
     return (
-        <div className="w-full" onBlur={handleFieldBlur}>
+        <div className={classNames?.root ?? 'w-full'} onBlur={handleFieldBlur}>
             {label != null && (
-                <div id={labelId} className="mb-1 text-sm font-medium">
+                <div
+                    id={labelId}
+                    className={classNames?.label ?? 'mb-1 text-sm font-medium'}
+                >
                     {label}
                 </div>
             )}
@@ -89,20 +94,32 @@ export default function CalendarField({
                     }
                     aria-haspopup={ariaProps['aria-haspopup'] ?? 'dialog'}
                 >
-                    {hasError ? (
-                        <CustomTooltip content={error || ''} side="bottom">
-                            <AlertCircle className="h-5 w-5 text-red-500" />
-                        </CustomTooltip>
-                    ) : (
-                        icon !== false &&
-                        (icon || (
-                            <CalendarDays
-                                className={`w-5 h-5 ${cd.textMuted}`}
-                            />
-                        ))
+                    {(hasError || icon !== false) && (
+                        <span
+                            className={
+                                classNames?.leading ??
+                                'inline-flex items-center'
+                            }
+                        >
+                            {hasError ? (
+                                <CustomTooltip
+                                    content={error || ''}
+                                    side="bottom"
+                                >
+                                    <AlertCircle className="h-5 w-5 text-rentner-danger" />
+                                </CustomTooltip>
+                            ) : (
+                                icon !== false &&
+                                (icon || (
+                                    <CalendarDays
+                                        className={`w-5 h-5 ${cd.textMuted}`}
+                                    />
+                                ))
+                            )}
+                        </span>
                     )}
                     <span
-                        className={`flex-1 truncate ${displayValue ? cd.textColor : cd.textMuted}`}
+                        className={`flex-1 truncate ${classNames?.control ? '' : displayValue ? cd.textColor : cd.textMuted}`}
                     >
                         {displayValue || resolvedPlaceholder}
                     </span>
@@ -114,7 +131,7 @@ export default function CalendarField({
                         aria-label={messages.clear}
                         disabled={disabled || readOnly}
                         style={{ borderRadius: resolvedRadius }}
-                        className="group/delete absolute right-2 top-1/2 -translate-y-1/2 bg-red-500/50 p-1 transition-colors hover:bg-red-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                        className={`group/delete absolute right-2 top-1/2 -translate-y-1/2 p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 ${classNames?.trailing ?? 'bg-rentner-danger/50 hover:bg-rentner-danger/40 focus-visible:ring-rentner-accent'}`}
                     >
                         <X aria-hidden="true" className="h-4 w-4" />
                     </button>
@@ -122,7 +139,7 @@ export default function CalendarField({
             </div>
             {isOpen &&
                 typeof document !== 'undefined' &&
-                createPortal(popoverContent, document.body)}
+                createPortal(popoverContent, portalContainer ?? document.body)}
             <input
                 ref={validationInputRef}
                 name={name}
@@ -139,13 +156,20 @@ export default function CalendarField({
             {description != null && (
                 <div
                     id={descriptionId}
-                    className="mt-1 text-xs text-muted-foreground"
+                    className={
+                        classNames?.description ??
+                        `mt-1 text-xs ${cd.textMuted}`
+                    }
                 >
                     {description}
                 </div>
             )}
             {hasError && error && (
-                <span id={errorId} className="sr-only" aria-live="polite">
+                <span
+                    id={errorId}
+                    className={classNames?.error ?? 'sr-only'}
+                    aria-live="polite"
+                >
                     {error}
                 </span>
             )}

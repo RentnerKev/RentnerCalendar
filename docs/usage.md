@@ -536,3 +536,41 @@ information, API declarations, usage guides, examples, and search, without
 accounts, write operations, or access to private project files. The installed
 `/ai` entry works locally without that service. Always use the documentation and
 declarations for the version installed in your project.
+
+## Typed values and instant bounds
+
+The existing default `valueFormat="date"` preserves Date callbacks and accepts Date, supported strings and epoch inputs. `SingleCalendar` and `RangeCalendar` also support `valueFormat="iso-date"` or `"iso-datetime"`. Inputs and callbacks infer string or string-tuple types. Clearing emits `undefined`; partial ranges retain `[string | null, string | null]`. `null` is accepted as an empty input. Date-only values retain their local calendar day; datetime values serialize to UTC ISO instants. `getFormValue` still receives Dates. `formValueFormat` separately controls native form submission.
+
+```tsx
+import { SingleCalendar, RangeCalendar, CalendarProvider } from '@rentnerkev/calendar'
+import { getCalendarFieldProps } from '@rentnerkev/calendar/form'
+
+<SingleCalendar valueFormat="iso-date" value="2026-10-16" onChange={saveDate} />
+<RangeCalendar valueFormat="iso-datetime" value={["2026-10-16T10:00:00Z", null]} onChange={saveRange} />
+// A structural TanStack Form Field: direct values, name, blur and external errors.
+<SingleCalendar valueFormat="iso-date" {...getCalendarFieldProps(field)} />
+```
+
+`minDateTime` / `maxDateTime` accept `CalendarDateInput` and constrain complete instants inclusively during day selection, time edits and Apply. Both range endpoints are checked. A day is available only when its local day intersects the instant bounds and, with time enabled, the daily time interval. Selection and time edits clamp within that day; impossible intersections stay disabled. `minDate` / `maxDate` retain day semantics; `minTime` / `maxTime` retain daily semantics. Invalid date inputs follow the existing parser and are ignored; contradictory valid instant bounds permit no selection. Applications own business policies.
+
+## Shared appearance and portals
+
+Import `@rentnerkev/calendar/tailwind.css` with Tailwind, or use the separately exported `theme.css` tokens. Shared `--rentner-*` CSS variables style the field, calendar and internal month/year Select. Legacy `customDesign` remains supported throughout.
+
+```tsx
+<CalendarProvider
+    controlSize="md"
+    portalContainer={overlayRoot}
+    portalClassName="my-overlay"
+    portalZIndex={12000}
+>
+    <SingleCalendar
+        controlSize="sm"
+        classNames={{ control: 'bg-white text-black border-blue-500' }}
+    />
+</CalendarProvider>
+```
+
+`controlSize` is `sm` / `md` / `lg` (36/44/48 px); omission preserves existing geometry. Local settings override provider defaults. Typed `classNames` slots are `root`, `label`, `description`, `error`, `control`, `leading`, `trailing`, `header`, `selectTrigger`, `selectContent`, `selectSearch`, `selectOption`, `time`, and `portal`. Each replaces its visual defaults while retaining positioning and keyboard-focus mechanics. Legacy `className` styles the field control. Container/class/z-index reach the calendar and header popups; the latter use one level above the calendar. A null container uses the body fallback. Containers should share the trigger document and preserve fixed positioning.
+
+`getCalendarFieldProps(field, options)` is UI-free with no TanStack runtime dependency. It connects `name`, `state.value`, `state.meta.errors/isTouched`, `handleChange(value)` and `handleBlur()`. Readable strings/message objects appear after touch by default. `showErrors: "always" | "touched" | boolean` and `mapError(error)` configure visibility and mapping. The root entry exports the adapter and its types too.

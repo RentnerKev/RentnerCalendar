@@ -1,5 +1,8 @@
 import type { AriaAttributes } from 'react'
-import type { CalendarCustomDesign } from './Calendar.types.ts'
+import type {
+    CalendarAppearance,
+    CalendarCustomDesign,
+} from './Calendar.types.ts'
 import type {
     CSSProperties,
     FocusEvent,
@@ -10,7 +13,7 @@ import type {
 
 export type CustomCalendarLogicResult = {
     state: {
-        field: {
+        field: CalendarAppearance & {
             ariaLabel: string | undefined
             ariaLabelledBy: string | undefined
             ariaDescribedBy: string | undefined
@@ -43,7 +46,9 @@ export type CustomCalendarLogicResult = {
             resolvedRadius: string
             validationRequired: boolean
         }
-        popover: {
+        popover: CalendarAppearance & {
+            minDateTime?: Date
+            maxDateTime?: Date
             backdrop: boolean
             dialogId: string
             className: string

@@ -1,3 +1,4 @@
+@import './theme.css';
 @import '@rentnerkev/tooltips/tailwind.css';
 
 @source "./dist/**/*.js";

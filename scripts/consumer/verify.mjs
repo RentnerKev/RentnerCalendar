@@ -139,9 +139,21 @@ try {
         ai.getPackageApi({ symbol: 'DefinitelyNotAPublicSymbol' }),
     )
     assert.ok(existsSync(join(installedPackage, 'docs/usage.md')))
+    assert.ok(
+        readFileSync(join(installedPackage, 'theme.css'), 'utf8').includes(
+            '--rentner-control',
+        ),
+    )
+    assert.ok(
+        ai
+            .getPackageApi({ subpath: './form' })
+            .declarations.some((entry) =>
+                entry.content.includes('getCalendarFieldProps'),
+            ),
+    )
     const entryPoints = Object.keys(manifest.exports)
         .filter(
-            (entry) => entry !== './package.json' && entry !== './tailwind.css',
+            (entry) => entry !== './package.json' && !entry.endsWith('.css'),
         )
         .map(
             (entry) => `${manifest.name}${entry === '.' ? '' : entry.slice(1)}`,
@@ -181,7 +193,12 @@ try {
             .concat(`
                 import { toSafeDate, parseToDate, normalizeValue } from '${manifest.name}/date'
                 import { hasCalendarValue } from '${manifest.name}/value'
-                import type { CalendarValue } from '${manifest.name}'
+                import type { CalendarValue, SingleCalendarProps, RangeCalendarProps } from '${manifest.name}'
+                import { getCalendarFieldProps } from '${manifest.name}/form'
+                const serializedSingle: SingleCalendarProps = { valueFormat: 'iso-date', value: '2026-10-08', onChange(value) { const result: string | undefined = value; void result } }
+                const serializedRange: RangeCalendarProps = { valueFormat: 'iso-datetime', value: ['2026-10-08T09:00:00Z', null], onChange(value) { const result: [string | null, string | null] | undefined = value; void result } }
+                const adapter = getCalendarFieldProps({ name: 'date', state: { value: undefined as string | undefined, meta: { errors: [], isTouched: true } }, handleChange(value: string | undefined) { void value }, handleBlur() {} })
+                void [serializedSingle, serializedRange, adapter]
                 const safe: Date | null = toSafeDate('2026-10-08')
                 const parsed: Date | null = parseToDate('2026-10-08')
                 const value: CalendarValue = normalizeValue(['2026-10-08', null])

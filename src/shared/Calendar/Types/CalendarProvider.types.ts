@@ -3,9 +3,12 @@ import type {
     CalendarLocale,
     CalendarMessages,
 } from '../../../lib/Calendar/Types/Messages.types.ts'
-import type { CalendarCustomDesign } from './Calendar.types.ts'
+import type {
+    CalendarAppearance,
+    CalendarCustomDesign,
+} from './Calendar.types.ts'
 
-export interface CalendarProviderProps {
+export interface CalendarProviderProps extends CalendarAppearance {
     children: ReactNode
     locale?: CalendarLocale
     messages?: Partial<CalendarMessages>

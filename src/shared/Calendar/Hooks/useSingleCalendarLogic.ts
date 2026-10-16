@@ -1,19 +1,42 @@
+import { serializeCalendarValue } from '../../../lib/Calendar/CalendarValue.ts'
 import type { SingleCalendarLogicResult } from '../Types/SingleCalendarLogicResult.types.ts'
 import type {
     CalendarValue,
     SingleCalendarProps,
 } from '../Types/Calendar.types.ts'
 
-export default function useSingleCalendarLogic({
-    mode: _mode,
-    onChange,
-    getFormValue,
-    ...props
-}: SingleCalendarProps): SingleCalendarLogicResult {
+export default function useSingleCalendarLogic(
+    inputProps: SingleCalendarProps,
+): SingleCalendarLogicResult {
+    const {
+        mode: _mode,
+        onChange,
+        getFormValue,
+        valueFormat: _valueFormat,
+        ...props
+    } = inputProps
     void _mode
+    void _valueFormat
 
     function handleChange(value: CalendarValue) {
-        onChange?.(value instanceof Date ? value : undefined)
+        const selected = value instanceof Date ? value : undefined
+        if (
+            inputProps.valueFormat === undefined ||
+            inputProps.valueFormat === 'date'
+        )
+            inputProps.onChange?.(selected)
+        if (
+            inputProps.valueFormat === 'iso-date' ||
+            inputProps.valueFormat === 'iso-datetime'
+        )
+            inputProps.onChange?.(
+                serializeCalendarValue(selected, {
+                    format:
+                        inputProps.valueFormat === 'iso-date'
+                            ? 'date'
+                            : 'datetime',
+                }),
+            )
     }
 
     function handleGetFormValue(value: CalendarValue) {
