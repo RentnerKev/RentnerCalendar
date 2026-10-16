@@ -6,7 +6,7 @@
       "name": "@rentnerkev/calendar",
       "dependencies": {
         "@radix-ui/react-select": "^2.3.8",
-        "@rentnerkev/tooltips": "^2.0.8",
+        "@rentnerkev/tooltips": "^2.2.0",
         "lucide-react": "^1.52.0",
       },
       "devDependencies": {
@@ -169,7 +169,7 @@
 
     "@radix-ui/rect": ["@radix-ui/rect@1.1.3", "", {}, "sha512-JtyZR+mqgBibTo8xea3B6ZRmzZiM/YeVBtUkas6zMuXjAlfIFIW2FgqeM9eLyvEaYX66vr6DJMK+4U6LV0KhNw=="],
 
-    "@rentnerkev/tooltips": ["@rentnerkev/tooltips@2.1.0", "", { "dependencies": { "@radix-ui/react-tooltip": "^1.3.0" }, "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-GmfYgbGM9Ab5xoyUvJy9DBh9vPobNW3VbmziOT/x7D3gZV5Ap3jsL4m8GrpFXKHCOajMGbFPmExSOTHHX1wyFg=="],
+    "@rentnerkev/tooltips": ["@rentnerkev/tooltips@2.2.0", "", { "dependencies": { "@radix-ui/react-tooltip": "^1.3.0" }, "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-1tIVCfGn//M+jqt4XPJLEFuSVfRWQ1c45K1r6cObzEh+8Zj1qvOtItO8O+jXyxhV1GsxVO9yx0fJ1RsCBZKG2A=="],
 
     "@types/bun": ["@types/bun@1.4.3", "", { "dependencies": { "bun-types": "1.4.3" } }, "sha512-N67Pqy8JXbAY/j0tNraS3V5mubGvc6rrrNDmDCtZLlFzccbUJPDb0tvgUBC5q4m8ybkP93Jcn1QB+RYQ6PvBhw=="],
 

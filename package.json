@@ -1,6 +1,6 @@
 {
     "name": "@rentnerkev/calendar",
-    "version": "2.6.0",
+    "version": "2.7.0",
     "description": "A customizable React calendar with range selection, time input, holidays, and fast navigation.",
     "author": "RentnerKev",
     "license": "MIT",
@@ -66,7 +66,7 @@
     },
     "dependencies": {
         "@radix-ui/react-select": "^2.3.8",
-        "@rentnerkev/tooltips": "^2.0.8",
+        "@rentnerkev/tooltips": "^2.2.0",
         "lucide-react": "^1.52.0"
     },
     "exports": {
