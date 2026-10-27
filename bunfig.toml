@@ -7,3 +7,31 @@ globalStore = false
 [test]
 root = "src/tests"
 pathIgnorePatterns = ["**/*.db.test.ts", "**/browser/**"]
+
+# The empty .oxfmtrc.json preserves Bun's Oxfmt output mode.
+[fmt]
+semi = false
+singleQuote = true
+trailingComma = "all"
+tabWidth = 4
+useTabs = false
+printWidth = 80
+sortPackageJson = false
+ignorePatterns = [
+    "dist/",
+    "build/",
+    "node_modules/",
+    "bun.lock",
+    "drizzle/**",
+    "**/drizzle/**",
+    ".env",
+    "**/.env",
+    "**/.env.*",
+    "playground/dist/**",
+    "playground/node_modules/**",
+    "test-results/**",
+    "playwright-report/**",
+    "**/routeTree.gen.*",
+    "**/bindings/**",
+    "target/**",
+]

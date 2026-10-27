@@ -117,6 +117,7 @@ export default function useCustomCalendarLogic({
     const [isTouched, setIsTouched] = useState(false)
     const generatedId = useId()
     const fieldId = id ?? generatedId
+    const displayValueId = `${fieldId}-value`
     const labelId = `${fieldId}-label`
     const descriptionId = `${fieldId}-description`
     const errorId = `${fieldId}-error`
@@ -527,6 +528,12 @@ export default function useCustomCalendarLogic({
     const displayValue = normalizedValue
         ? formatCalendarValue(normalizedValue, locale)
         : ''
+    const triggerLabelledBy = labelledBy
+        ? mergeAriaIds(labelledBy, displayValueId)
+        : undefined
+    const triggerLabel = triggerLabelledBy
+        ? undefined
+        : `${ariaLabel ?? (isOpen ? messages.closeCalendar : messages.openCalendar)}: ${displayValue || resolvedPlaceholder}`
     let formValue = displayValue
     if (displayValue && normalizedValue) {
         if (getFormValue) {
@@ -546,8 +553,8 @@ export default function useCustomCalendarLogic({
             field: {
                 classNames,
                 portalContainer,
-                ariaLabel,
-                ariaLabelledBy: labelledBy,
+                ariaLabel: triggerLabel,
+                ariaLabelledBy: triggerLabelledBy,
                 ariaDescribedBy: describedBy,
                 ariaProps,
                 cd,
@@ -556,6 +563,7 @@ export default function useCustomCalendarLogic({
                 dialogId,
                 disabled,
                 displayValue,
+                displayValueId,
                 formValue,
                 error,
                 errorId,

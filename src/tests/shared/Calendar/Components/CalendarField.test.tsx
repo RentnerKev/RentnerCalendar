@@ -29,6 +29,77 @@ describe('calendar field helpers', () => {
 })
 
 describe('calendar field contract rendering', () => {
+    test('includes the single-date value alongside external and internal labels', () => {
+        const markup = renderToStaticMarkup(
+            <SingleCalendar
+                id="appointment"
+                label="Appointment"
+                aria-labelledby="external-label"
+                value={new Date(2026, 8, 21)}
+                locale="en"
+            />,
+        )
+
+        expect(markup).toContain(
+            'aria-labelledby="external-label appointment-label appointment-value"',
+        )
+        expect(markup).toMatch(
+            /<span id="appointment-value"[^>]*>09\/21\/2026<\/span>/,
+        )
+        expect(markup).not.toContain('aria-label=')
+    })
+
+    test('includes both range dates alongside an external label', () => {
+        const markup = renderToStaticMarkup(
+            <RangeCalendar
+                id="period"
+                aria-labelledby="period-label"
+                value={[new Date(2026, 8, 21), new Date(2026, 8, 24)]}
+                locale="en"
+            />,
+        )
+
+        expect(markup).toContain('aria-labelledby="period-label period-value"')
+        expect(markup).toMatch(
+            /<span id="period-value"[^>]*>09\/21\/2026 - 09\/24\/2026<\/span>/,
+        )
+    })
+
+    test('includes an empty field placeholder alongside its label', () => {
+        const markup = renderToStaticMarkup(
+            <SingleCalendar
+                id="appointment"
+                label="Appointment"
+                placeholder="Choose a date"
+            />,
+        )
+
+        expect(markup).toContain(
+            'aria-labelledby="appointment-label appointment-value"',
+        )
+        expect(markup).toMatch(
+            /<span id="appointment-value"[^>]*>Choose a date<\/span>/,
+        )
+    })
+
+    test('includes visible text in default and explicit accessible names', () => {
+        const emptyMarkup = renderToStaticMarkup(
+            <SingleCalendar locale="en" placeholder="Choose a date" />,
+        )
+        const selectedMarkup = renderToStaticMarkup(
+            <SingleCalendar
+                aria-label="Appointment"
+                value={new Date(2026, 8, 21)}
+                locale="en"
+            />,
+        )
+
+        expect(emptyMarkup).toContain(
+            'aria-label="Open calendar: Choose a date"',
+        )
+        expect(selectedMarkup).toContain('aria-label="Appointment: 09/21/2026"')
+    })
+
     test('renders stable label, description, error and disabled form semantics', () => {
         const markup = renderToStaticMarkup(
             <CustomCalendar

@@ -30,8 +30,8 @@
         "playground:build": "bun --cwd playground build",
         "lint": "oxlint --deny-warnings src scripts playground/src playwright.config.ts .github/scripts",
         "lint:fix": "oxlint --fix --deny-warnings src scripts playground/src playwright.config.ts .github/scripts",
-        "format": "oxfmt src scripts playground README.md docs package.json tailwind.css theme.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
-        "format:check": "oxfmt --check src scripts playground README.md docs package.json tailwind.css theme.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json .oxfmtrc.json bunfig.toml .github",
+        "format": "bun fmt src scripts playground README.md docs package.json tailwind.css theme.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json bunfig.toml .github",
+        "format:check": "bun fmt --check src scripts playground README.md docs package.json tailwind.css theme.css tsconfig.json tsconfig.type-tests.json playwright.config.ts .oxlintrc.json bunfig.toml .github",
         "verify": "bun run typecheck && bun run lint && bun run format:check && bun run test && bun run build && bun run pack:check && bun run pack:consumer && bun run test:e2e",
         "typecheck:automation": "tsc --noEmit -p .github/scripts/tsconfig.json"
     },
@@ -52,22 +52,21 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
-        "@axe-core/playwright": "^4.13.0",
-        "@playwright/test": "^1.63.0",
-        "@types/bun": "^1.4.2",
-        "@types/node": "^26.6.4",
+        "@axe-core/playwright": "^4.14.0",
+        "@playwright/test": "^1.64.1",
+        "@types/bun": "^1.4.4",
+        "@types/node": "^26.6.5",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
-        "oxfmt": "^0.73.0",
-        "oxlint": "^1.87.0",
-        "react": "^19.3.0",
-        "react-dom": "^19.3.0",
+        "oxlint": "^1.89.0",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
         "typescript": "^7.0.2"
     },
     "dependencies": {
-        "@radix-ui/react-select": "^2.3.8",
+        "@radix-ui/react-select": "^2.4.1",
         "@rentnerkev/tooltips": "^2.2.0",
-        "lucide-react": "^1.52.0"
+        "lucide-react": "^1.61.0"
     },
     "exports": {
         ".": {
@@ -118,5 +117,5 @@
             "import": "./dist/form.js"
         }
     },
-    "packageManager": "bun@1.4.2"
+    "packageManager": "bun@1.4.4"
 }

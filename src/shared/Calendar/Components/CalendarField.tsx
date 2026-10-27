@@ -18,6 +18,7 @@ export default function CalendarField({
     descriptionId,
     disabled,
     displayValue,
+    displayValueId,
     formValue,
     error,
     errorId,
@@ -70,14 +71,7 @@ export default function CalendarField({
                     aria-errormessage={
                         hasError ? errorId : ariaProps['aria-errormessage']
                     }
-                    aria-label={
-                        ariaLabel ??
-                        (ariaLabelledBy
-                            ? undefined
-                            : isOpen
-                              ? messages.closeCalendar
-                              : messages.openCalendar)
-                    }
+                    aria-label={ariaLabel}
                     aria-labelledby={ariaLabelledBy}
                     aria-describedby={ariaDescribedBy}
                     aria-disabled={
@@ -119,6 +113,7 @@ export default function CalendarField({
                         </span>
                     )}
                     <span
+                        id={displayValueId}
                         className={`flex-1 truncate ${classNames?.control ? '' : displayValue ? cd.textColor : cd.textMuted}`}
                     >
                         {displayValue || resolvedPlaceholder}

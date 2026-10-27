@@ -27,6 +27,7 @@ export type CustomCalendarLogicResult = {
             dialogId: string
             disabled: boolean
             displayValue: string
+            displayValueId: string
             formValue: string
             error: string | null
             errorId: string
