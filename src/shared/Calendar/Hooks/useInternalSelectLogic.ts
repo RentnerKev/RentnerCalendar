@@ -4,6 +4,7 @@ import type { InvalidEvent, ChangeEvent, PointerEvent } from 'react'
 import type { CustomSelectProps } from '../Types/InternalSelect.types.ts'
 import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
 import { useInternalSelectOverlay } from './useInternalSelectOverlay.ts'
+import { useInternalSelectSearch } from './useInternalSelectSearch.ts'
 
 function handleSearchPointerDownCapture(event: PointerEvent<HTMLInputElement>) {
     event.stopPropagation()
@@ -83,25 +84,9 @@ export default function useInternalSelectLogic({
     const hasError = isTouched && error !== null
     const hasLeftIcon = Boolean(icon || hasError)
 
-    const filteredOptions = useMemo(() => {
-        const normalizedSearch = searchValue.trim().toLowerCase()
-
-        if (!normalizedSearch) {
-            return options
-        }
-
-        return options.filter((option) => {
-            const label = option.label.toLowerCase()
-            const optionValue = option.value.toLowerCase()
-            const subOption = option.subOption?.toLowerCase() || ''
-
-            return (
-                label.includes(normalizedSearch) ||
-                optionValue.includes(normalizedSearch) ||
-                subOption.includes(normalizedSearch)
-            )
-        })
-    }, [options, searchValue])
+    const {
+        state: { filteredOptions },
+    } = useInternalSelectSearch(options, searchValue)
 
     const selectedOptions = useMemo(() => {
         return options.filter((option) => selectedValues.includes(option.value))

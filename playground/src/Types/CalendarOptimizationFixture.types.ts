@@ -1,0 +1,10 @@
+export type CalendarOptimizationAction =
+    | 'tick'
+    | 'same-date'
+    | 'mutate-year'
+    | 'mutate-month'
+    | 'clone-months'
+    | 'english'
+    | 'reorder-options'
+    | 'mutate-option'
+    | 'replace-options'

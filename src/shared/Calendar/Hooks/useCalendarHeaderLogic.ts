@@ -2,6 +2,7 @@ import type { CalendarHeaderLogicResult } from '../Types/CalendarHeaderLogicResu
 import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
 import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
 import { createCalendarDate } from '../../../lib/Calendar/CalendarDay.ts'
+import { useMemo, useState } from 'react'
 import type {
     CalendarHeaderInternalProps,
     FastEditOption,
@@ -17,6 +18,25 @@ function getYearOptions(currentYear: number): FastEditOption[] {
     })
 }
 
+function getMonthOptions(labels: readonly string[]): FastEditOption[] {
+    return labels.map((label, month) => ({ value: month.toString(), label }))
+}
+
+function matchesMonthOptions(
+    options: FastEditOption[],
+    labels: readonly string[],
+) {
+    if (options.length !== labels.length) return false
+    for (let index = 0; index < labels.length; index++) {
+        if (
+            index in options !== index in labels ||
+            options[index]?.label !== labels[index]
+        )
+            return false
+    }
+    return true
+}
+
 export default function useCalendarHeaderLogic({
     currentDate,
     onViewDateChange,
@@ -27,13 +47,18 @@ export default function useCalendarHeaderLogic({
     const messages = providedMessages ?? resolveCalendarMessages()
     const currentMonth = currentDate.getMonth()
     const currentYear = currentDate.getFullYear()
-    const monthOptions: FastEditOption[] = messages.months.map(
-        (label, month) => ({
-            value: month.toString(),
-            label,
-        }),
+    const [cachedMonthOptions, setMonthOptions] = useState(() =>
+        getMonthOptions(messages.months),
     )
-    const yearOptions = getYearOptions(currentYear)
+    let monthOptions = cachedMonthOptions
+    if (!matchesMonthOptions(cachedMonthOptions, messages.months)) {
+        monthOptions = getMonthOptions(messages.months)
+        setMonthOptions(monthOptions)
+    }
+    const yearOptions = useMemo(
+        () => getYearOptions(currentYear),
+        [currentYear],
+    )
 
     function handleMonthChange(value: string) {
         onViewDateChange(createCalendarDate(currentYear, Number(value), 1))

@@ -30,7 +30,7 @@ export function getCalendarDateFormatters(locale: CalendarLocale) {
     // Resolve once per caller/render, not once per day. Include the current host
     // zone so SSR requests and runtime timezone changes cannot reuse stale rules.
     const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone
-    const key = JSON.stringify([intlLocale, timeZone])
+    const key = `${intlLocale}:${timeZone}`
     const cached = cache.get(key)
     if (cached) return cached
     const formatters = createFormatters(intlLocale, timeZone)

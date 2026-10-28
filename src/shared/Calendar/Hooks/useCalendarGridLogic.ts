@@ -9,12 +9,18 @@ import {
 } from '../../../lib/Calendar/CalendarDay.ts'
 import { constrainCalendarDateTime } from '../../../lib/Calendar/CalendarDateTime.ts'
 import { hasCalendarTimeWithinBounds } from '../../../lib/Calendar/CalendarTime.ts'
-import {
-    getGermanHolidayName,
-    isSameDay,
-    isToday,
-} from '../../../lib/Calendar/date.ts'
+import { getGermanHolidayName } from '../../../lib/Calendar/date.ts'
 import useCalendarGridNavigation from './useCalendarGridNavigation.ts'
+import { useSyncExternalStore } from 'react'
+
+function getTodayKey() {
+    return getCalendarDateKey(new Date())
+}
+
+function subscribeToToday() {
+    // Keep the existing parent-driven clock refresh, without a timer per grid.
+    return () => {}
+}
 
 function formatLongWeekday(formatter: Intl.DateTimeFormat, isoDay: number) {
     const date = new Date(2023, 0, 2 + isoDay - 1)
@@ -77,16 +83,114 @@ export default function useCalendarGridLogic({
         preferredDate = selectedDate
     }
 
-    const initialFocusDate =
-        dayItems.find(
-            ({ date }) =>
+    const todayKey = useSyncExternalStore(
+        subscribeToToday,
+        getTodayKey,
+        getTodayKey,
+    )
+    const dayFacts = dayItems.map((dayObj) => {
+        const dateKey = getCalendarDateKey(dayObj.date)
+        let isSelected = false
+        let isInRange = false
+        let rangeMembership: string | undefined
+
+        const germanHolidayName = showHolidays
+            ? getGermanHolidayName(dayObj.date)
+            : null
+        const holidayName = germanHolidayName
+            ? (messages.holidayNames[
+                  germanHolidayName as keyof typeof messages.holidayNames
+              ] ?? germanHolidayName)
+            : null
+        const dayDisabled = isDateDisabled(dayObj.date)
+
+        if (enableRange && Array.isArray(selectedDate)) {
+            const [start, end] = selectedDate
+            if (start && compareCalendarDays(dayObj.date, start) === 0) {
+                isSelected = true
+                rangeMembership =
+                    end && compareCalendarDays(dayObj.date, end) === 0
+                        ? locale === 'en'
+                            ? 'start and end of selected range'
+                            : 'Anfang und Ende des ausgewählten Zeitraums'
+                        : locale === 'en'
+                          ? 'start of selected range'
+                          : 'Beginn des ausgewählten Zeitraums'
+            }
+            if (end && compareCalendarDays(dayObj.date, end) === 0) {
+                isSelected = true
+                rangeMembership ??=
+                    locale === 'en'
+                        ? 'end of selected range'
+                        : 'Ende des ausgewählten Zeitraums'
+            }
+            if (
+                start &&
+                end &&
+                compareCalendarDays(dayObj.date, start) > 0 &&
+                compareCalendarDays(dayObj.date, end) < 0
+            ) {
+                isInRange = true
+                rangeMembership =
+                    locale === 'en'
+                        ? 'within selected range'
+                        : 'im ausgewählten Zeitraum'
+            }
+        } else if (!enableRange && selectedDate instanceof Date) {
+            isSelected = compareCalendarDays(dayObj.date, selectedDate) === 0
+        }
+
+        const isCurrentDay = dateKey === todayKey
+        let buttonClass =
+            'h-9 w-9 rounded-lg flex items-center justify-center text-sm transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 '
+
+        if (dayDisabled) {
+            buttonClass += `opacity-30 cursor-not-allowed ${cd.textDisabled} `
+        } else {
+            buttonClass += 'cursor-pointer '
+            if (isSelected) {
+                buttonClass += `${cd.primaryBg} ${cd.textBackground} font-bold `
+            } else if (isInRange) {
+                buttonClass += `${cd.primaryBgSubtle} ${cd.textColor} `
+            } else if (!dayObj.isCurrentMonth) {
+                buttonClass += `${cd.textDisabled} ${cd.hoverTextMuted} `
+            } else {
+                buttonClass += `${cd.textDay} ${cd.hoverBackground} ${cd.hoverText} `
+            }
+        }
+
+        if (isCurrentDay && !isSelected && !isInRange && !dayDisabled) {
+            buttonClass += `border ${cd.primaryBorder} ${cd.primaryColor} `
+        } else if (isCurrentDay && dayDisabled) {
+            buttonClass += `border ${cd.borderColor} `
+        }
+
+        const dateLabel = dateFormatters.full.format(dayObj.date)
+        return {
+            date: dayObj.date,
+            dateKey,
+            isSelected,
+            isInRange,
+            holidayName,
+            dayDisabled,
+            isCurrentDay,
+            buttonClass,
+            dateLabel,
+            rangeMembership,
+        }
+    })
+
+    const initialFocusDay =
+        dayFacts.find(
+            ({ date, dayDisabled }) =>
                 preferredDate &&
-                isSameDay(date, preferredDate) &&
-                !isDateDisabled(date),
-        )?.date ??
-        dayItems.find(({ date }) => isToday(date) && !isDateDisabled(date))
-            ?.date ??
-        dayItems.find(({ date }) => !isDateDisabled(date))?.date
+                compareCalendarDays(date, preferredDate) === 0 &&
+                !dayDisabled,
+        ) ??
+        dayFacts.find(
+            ({ isCurrentDay, dayDisabled }) => isCurrentDay && !dayDisabled,
+        ) ??
+        dayFacts.find(({ dayDisabled }) => !dayDisabled)
 
     const {
         refs: { gridRef },
@@ -96,7 +200,7 @@ export default function useCalendarGridLogic({
         columnCount: visibleDays,
         weekStartsOn,
         currentDate,
-        initialFocusDate,
+        initialFocusDate: initialFocusDay?.date,
         minDate,
         maxDate,
         availabilityKey,
@@ -104,16 +208,13 @@ export default function useCalendarGridLogic({
         onViewDateChange,
     })
 
-    const hasActiveDate = dayItems.some(
-        ({ date }) =>
-            getCalendarDateKey(date) === state.activeDateKey &&
-            !isDateDisabled(date),
+    const hasActiveDate = dayFacts.some(
+        ({ dateKey, dayDisabled }) =>
+            dateKey === state.activeDateKey && !dayDisabled,
     )
     const activeDateKey = hasActiveDate
         ? state.activeDateKey
-        : initialFocusDate
-          ? getCalendarDateKey(initialFocusDate)
-          : ''
+        : (initialFocusDay?.dateKey ?? '')
 
     const weekDays = Array.from({ length: visibleDays }, (_, index) => {
         const isoDay = ((weekStartsOn - 1 + index) % 7) + 1
@@ -122,107 +223,13 @@ export default function useCalendarGridLogic({
             fullName: formatLongWeekday(dateFormatters.weekday, isoDay),
         }
     })
-    const rawRows = Array.from(
-        { length: Math.ceil(dayItems.length / visibleDays) },
+    const rows = Array.from(
+        { length: Math.ceil(dayFacts.length / visibleDays) },
         (_, rowIndex) =>
-            dayItems.slice(
+            dayFacts.slice(
                 rowIndex * visibleDays,
                 (rowIndex + 1) * visibleDays,
             ),
-    )
-
-    const rows = rawRows.map((week) =>
-        week.map((dayObj) => {
-            const dateKey = getCalendarDateKey(dayObj.date)
-            let isSelected = false
-            let isInRange = false
-            let rangeMembership: string | undefined
-
-            const germanHolidayName = showHolidays
-                ? getGermanHolidayName(dayObj.date)
-                : null
-            const holidayName = germanHolidayName
-                ? (messages.holidayNames[
-                      germanHolidayName as keyof typeof messages.holidayNames
-                  ] ?? germanHolidayName)
-                : null
-            const dayDisabled = isDateDisabled(dayObj.date)
-
-            if (enableRange && Array.isArray(selectedDate)) {
-                const [start, end] = selectedDate
-                if (start && isSameDay(dayObj.date, start)) {
-                    isSelected = true
-                    rangeMembership =
-                        end && isSameDay(dayObj.date, end)
-                            ? locale === 'en'
-                                ? 'start and end of selected range'
-                                : 'Anfang und Ende des ausgewählten Zeitraums'
-                            : locale === 'en'
-                              ? 'start of selected range'
-                              : 'Beginn des ausgewählten Zeitraums'
-                }
-                if (end && isSameDay(dayObj.date, end)) {
-                    isSelected = true
-                    rangeMembership ??=
-                        locale === 'en'
-                            ? 'end of selected range'
-                            : 'Ende des ausgewählten Zeitraums'
-                }
-                if (
-                    start &&
-                    end &&
-                    compareCalendarDays(dayObj.date, start) > 0 &&
-                    compareCalendarDays(dayObj.date, end) < 0
-                ) {
-                    isInRange = true
-                    rangeMembership =
-                        locale === 'en'
-                            ? 'within selected range'
-                            : 'im ausgewählten Zeitraum'
-                }
-            } else if (!enableRange && selectedDate instanceof Date) {
-                isSelected = isSameDay(dayObj.date, selectedDate)
-            }
-
-            const isCurrentDay = isToday(dayObj.date)
-            let buttonClass =
-                'h-9 w-9 rounded-lg flex items-center justify-center text-sm transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 '
-
-            if (dayDisabled) {
-                buttonClass += `opacity-30 cursor-not-allowed ${cd.textDisabled} `
-            } else {
-                buttonClass += 'cursor-pointer '
-                if (isSelected) {
-                    buttonClass += `${cd.primaryBg} ${cd.textBackground} font-bold `
-                } else if (isInRange) {
-                    buttonClass += `${cd.primaryBgSubtle} ${cd.textColor} `
-                } else if (!dayObj.isCurrentMonth) {
-                    buttonClass += `${cd.textDisabled} ${cd.hoverTextMuted} `
-                } else {
-                    buttonClass += `${cd.textDay} ${cd.hoverBackground} ${cd.hoverText} `
-                }
-            }
-
-            if (isCurrentDay && !isSelected && !isInRange && !dayDisabled) {
-                buttonClass += `border ${cd.primaryBorder} ${cd.primaryColor} `
-            } else if (isCurrentDay && dayDisabled) {
-                buttonClass += `border ${cd.borderColor} `
-            }
-
-            const dateLabel = dateFormatters.full.format(dayObj.date)
-            return {
-                date: dayObj.date,
-                dateKey,
-                isSelected,
-                isInRange,
-                holidayName,
-                dayDisabled,
-                isCurrentDay,
-                buttonClass,
-                dateLabel,
-                rangeMembership,
-            }
-        }),
     )
     function handleSelectDate(date: Date) {
         if (!isDateDisabled(date)) onSelectDate(date)

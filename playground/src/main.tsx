@@ -1,4 +1,5 @@
 import { NativeCalendarSelectFixture } from './Components/NativeCalendarSelectFixture.tsx'
+import { CalendarOptimizationFixture } from './Components/CalendarOptimizationFixture.tsx'
 import { getCalendarFieldProps } from '../../src/form.ts'
 import { usePlaygroundLogic } from './Hooks/usePlaygroundLogic.ts'
 import { CalendarClock } from 'lucide-react'
@@ -305,7 +306,11 @@ function App() {
 }
 
 createRoot(document.getElementById('root')!).render(
-    new URLSearchParams(window.location.search).has('native-select-fixture') ? (
+    new URLSearchParams(window.location.search).has('calendar-optimization') ? (
+        <CalendarOptimizationFixture />
+    ) : new URLSearchParams(window.location.search).has(
+          'native-select-fixture',
+      ) ? (
         <NativeCalendarSelectFixture />
     ) : (
         <App />
