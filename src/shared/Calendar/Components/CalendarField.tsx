@@ -45,6 +45,7 @@ export default function CalendarField({
     validationInputRef,
     validationRequired,
 }: CalendarFieldProps) {
+    const showClearButton = isDeletable && displayValue.length > 0
     return (
         <div className={classNames?.root ?? 'w-full'} onBlur={handleFieldBlur}>
             {label != null && (
@@ -55,12 +56,12 @@ export default function CalendarField({
                     {label}
                 </div>
             )}
-            <div className="relative">
+            <div className={showClearButton ? 'relative flex' : 'relative'}>
                 <button
                     type="button"
                     id={fieldId}
                     ref={setTriggerRef}
-                    className={`${inputClasses} ${isDeletable && displayValue ? 'pr-12' : ''}`}
+                    className={`${inputClasses} ${showClearButton ? 'flex-none pr-12' : ''}`}
                     style={inputStyle}
                     onClick={toggleCalendar}
                     tabIndex={disabled ? -1 : 0}
@@ -119,17 +120,19 @@ export default function CalendarField({
                         {displayValue || resolvedPlaceholder}
                     </span>
                 </button>
-                {isDeletable && displayValue && (
-                    <button
-                        type="button"
-                        onClick={handleClear}
-                        aria-label={messages.clear}
-                        disabled={disabled || readOnly}
-                        style={{ borderRadius: resolvedRadius }}
-                        className={`group/delete absolute right-2 top-1/2 -translate-y-1/2 p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 ${classNames?.trailing ?? 'bg-rentner-danger/50 hover:bg-rentner-danger/40 focus-visible:ring-rentner-accent'}`}
-                    >
-                        <X aria-hidden="true" className="h-4 w-4" />
-                    </button>
+                {showClearButton && (
+                    <span className="relative w-0 shrink-0 self-stretch">
+                        <button
+                            type="button"
+                            onClick={handleClear}
+                            aria-label={messages.clear}
+                            disabled={disabled || readOnly}
+                            style={{ borderRadius: resolvedRadius }}
+                            className={`group/delete absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer disabled:cursor-not-allowed p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 ${classNames?.trailing ?? 'bg-rentner-danger/50 hover:bg-rentner-danger/40 focus-visible:ring-rentner-accent'}`}
+                        >
+                            <X aria-hidden="true" className="h-4 w-4" />
+                        </button>
+                    </span>
                 )}
             </div>
             {isOpen &&
