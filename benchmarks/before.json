@@ -1,0 +1,196 @@
+{
+    "schemaVersion": 1,
+    "phase": "before",
+    "baselineCommit": "6249e2bb2e16617cfa7735e9e73909e709a5c348",
+    "comparison": "Compare isolated to isolated and integrated to integrated to hold tooltip implementation constant; before.isolated to after.integrated represents the future combined migration. Integrated mode is an explicit source alias, not the published dependency lock.",
+    "reports": {
+        "isolated": {
+            "schemaVersion": 2,
+            "package": "@rentnerkev/calendar",
+            "packageVersion": "2.7.2",
+            "revision": "6249e2bb2e16617cfa7735e9e73909e709a5c348",
+            "baselineCommit": "6249e2bb2e16617cfa7735e9e73909e709a5c348",
+            "sourceKind": "git-archive",
+            "sourceTree": {
+                "sha256": "5c78f4a05e0c2b539f78ea8166627829d6671a574d461835783bd91d67bae6df",
+                "files": 96,
+                "includes": "src/**, package.json, bun.lock, tailwind.css and theme.css when present"
+            },
+            "harnessSha256": "6a76cba6ff3120e4c49244125143516c22ddc1228757356bb243f67ec171aa40",
+            "measuredAt": "2026-10-28T00:01:21.530Z",
+            "environment": {
+                "bun": "1.4.4",
+                "nodeCompatibility": "v26.3.0",
+                "platform": "win32",
+                "release": "10.0.26300",
+                "arch": "x64",
+                "cpu": "AMD Ryzen 9 9900X 12-Core Processor",
+                "logicalCpus": 24,
+                "totalMemoryBytes": 33493741568,
+                "mode": "production",
+                "timezone": "Europe/Berlin"
+            },
+            "scenario": "closed calendar and internal 100-option year select",
+            "methodology": {
+                "scheduling": "Run serially on the same host after test/build processes finish. No timing assertions.",
+                "timing": "performance.now; one sample is 100 synchronous renderToStaticMarkup calls divided by 100; samples retain original order; nearest-rank p95.",
+                "bundle": "Bun production browser bundle of representative named exports, minified; gzip level 9; shared consumer peers external; tooltip dependency is bundled.",
+                "ssr": "Bun production SSR bundle; all React/ReactDOM imports resolve to this package root to prevent duplicate React instances; tree constructed before timing.",
+                "limitations": [
+                    "Closed-widget SSR measures server rendering, not interaction latency, layout, accessibility or browser memory.",
+                    "Bundle byte counts exclude shared React/ReactDOM, icon and Motion peers and CSS.",
+                    "Single-machine observations can vary; no performance pass/fail threshold is inferred."
+                ]
+            },
+            "dependencyMode": "isolated-installed-dependencies",
+            "dependencies": {
+                "declaredTooltipRange": "^2.2.0",
+                "installedPublishedTooltip": {
+                    "version": "2.2.0",
+                    "entrySha256": "3183229e94876d32cb4175efe9fc11b4ca12538747969eb8d583008355c8877e",
+                    "resolvedEntry": "C:\\Repositorys\\@rentnerkev\\.performance-audit\\2026-10-28-native-ui\\baseline\\RentnerCalendar\\node_modules\\.bun\\@rentnerkev+tooltips@2.2.0+b146eb580f4286be\\node_modules\\@rentnerkev\\tooltips\\dist\\index.js"
+                },
+                "nativeTooltipOverride": null,
+                "releasePrerequisite": "Publish the native Tooltips release first, then resolve consumer dependencies normally. The current published Tooltip 2.2.0 dependency can still contain Radix; an integrated source override is evidence only."
+            },
+            "bundle": {
+                "exports": ["CustomCalendar", "CalendarProvider"],
+                "external": [
+                    "react",
+                    "react/*",
+                    "react-dom",
+                    "react-dom/*",
+                    "lucide-react",
+                    "motion",
+                    "motion/*"
+                ],
+                "minifiedBytes": 167888,
+                "gzipBytes": 56413
+            },
+            "ssr": {
+                "warmupRenders": 100,
+                "samples": 31,
+                "rendersPerSample": 100,
+                "rawSampleMsPerRender": [
+                    0.118861, 0.14488499999999987, 0.11752400000000023,
+                    0.10641099999999995, 0.09609199999999987,
+                    0.08338799999999992, 0.09338400000000036,
+                    0.12993100000000027, 0.0785609999999997,
+                    0.09152100000000019, 0.08574399999999968,
+                    0.07974800000000017, 0.08185999999999978,
+                    0.06178200000000004, 0.0971550000000002,
+                    0.07005599999999959, 0.06991899999999987,
+                    0.06350300000000005, 0.05453700000000026,
+                    0.08016999999999996, 0.05485400000000027,
+                    0.06746600000000058, 0.0646530000000007,
+                    0.04782299999999964, 0.06540399999999977,
+                    0.05577099999999973, 0.06777600000000007,
+                    0.06993200000000002, 0.05386399999999981,
+                    0.08205699999999978, 0.055758000000000724
+                ],
+                "medianMs": 0.0785609999999997,
+                "p95Ms": 0.12993100000000027,
+                "htmlBytes": 2769,
+                "htmlSha256": "626d4d65b8c12188c34364a25f76e9c9bf91c1019bb56afd34422996167bcff2"
+            }
+        },
+        "integrated": {
+            "schemaVersion": 2,
+            "package": "@rentnerkev/calendar",
+            "packageVersion": "2.7.2",
+            "revision": "6249e2bb2e16617cfa7735e9e73909e709a5c348",
+            "baselineCommit": "6249e2bb2e16617cfa7735e9e73909e709a5c348",
+            "sourceKind": "git-archive",
+            "sourceTree": {
+                "sha256": "5c78f4a05e0c2b539f78ea8166627829d6671a574d461835783bd91d67bae6df",
+                "files": 96,
+                "includes": "src/**, package.json, bun.lock, tailwind.css and theme.css when present"
+            },
+            "harnessSha256": "6a76cba6ff3120e4c49244125143516c22ddc1228757356bb243f67ec171aa40",
+            "measuredAt": "2026-10-28T00:01:22.395Z",
+            "environment": {
+                "bun": "1.4.4",
+                "nodeCompatibility": "v26.3.0",
+                "platform": "win32",
+                "release": "10.0.26300",
+                "arch": "x64",
+                "cpu": "AMD Ryzen 9 9900X 12-Core Processor",
+                "logicalCpus": 24,
+                "totalMemoryBytes": 33493741568,
+                "mode": "production",
+                "timezone": "Europe/Berlin"
+            },
+            "scenario": "closed calendar and internal 100-option year select",
+            "methodology": {
+                "scheduling": "Run serially on the same host after test/build processes finish. No timing assertions.",
+                "timing": "performance.now; one sample is 100 synchronous renderToStaticMarkup calls divided by 100; samples retain original order; nearest-rank p95.",
+                "bundle": "Bun production browser bundle of representative named exports, minified; gzip level 9; shared consumer peers external; tooltip dependency is bundled.",
+                "ssr": "Bun production SSR bundle; all React/ReactDOM imports resolve to this package root to prevent duplicate React instances; tree constructed before timing.",
+                "limitations": [
+                    "Closed-widget SSR measures server rendering, not interaction latency, layout, accessibility or browser memory.",
+                    "Bundle byte counts exclude shared React/ReactDOM, icon and Motion peers and CSS.",
+                    "Single-machine observations can vary; no performance pass/fail threshold is inferred."
+                ]
+            },
+            "dependencyMode": "integrated-native-tooltip-source",
+            "dependencies": {
+                "declaredTooltipRange": "^2.2.0",
+                "installedPublishedTooltip": {
+                    "version": "2.2.0",
+                    "entrySha256": "3183229e94876d32cb4175efe9fc11b4ca12538747969eb8d583008355c8877e",
+                    "resolvedEntry": "C:\\Repositorys\\@rentnerkev\\.performance-audit\\2026-10-28-native-ui\\baseline\\RentnerCalendar\\node_modules\\.bun\\@rentnerkev+tooltips@2.2.0+b146eb580f4286be\\node_modules\\@rentnerkev\\tooltips\\dist\\index.js"
+                },
+                "nativeTooltipOverride": {
+                    "package": "@rentnerkev/tooltips",
+                    "sourceTree": {
+                        "sha256": "88eeb2cbe2772830a24a3a6e9d781592074e4dec068a0d12cc4337178838ca71",
+                        "files": 49,
+                        "includes": "src/**, package.json, bun.lock, tailwind.css and theme.css when present"
+                    },
+                    "resolution": "Explicit Bun build plugin aliases only the package root import to the sibling PR source. Package manifests and locks remain unchanged."
+                },
+                "releasePrerequisite": "Publish the native Tooltips release first, then resolve consumer dependencies normally. The current published Tooltip 2.2.0 dependency can still contain Radix; an integrated source override is evidence only."
+            },
+            "bundle": {
+                "exports": ["CustomCalendar", "CalendarProvider"],
+                "external": [
+                    "react",
+                    "react/*",
+                    "react-dom",
+                    "react-dom/*",
+                    "lucide-react",
+                    "motion",
+                    "motion/*"
+                ],
+                "minifiedBytes": 171053,
+                "gzipBytes": 57429
+            },
+            "ssr": {
+                "warmupRenders": 100,
+                "samples": 31,
+                "rendersPerSample": 100,
+                "rawSampleMsPerRender": [
+                    0.11840499999999991, 0.12907800000000008,
+                    0.1242919999999998, 0.10645200000000017,
+                    0.08434500000000014, 0.09110700000000009,
+                    0.06716100000000011, 0.1238499999999999, 0.1044319999999999,
+                    0.10170000000000017, 0.07423999999999978,
+                    0.07195899999999994, 0.06298900000000003,
+                    0.05989399999999989, 0.07695400000000006,
+                    0.06545500000000004, 0.06362899999999967,
+                    0.06642600000000015, 0.06161900000000003,
+                    0.05953300000000013, 0.06398599999999988,
+                    0.06245900000000006, 0.07081099999999992,
+                    0.05002100000000041, 0.06675799999999982,
+                    0.06548699999999996, 0.060867999999999825,
+                    0.06148300000000006, 0.0685880000000003,
+                    0.06831999999999994, 0.05641899999999964
+                ],
+                "medianMs": 0.06716100000000011,
+                "p95Ms": 0.1242919999999998,
+                "htmlBytes": 2769,
+                "htmlSha256": "626d4d65b8c12188c34364a25f76e9c9bf91c1019bb56afd34422996167bcff2"
+            }
+        }
+    }
+}
