@@ -1,6 +1,6 @@
 import type {
+    CSSProperties,
     InvalidEvent,
-    FocusEvent,
     KeyboardEvent,
     ChangeEvent,
     PointerEvent,
@@ -8,6 +8,9 @@ import type {
 
 export type InternalSelectLogicResult = {
     state: {
+        defaultPortalContainer: HTMLElement | null
+        popupStyle: CSSProperties
+        listboxId: string
         triggerId: string
         messages: import('../../../lib/Calendar/Types/Messages.types.ts').CalendarMessages
         isInteractionDisabled: boolean
@@ -21,25 +24,24 @@ export type InternalSelectLogicResult = {
         selectedOptions: import('./InternalSelect.types.ts').Option[]
     }
     handler: {
-        handleValueChange: (nextValue: string) => void
-        handleInvalid: (event: InvalidEvent<HTMLInputElement>) => void
-        handleOpenChange: (nextOpen: boolean) => void
-        handleContentFocusCapture: (event: FocusEvent<HTMLDivElement>) => void
-        handleContentKeyDownCapture: (
+        handleTriggerClick: () => void
+        handleTriggerKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void
+        handleNativeContentKeyDown: (
             event: KeyboardEvent<HTMLDivElement>,
         ) => void
+        handleNativeOptionKeyDown: (
+            event: KeyboardEvent<HTMLDivElement>,
+        ) => void
+        handleValueChange: (nextValue: string) => void
+        handleInvalid: (event: InvalidEvent<HTMLInputElement>) => void
         handleSearchChange: (event: ChangeEvent<HTMLInputElement>) => void
         handleSearchPointerDownCapture: (
             event: PointerEvent<HTMLInputElement>,
         ) => void
-        handleSearchKeyDownCapture: (
-            event: KeyboardEvent<HTMLInputElement>,
-        ) => void
-        handleSearchKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void
-        handleOptionPointerDown: () => void
-        handleOptionKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
     }
     refs: {
+        triggerRef: import('react').RefObject<HTMLButtonElement | null>
+        contentRef: import('react').RefObject<HTMLDivElement | null>
         searchInputRef: import('react').RefObject<HTMLInputElement | null>
         validationInputRef: import('react').RefObject<HTMLInputElement | null>
     }
