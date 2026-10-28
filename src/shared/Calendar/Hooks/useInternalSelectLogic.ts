@@ -1,23 +1,12 @@
 import type { InternalSelectLogicResult } from '../Types/InternalSelectLogicResult.types.ts'
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import type {
-    InvalidEvent,
-    FocusEvent,
-    KeyboardEvent,
-    ChangeEvent,
-    PointerEvent,
-} from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import type { InvalidEvent, ChangeEvent, PointerEvent } from 'react'
 import type { CustomSelectProps } from '../Types/InternalSelect.types.ts'
 import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
+import { useInternalSelectOverlay } from './useInternalSelectOverlay.ts'
 
 function handleSearchPointerDownCapture(event: PointerEvent<HTMLInputElement>) {
     event.stopPropagation()
-}
-function handleSearchKeyDownCapture(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== 'Escape') event.stopPropagation()
-}
-function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== 'Escape' && event.key !== 'Tab') event.stopPropagation()
 }
 
 export default function useInternalSelectLogic({
@@ -33,6 +22,7 @@ export default function useInternalSelectLogic({
     messages: providedMessages,
     disabled = false,
     readOnly = false,
+    portalContainer,
 }: CustomSelectProps): InternalSelectLogicResult {
     const generatedId = useId()
     const triggerId = id ?? generatedId
@@ -43,7 +33,19 @@ export default function useInternalSelectLogic({
     const [isTouched, setIsTouched] = useState(false)
     const searchInputRef = useRef<HTMLInputElement>(null)
     const validationInputRef = useRef<HTMLInputElement>(null)
-    const shouldKeepOpen = useRef(false)
+    const overlay = useInternalSelectOverlay({
+        open: open && !isInteractionDisabled,
+        triggerId,
+        portalContainer,
+        searchInputRef,
+        onOpenChange: handleOpenChange,
+        onSelect: handleValueChange,
+        onSearch: setSearchValue,
+    })
+    if (isInteractionDisabled && open) {
+        setOpen(false)
+        setSearchValue('')
+    }
 
     const selectedValues = useMemo(() => {
         if (!value) return []
@@ -127,6 +129,8 @@ export default function useInternalSelectLogic({
         } else {
             setSearchValue('')
             onValueChange(nextValue)
+            setOpen(false)
+            overlay.refs.triggerRef.current?.focus({ preventScroll: true })
         }
     }
 
@@ -134,17 +138,6 @@ export default function useInternalSelectLogic({
         event.preventDefault()
         setIsTouched(true)
     }
-
-    const focusSearchInput = useCallback(() => {
-        requestAnimationFrame(() => searchInputRef.current?.focus())
-        window.setTimeout(() => searchInputRef.current?.focus(), 0)
-    }, [])
-
-    useEffect(() => {
-        if (open) {
-            focusSearchInput()
-        }
-    }, [open, focusSearchInput])
 
     useEffect(() => {
         validationInputRef.current?.setCustomValidity(error || '')
@@ -167,53 +160,32 @@ export default function useInternalSelectLogic({
         }
 
         form.addEventListener('submit', handleFormSubmit)
+        function handleReset() {
+            setOpen(false)
+            setSearchValue('')
+            setIsTouched(false)
+        }
+        form.addEventListener('reset', handleReset)
 
         return () => {
             form.removeEventListener('submit', handleFormSubmit)
+            form.removeEventListener('reset', handleReset)
         }
     }, [])
 
     function handleOpenChange(nextOpen: boolean) {
-        if (multiple && !nextOpen && shouldKeepOpen.current) {
-            shouldKeepOpen.current = false
-            return
-        }
+        if (isInteractionDisabled && nextOpen) return
         setOpen(nextOpen)
-        if (nextOpen) focusSearchInput()
-        else setSearchValue('')
-    }
-    function handleContentFocusCapture(event: FocusEvent<HTMLDivElement>) {
-        if (event.target !== searchInputRef.current && searchInputRef.current) {
-            event.stopPropagation()
-            focusSearchInput()
-        }
-    }
-    function handleContentKeyDownCapture(event: KeyboardEvent<HTMLDivElement>) {
-        if (
-            event.target === searchInputRef.current ||
-            event.ctrlKey ||
-            event.altKey ||
-            event.metaKey ||
-            event.key.length !== 1
-        )
-            return
-        event.preventDefault()
-        event.stopPropagation()
-        setSearchValue((current) => `${current}${event.key}`)
-        focusSearchInput()
+        if (!nextOpen) setSearchValue('')
     }
     function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
         setSearchValue(event.target.value)
     }
-    function handleOptionPointerDown() {
-        if (multiple) shouldKeepOpen.current = true
-    }
-    function handleOptionKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-        if (multiple && (event.key === 'Enter' || event.key === ' '))
-            shouldKeepOpen.current = true
-    }
     return {
         state: {
+            defaultPortalContainer: overlay.state.defaultPortalContainer,
+            popupStyle: overlay.state.popupStyle,
+            listboxId: `${triggerId}-options`,
             triggerId,
             messages,
             isInteractionDisabled,
@@ -227,18 +199,15 @@ export default function useInternalSelectLogic({
             selectedOptions,
         },
         handler: {
+            handleTriggerClick: overlay.handler.handleTriggerClick,
+            handleTriggerKeyDown: overlay.handler.handleTriggerKeyDown,
+            handleNativeContentKeyDown: overlay.handler.handleContentKeyDown,
+            handleNativeOptionKeyDown: overlay.handler.handleOptionKeyDown,
             handleValueChange,
             handleInvalid,
-            handleOpenChange,
-            handleContentFocusCapture,
-            handleContentKeyDownCapture,
             handleSearchChange,
             handleSearchPointerDownCapture,
-            handleSearchKeyDownCapture,
-            handleSearchKeyDown,
-            handleOptionPointerDown,
-            handleOptionKeyDown,
         },
-        refs: { searchInputRef, validationInputRef },
+        refs: { searchInputRef, validationInputRef, ...overlay.refs },
     }
 }
