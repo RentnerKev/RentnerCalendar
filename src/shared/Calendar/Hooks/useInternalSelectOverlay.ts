@@ -160,10 +160,14 @@ export function useInternalSelectOverlay({
         // Native top-layer positioning retains the configured portal ancestry
         // without clipping or transformed fixed-position containing blocks.
         content.showPopover?.()
-        let moveObserver: IntersectionObserver | undefined
-        let observedAnchor:
-            | Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>
-            | undefined
+        const moveObserver: { current: IntersectionObserver | undefined } = {
+            current: undefined,
+        }
+        const observedAnchor: {
+            current:
+                | Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>
+                | undefined
+        } = { current: undefined }
         function updatePosition() {
             const rect = trigger!.getBoundingClientRect()
             const viewport = view!.visualViewport
@@ -218,17 +222,17 @@ export function useInternalSelectOverlay({
             )
             if (
                 view!.IntersectionObserver &&
-                (!observedAnchor ||
-                    observedAnchor.left !== rect.left ||
-                    observedAnchor.top !== rect.top ||
-                    observedAnchor.width !== rect.width ||
-                    observedAnchor.height !== rect.height)
+                (!observedAnchor.current ||
+                    observedAnchor.current.left !== rect.left ||
+                    observedAnchor.current.top !== rect.top ||
+                    observedAnchor.current.width !== rect.width ||
+                    observedAnchor.current.height !== rect.height)
             ) {
-                moveObserver?.disconnect()
-                observedAnchor = rect
+                moveObserver.current?.disconnect()
+                observedAnchor.current = rect
                 if (rect.width > 0 && rect.height > 0) {
                     const root = ownerDocument.documentElement
-                    moveObserver = new view!.IntersectionObserver(
+                    moveObserver.current = new view!.IntersectionObserver(
                         (entries) => {
                             if (entries[0]?.intersectionRatio !== 1)
                                 schedulePosition()
@@ -245,17 +249,17 @@ export function useInternalSelectOverlay({
                             threshold: 1,
                         },
                     )
-                    moveObserver.observe(trigger!)
+                    moveObserver.current.observe(trigger!)
                 }
             }
         }
         updatePosition()
-        let frame: number | undefined
+        const frame: { current: number | undefined } = { current: undefined }
         function schedulePosition(event?: Event) {
             if (event?.composedPath().includes(content!)) return
-            if (frame === undefined)
-                frame = view!.requestAnimationFrame(() => {
-                    frame = undefined
+            if (frame.current === undefined)
+                frame.current = view!.requestAnimationFrame(() => {
+                    frame.current = undefined
                     updatePosition()
                 })
         }
@@ -294,7 +298,7 @@ export function useInternalSelectOverlay({
             if (activeOverlays.get(ownerDocument) === dismiss)
                 activeOverlays.delete(ownerDocument)
             observer.disconnect()
-            moveObserver?.disconnect()
+            moveObserver.current?.disconnect()
             view.removeEventListener('resize', schedulePosition)
             view.visualViewport?.removeEventListener('resize', schedulePosition)
             view.visualViewport?.removeEventListener('scroll', schedulePosition)
@@ -305,7 +309,8 @@ export function useInternalSelectOverlay({
                 true,
             )
             ownerDocument.removeEventListener('keydown', handleEscape, true)
-            if (frame !== undefined) view.cancelAnimationFrame(frame)
+            if (frame.current !== undefined)
+                view.cancelAnimationFrame(frame.current)
             if (content.isConnected && content.matches(':popover-open'))
                 content.hidePopover?.()
         }

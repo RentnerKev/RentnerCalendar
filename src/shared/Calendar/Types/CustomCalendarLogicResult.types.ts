@@ -1,6 +1,8 @@
 import type { AriaAttributes } from 'react'
 import type {
     CalendarAppearance,
+    CalendarDateRestrictions,
+    CalendarPreset,
     CalendarCustomDesign,
 } from './Calendar.types.ts'
 import type {
@@ -47,36 +49,38 @@ export type CustomCalendarLogicResult = {
             resolvedRadius: string
             validationRequired: boolean
         }
-        popover: CalendarAppearance & {
-            minDateTime?: Date
-            maxDateTime?: Date
-            backdrop: boolean
-            dialogId: string
-            className: string
-            style: CSSProperties
-            labelledBy: string | undefined
-            describedBy: string | undefined
-            dialogLabel: string
-            switchMode: boolean
-            isRangeMode: boolean
-            disabled: boolean
-            readOnly: boolean
-            messages: import('../../../lib/Calendar/Types/Messages.types.ts').CalendarMessages
-            currentDate: Date
-            fastEdit: boolean
-            customDesign: Required<CalendarCustomDesign>
-            selectedDate: CalendarValue
-            minDate: Date | undefined
-            maxDate: Date | undefined
-            weekStartsOn: 1 | 2 | 3 | 4 | 5 | 6 | 7
-            visibleDays: number
-            showHolidays: boolean
-            locale: import('../../../lib/Calendar/Types/Messages.types.ts').CalendarLocale
-            enableTime: boolean
-            minTime: string | undefined
-            maxTime: string | undefined
-            button: boolean
-        }
+        popover: CalendarAppearance &
+            CalendarDateRestrictions & {
+                presets?: readonly CalendarPreset[]
+                minDateTime?: Date
+                maxDateTime?: Date
+                backdrop: boolean
+                dialogId: string
+                className: string
+                style: CSSProperties
+                labelledBy: string | undefined
+                describedBy: string | undefined
+                dialogLabel: string
+                switchMode: boolean
+                isRangeMode: boolean
+                disabled: boolean
+                readOnly: boolean
+                messages: import('../../../lib/Calendar/Types/Messages.types.ts').CalendarMessages
+                currentDate: Date
+                fastEdit: boolean
+                customDesign: Required<CalendarCustomDesign>
+                selectedDate: CalendarValue
+                minDate: Date | undefined
+                maxDate: Date | undefined
+                weekStartsOn: 1 | 2 | 3 | 4 | 5 | 6 | 7
+                visibleDays: number
+                showHolidays: boolean
+                locale: import('../../../lib/Calendar/Types/Messages.types.ts').CalendarLocale
+                enableTime: boolean
+                minTime: string | undefined
+                maxTime: string | undefined
+                button: boolean
+            }
     }
     handler: {
         closeCalendar: () => void
@@ -85,6 +89,7 @@ export type CustomCalendarLogicResult = {
         handleInvalid: (event: InvalidEvent<HTMLInputElement>) => void
         toggleCalendar: () => void
         handleApply: () => void
+        handlePresetSelect: (preset: CalendarPreset) => void
         handlePrevMonth: () => void
         handleNextMonth: () => void
         handleViewDateChange: (date: Date) => void

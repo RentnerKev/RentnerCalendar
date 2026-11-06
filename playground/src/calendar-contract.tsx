@@ -37,6 +37,7 @@ function ContractPlayground() {
             >
                 <SingleCalendar
                     id="contract-single"
+                    isDateDisabled={() => state.restrictCurrentDate}
                     name="single"
                     label="Single instant"
                     valueFormat="iso-datetime"
@@ -79,7 +80,53 @@ function ContractPlayground() {
                     minDateTime={state.rangeMinimum}
                     enableTime
                 />
+                <SingleCalendar
+                    id="restricted-single"
+                    name="restrictedSingle"
+                    formValueFormat="iso-date"
+                    label="Available weekdays"
+                    valueFormat="iso-date"
+                    value={state.restrictedSingle}
+                    onChange={setter.setRestrictedSingle}
+                    disabledWeekdays={[6, 7]}
+                    isDateDisabled={(date) => date.getDate() === 20}
+                    presets={[
+                        { label: 'Blocked Tuesday', value: '2026-10-20' },
+                        { label: 'Next Monday', value: () => '2026-10-19' },
+                    ]}
+                />
+                <RangeCalendar
+                    id="restricted-range"
+                    label="Available range"
+                    valueFormat="iso-date"
+                    value={state.restrictedRange}
+                    onChange={setter.setRestrictedRange}
+                    disabledWeekdays={[6, 7]}
+                    presets={[
+                        {
+                            label: 'Across weekend',
+                            value: ['2026-10-16', '2026-10-19'],
+                        },
+                        {
+                            label: 'Working week',
+                            value: () => ['2026-10-19', '2026-10-23'],
+                        },
+                    ]}
+                    button
+                />
+                <output data-testid="restricted-single-value">
+                    {state.restrictedSingle}
+                </output>
+                <output data-testid="restricted-range-value">
+                    {JSON.stringify(state.restrictedRange)}
+                </output>
             </CalendarProvider>
+            <button
+                type="button"
+                onClick={() => setter.setRestrictCurrentDate(true)}
+            >
+                Restrict current date
+            </button>
             <button type="button" onClick={handler.handleLaterMinimum}>
                 Later minimum
             </button>

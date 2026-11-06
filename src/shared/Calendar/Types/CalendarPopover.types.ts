@@ -5,10 +5,15 @@ import type {
 } from '../../../lib/Calendar/Types/Messages.types.ts'
 import type {
     CalendarAppearance,
+    CalendarDateRestrictions,
+    CalendarPreset,
     CalendarCustomDesign,
     CalendarValue,
 } from './Calendar.types.ts'
-export interface CalendarPopoverProps extends CalendarAppearance {
+export interface CalendarPopoverProps
+    extends CalendarAppearance, CalendarDateRestrictions {
+    presets?: readonly CalendarPreset[]
+    onPresetSelect?: (preset: CalendarPreset) => void
     backdrop: boolean
     onClose: () => void
     dialogId: string

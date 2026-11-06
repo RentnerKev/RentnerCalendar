@@ -2,6 +2,9 @@ import type { Dispatch, RefCallback, SetStateAction } from 'react'
 
 export interface ContractPlaygroundLogicResult {
     state: {
+        restrictCurrentDate: boolean
+        restrictedSingle: string | undefined
+        restrictedRange: [string | null, string | null] | undefined
         single: string | undefined
         range: [string | null, string | null] | undefined
         rangeDynamic: [string | null, string | null] | undefined
@@ -15,6 +18,11 @@ export interface ContractPlaygroundLogicResult {
         handleLaterRangeMinimum: () => void
     }
     setter: {
+        setRestrictCurrentDate: Dispatch<SetStateAction<boolean>>
+        setRestrictedSingle: Dispatch<SetStateAction<string | undefined>>
+        setRestrictedRange: Dispatch<
+            SetStateAction<[string | null, string | null] | undefined>
+        >
         setSingle: Dispatch<SetStateAction<string | undefined>>
         setRange: Dispatch<
             SetStateAction<[string | null, string | null] | undefined>

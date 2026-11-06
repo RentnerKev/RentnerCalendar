@@ -1,3 +1,5 @@
+import { isCalendarDateDisabled } from './CalendarRestrictions.ts'
+import type { CalendarDateRestrictions } from '../../shared/Calendar/Types/Calendar.types.ts'
 import { calendarValueWithinDateTimeBounds } from './CalendarDateTime.ts'
 import type {
     CalendarRange,
@@ -61,7 +63,7 @@ export function updateCalendarRangeBoundary(
 export function createCalendarDateSelection(
     date: Date,
     currentValue: CalendarValue | undefined,
-    options: {
+    options: CalendarDateRestrictions & {
         enableRange?: boolean
         enableTime?: boolean
         minDateTime?: Date
@@ -94,6 +96,7 @@ export function createCalendarDateSelection(
         const [start, end] = currentRange
         const validStart =
             start !== null &&
+            !isCalendarDateDisabled(start, options) &&
             isCalendarDayWithinBounds(start, minDate, maxDate) &&
             calendarValueWithinDateTimeBounds(
                 start,

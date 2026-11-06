@@ -37,6 +37,9 @@ export type {
 } from './lib/Calendar/Types/CalendarValue.types.ts'
 export type {
     CalendarDateInput,
+    CalendarDateRestrictions,
+    CalendarWeekday,
+    CalendarPreset,
     CalendarCustomDesign,
     CalendarFormValueFormat,
     CalendarGridProps,

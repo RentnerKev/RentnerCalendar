@@ -1,3 +1,4 @@
+import { isCalendarDateDisabled } from '../../../lib/Calendar/CalendarRestrictions.ts'
 import type { CalendarGridLogicResult } from '../Types/CalendarGridLogicResult.types.ts'
 import { getCalendarDateFormatters } from '../../../lib/Calendar/CalendarDateFormat.ts'
 import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
@@ -31,6 +32,8 @@ export default function useCalendarGridLogic({
     customDesign = defaultCalendarDesign,
     minDate,
     maxDate,
+    disabledWeekdays,
+    isDateDisabled: dateDisabledPredicate,
     minDateTime,
     maxDateTime,
     minTime,
@@ -52,6 +55,10 @@ export default function useCalendarGridLogic({
     const dayItems = handleGetDaysInMonth()
     const isDateDisabled = (date: Date) =>
         isInteractionDisabled ||
+        isCalendarDateDisabled(date, {
+            disabledWeekdays,
+            isDateDisabled: dateDisabledPredicate,
+        }) ||
         !constrainCalendarDateTime(
             date,
             minDateTime,
@@ -68,6 +75,9 @@ export default function useCalendarGridLogic({
         maxDate ? getCalendarDateKey(maxDate) : '',
         enableTime ? (minTime ?? '') : '',
         enableTime ? (maxTime ?? '') : '',
+        ...dayItems.map(({ date }) =>
+            isDateDisabled(date) ? getCalendarDateKey(date) : '',
+        ),
     ].join('|')
 
     let preferredDate: Date | undefined

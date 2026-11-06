@@ -21,6 +21,7 @@ export function CustomCalendar(props: CalendarProps) {
             onSelectDate={handler.handleDateSelect}
             onTimeChange={handler.handleTimeChange}
             onApply={handler.handleApply}
+            onPresetSelect={handler.handlePresetSelect}
         />
     ) : null
     return (

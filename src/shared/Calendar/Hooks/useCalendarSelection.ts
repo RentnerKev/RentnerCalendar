@@ -2,6 +2,11 @@ import {
     constrainCalendarDateTime,
     calendarValueWithinDateTimeBounds,
 } from '../../../lib/Calendar/CalendarDateTime.ts'
+import {
+    calendarValueAllowsDates,
+    isCalendarDateDisabled,
+} from '../../../lib/Calendar/CalendarRestrictions.ts'
+import type { CalendarDateRestrictions } from '../Types/Calendar.types.ts'
 import { useState } from 'react'
 import type { CalendarValue } from '../Types/Calendar.types.ts'
 import {
@@ -25,6 +30,7 @@ export default function useCalendarSelection(
     maxTime?: string,
     minDateTime?: Date,
     maxDateTime?: Date,
+    restrictions: CalendarDateRestrictions = {},
 ) {
     const [viewDate, setViewDate] = useState(() =>
         Array.isArray(value) && value[0]
@@ -94,6 +100,7 @@ export default function useCalendarSelection(
     }
 
     function handleDateSelect(date: Date) {
+        if (isCalendarDateDisabled(date, restrictions)) return
         if (!isCalendarDayWithinBounds(date, minDate, maxDate)) return
         if (
             enableTime &&
@@ -103,6 +110,7 @@ export default function useCalendarSelection(
         }
 
         const newValue = createCalendarDateSelection(date, internalValue, {
+            ...restrictions,
             enableRange,
             enableTime,
             minDate,
@@ -112,6 +120,7 @@ export default function useCalendarSelection(
             minTime,
             maxTime,
         })
+        if (!calendarValueAllowsDates(newValue, restrictions)) return
         const clamp = (boundary: Date) =>
             constrainCalendarDateTime(
                 boundary,
@@ -132,6 +141,7 @@ export default function useCalendarSelection(
     }
 
     function handleTimeChange(newValue: CalendarValue) {
+        if (!calendarValueAllowsDates(newValue, restrictions)) return
         if (
             calendarValueWithinDateTimeBounds(
                 newValue,

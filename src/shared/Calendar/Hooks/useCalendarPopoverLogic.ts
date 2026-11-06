@@ -1,3 +1,4 @@
+import { calendarValueAllowsDates } from '../../../lib/Calendar/CalendarRestrictions.ts'
 import type { CalendarPopoverLogicResult } from '../Types/CalendarPopoverLogicResult.types.ts'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import type { CalendarPopoverProps } from '../Types/CalendarPopover.types.ts'
@@ -32,10 +33,16 @@ export default function useCalendarPopoverLogic({
     maxDateTime,
     minTime,
     maxTime,
+    disabledWeekdays,
+    isDateDisabled,
 }: CalendarPopoverProps): CalendarPopoverLogicResult {
     const monthHeadingId = `${dialogId}-month-heading`
     const keyboardHelpId = `${dialogId}-keyboard-help`
     const applyDisabled =
+        !calendarValueAllowsDates(selectedDate, {
+            disabledWeekdays,
+            isDateDisabled,
+        }) ||
         !calendarValueWithinDateTimeBounds(
             selectedDate,
             minDateTime,

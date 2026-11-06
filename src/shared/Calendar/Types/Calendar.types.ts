@@ -70,8 +70,21 @@ export interface CalendarClassNames {
     portal?: string
 }
 
+/** ISO weekdays: Monday = 1, Sunday = 7. */
+export type CalendarWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7
+export interface CalendarDateRestrictions {
+    disabledWeekdays?: readonly CalendarWeekday[]
+    isDateDisabled?: (date: Date) => boolean
+}
+export interface CalendarPreset {
+    /** A unique, consumer-localized label. */
+    label: string
+    value: CalendarInputValue | (() => CalendarInputValue)
+}
+
 export interface CalendarInternalProps
-    extends AriaAttributes, CalendarAppearance {
+    extends AriaAttributes, CalendarAppearance, CalendarDateRestrictions {
+    presets?: readonly CalendarPreset[]
     id?: string
     name?: string
     value?: CalendarInputValue
@@ -178,7 +191,7 @@ export interface CalendarHeaderProps extends CalendarAppearance {
     readOnly?: boolean
 }
 
-export interface CalendarGridProps {
+export interface CalendarGridProps extends CalendarDateRestrictions {
     handleGetDaysInMonth: () => { date: Date; isCurrentMonth: boolean }[]
     selectedDate?: CalendarValue
     onSelectDate: (date: Date) => void

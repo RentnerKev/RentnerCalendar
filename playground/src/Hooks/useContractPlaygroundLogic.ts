@@ -2,6 +2,13 @@ import type { ContractPlaygroundLogicResult } from '../Types/ContractPlayground.
 import { useCallback, useState } from 'react'
 
 export function useContractPlaygroundLogic(): ContractPlaygroundLogicResult {
+    const [restrictCurrentDate, setRestrictCurrentDate] = useState(false)
+    const [restrictedSingle, setRestrictedSingle] = useState<
+        string | undefined
+    >('2026-10-16')
+    const [restrictedRange, setRestrictedRange] = useState<
+        [string | null, string | null] | undefined
+    >(['2026-10-16', null])
     const [rangeDynamic, setRangeDynamic] = useState<
         [string | null, string | null] | undefined
     >(['2026-10-16T08:00:00.000Z', null])
@@ -30,6 +37,9 @@ export function useContractPlaygroundLogic(): ContractPlaygroundLogicResult {
     }
     return {
         state: {
+            restrictCurrentDate,
+            restrictedSingle,
+            restrictedRange,
             single,
             range,
             rangeInstant,
@@ -39,7 +49,15 @@ export function useContractPlaygroundLogic(): ContractPlaygroundLogicResult {
             minimum,
         },
         handler: { handleLaterMinimum, handleLaterRangeMinimum },
-        setter: { setSingle, setRange, setRangeInstant, setRangeDynamic },
+        setter: {
+            setRestrictCurrentDate,
+            setRestrictedSingle,
+            setRestrictedRange,
+            setSingle,
+            setRange,
+            setRangeInstant,
+            setRangeDynamic,
+        },
         refs: { portalContainerRef },
     }
 }

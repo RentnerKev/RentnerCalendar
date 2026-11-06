@@ -123,7 +123,10 @@ export default function useCalendarGridNavigation({
         const previousFocusedDateKey = focusedDateKey.current
         if (!previousFocusedDateKey) return
 
-        const previousFocusedDay = findDayButtonByKey(previousFocusedDateKey)
+        const previousFocusedDay =
+            gridRef.current?.querySelector<HTMLButtonElement>(
+                `[data-calendar-date="${previousFocusedDateKey}"]`,
+            )
         if (!previousFocusedDay?.disabled) return
 
         if (

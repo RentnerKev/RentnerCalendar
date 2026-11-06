@@ -1,3 +1,4 @@
+import { calendarValueAllowsDates } from '../../../lib/Calendar/CalendarRestrictions.ts'
 import type { CustomCalendarLogicResult } from '../Types/CustomCalendarLogicResult.types.ts'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
@@ -10,6 +11,7 @@ import type {
 } from 'react'
 import type {
     CalendarInternalProps,
+    CalendarPreset,
     CalendarValue,
 } from '../Types/Calendar.types.ts'
 import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
@@ -70,6 +72,9 @@ export default function useCustomCalendarLogic({
     maxDateTime: rawMaxDateTime,
     minTime,
     maxTime,
+    disabledWeekdays,
+    isDateDisabled,
+    presets,
     fastEdit = true,
     weekStartsOn = 1,
     visibleDays = 7,
@@ -378,15 +383,43 @@ export default function useCustomCalendarLogic({
         setIsOpen(true)
     }
 
+    const restrictions = { disabledWeekdays, isDateDisabled }
+    function isAllowedSelection(value: CalendarValue) {
+        return (
+            calendarValueAllowsDates(value, restrictions) &&
+            calendarValueWithinDateBounds(value, minDate, maxDate) &&
+            calendarValueWithinDateTimeBounds(
+                value,
+                minDateTime,
+                maxDateTime,
+            ) &&
+            (!enableTime ||
+                calendarValueHasTimeWithinBounds(value, minTime, maxTime))
+        )
+    }
+    function handlePresetSelect(preset: CalendarPreset) {
+        if (disabled || readOnly) return
+        const value = normalizeValue(
+            typeof preset.value === 'function' ? preset.value() : preset.value,
+        )
+        if (
+            !value ||
+            (isRangeMode ? !Array.isArray(value) : !(value instanceof Date))
+        )
+            return
+        if (
+            Array.isArray(value) &&
+            (!value[0] || !value[1] || value[0] > value[1])
+        )
+            return
+        handleTempChange(value, 'date')
+    }
     function handleTempChange(newVal: CalendarValue, source?: 'date' | 'time') {
         if (disabled || readOnly) {
             return
         }
 
-        if (
-            !calendarValueWithinDateTimeBounds(newVal, minDateTime, maxDateTime)
-        )
-            return
+        if (!isAllowedSelection(newVal)) return
         setTempValue(newVal)
         commitCalendarSelection(newVal, onChange, {
             backdrop,
@@ -419,32 +452,15 @@ export default function useCustomCalendarLogic({
         maxTime,
         minDateTime,
         maxDateTime,
+        restrictions,
     )
 
     function handleApply() {
+        if (!isAllowedSelection(tempValue)) return
         if (disabled || readOnly) {
             return
         }
 
-        if (!calendarValueWithinDateBounds(tempValue, minDate, maxDate)) {
-            return
-        }
-
-        if (
-            enableTime &&
-            !calendarValueHasTimeWithinBounds(tempValue, minTime, maxTime)
-        ) {
-            return
-        }
-
-        if (
-            !calendarValueWithinDateTimeBounds(
-                tempValue,
-                minDateTime,
-                maxDateTime,
-            )
-        )
-            return
         onChange?.(tempValue)
         closeCalendar()
     }
@@ -606,6 +622,9 @@ export default function useCustomCalendarLogic({
                 fastEdit,
                 customDesign: cd,
                 selectedDate: state.internalValue,
+                disabledWeekdays,
+                isDateDisabled,
+                presets,
                 minDate,
                 maxDate,
                 weekStartsOn,
@@ -627,6 +646,7 @@ export default function useCustomCalendarLogic({
             handleInvalid,
             toggleCalendar,
             handleApply,
+            handlePresetSelect,
             handlePrevMonth: handler.handlePrevMonth,
             handleNextMonth: handler.handleNextMonth,
             handleViewDateChange: handler.handleViewDateChange,

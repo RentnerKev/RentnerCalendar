@@ -111,3 +111,43 @@ void [
     invalidSerializedValue,
     invalidSerializedRangeChange,
 ]
+
+const restrictedWithPresets = (
+    <SingleCalendar
+        valueFormat="iso-date"
+        disabledWeekdays={[6, 7]}
+        isDateDisabled={(date) => date.getDate() === 20}
+        presets={[{ label: 'Monday', value: () => '2026-10-19' }]}
+        onChange={(value) => {
+            const check: string | undefined = value
+            void check
+        }}
+    />
+)
+const invalidWeekday = (
+    // @ts-expect-error Weekdays use ISO numbers 1 through 7.
+    <SingleCalendar disabledWeekdays={[0]} />
+)
+void [restrictedWithPresets, invalidWeekday]
+
+const rangePresets = (
+    <RangeCalendar
+        valueFormat="iso-date"
+        presets={[
+            {
+                label: 'ISO range',
+                value: ['2026-10-19', '2026-10-23'] as const,
+            },
+            {
+                label: 'Dynamic range',
+                value: () =>
+                    [new Date(2026, 9, 19), new Date(2026, 9, 23)] as const,
+            },
+        ]}
+        onChange={(value) => {
+            const check: [string | null, string | null] | undefined = value
+            void check
+        }}
+    />
+)
+void rangePresets

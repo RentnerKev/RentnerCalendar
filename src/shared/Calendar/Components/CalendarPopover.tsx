@@ -37,6 +37,10 @@ export default function CalendarPopover({
     onSelectDate,
     minDate,
     maxDate,
+    disabledWeekdays,
+    isDateDisabled,
+    presets,
+    onPresetSelect,
     weekStartsOn,
     visibleDays,
     showHolidays,
@@ -77,6 +81,8 @@ export default function CalendarPopover({
         onSelectDate,
         minDate,
         maxDate,
+        disabledWeekdays,
+        isDateDisabled,
         weekStartsOn,
         visibleDays,
         showHolidays,
@@ -147,6 +153,21 @@ export default function CalendarPopover({
                     </div>
                 )}
 
+                {presets && (
+                    <div className="mb-3 flex flex-wrap gap-2">
+                        {presets.map((preset) => (
+                            <button
+                                key={preset.label}
+                                type="button"
+                                disabled={disabled || readOnly}
+                                onClick={() => onPresetSelect?.(preset)}
+                                className={`rounded-lg border px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 ${customDesign.borderColor} ${customDesign.textColor} ${customDesign.hoverBackground}`}
+                            >
+                                {preset.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
                 <CalendarHeader
                     classNames={classNames}
                     controlSize={controlSize}
@@ -172,6 +193,8 @@ export default function CalendarPopover({
                     enableRange={isRangeMode}
                     enableTime={enableTime}
                     customDesign={customDesign}
+                    disabledWeekdays={disabledWeekdays}
+                    isDateDisabled={isDateDisabled}
                     minDate={minDate}
                     maxDate={maxDate}
                     minDateTime={minDateTime}

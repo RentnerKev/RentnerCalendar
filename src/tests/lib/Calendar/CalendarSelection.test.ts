@@ -230,3 +230,12 @@ test('restarts a partial range after instant bounds invalidate its previous star
         ),
     ).toEqual([new Date(2026, 9, 14), null])
 })
+
+test('restarts a partial range when a restriction invalidates the previous start', () => {
+    const selected = createCalendarDateSelection(
+        new Date(2026, 9, 19),
+        [new Date(2026, 9, 18), null],
+        { enableRange: true, disabledWeekdays: [7] },
+    )
+    expect(selected).toEqual([new Date(2026, 9, 19), null])
+})
