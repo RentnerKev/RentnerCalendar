@@ -43,6 +43,7 @@ export interface CalendarPopoverProps
     weekStartsOn: 1 | 2 | 3 | 4 | 5 | 6 | 7
     visibleDays: number
     showHolidays: boolean
+    showKeyboardHelp?: boolean
     locale: CalendarLocale
     enableTime: boolean
     onTimeChange: (value: CalendarValue) => void

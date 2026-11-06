@@ -75,6 +75,7 @@ export type CustomCalendarLogicResult = {
                 weekStartsOn: 1 | 2 | 3 | 4 | 5 | 6 | 7
                 visibleDays: number
                 showHolidays: boolean
+                showKeyboardHelp: boolean
                 locale: import('../../../lib/Calendar/Types/Messages.types.ts').CalendarLocale
                 enableTime: boolean
                 minTime: string | undefined

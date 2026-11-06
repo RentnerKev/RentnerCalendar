@@ -44,6 +44,7 @@ export default function CalendarPopover({
     weekStartsOn,
     visibleDays,
     showHolidays,
+    showKeyboardHelp = false,
     locale,
     enableTime,
     onTimeChange,
@@ -232,7 +233,11 @@ export default function CalendarPopover({
                 )}
                 <p
                     id={keyboardHelpId}
-                    className={`mt-3 text-[11px] leading-4 ${customDesign.textMuted}`}
+                    className={
+                        showKeyboardHelp
+                            ? `mt-3 text-[11px] leading-4 ${customDesign.textMuted}`
+                            : 'sr-only'
+                    }
                 >
                     {messages.keyboardHelp}
                 </p>
