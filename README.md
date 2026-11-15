@@ -5,6 +5,7 @@
 <p align="center">
     <a href="https://github.com/RentnerKev/RentnerCalendar/actions/workflows/ci.yml"><img src="https://github.com/RentnerKev/RentnerCalendar/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
     <a href="https://github.com/RentnerKev/RentnerCalendar/actions/workflows/codeql.yml"><img src="https://github.com/RentnerKev/RentnerCalendar/actions/workflows/codeql.yml/badge.svg?branch=main" alt="CodeQL"></a>
+    <a href="https://scorecard.dev/viewer/?uri=github.com/RentnerKev/RentnerCalendar"><img src="https://api.scorecard.dev/projects/github.com/RentnerKev/RentnerCalendar/badge" alt="OpenSSF Scorecard"></a>
     <a href="https://www.npmjs.com/package/@rentnerkev/calendar"><img src="https://img.shields.io/npm/v/@rentnerkev/calendar" alt="npm version"></a>
     <a href="https://www.npmjs.com/package/@rentnerkev/calendar"><img src="https://img.shields.io/npm/dm/@rentnerkev/calendar" alt="npm downloads"></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
@@ -109,3 +110,7 @@ accounts, write operations, or access to private project files. The installed
 declarations for the version installed in your project.
 
 Typed ISO callbacks, combined instant bounds, shared theme tokens, provider/local sizing, typed slots, configurable portals and the optional UI-free `@rentnerkev/calendar/form` adapter are described in [the usage guide](docs/usage.md). Existing Date defaults remain compatible.
+
+## Community
+
+See [Contributing](.github/CONTRIBUTING.md), the [Code of Conduct](.github/CODE_OF_CONDUCT.md), [Support](.github/SUPPORT.md), and the [Security Policy](SECURITY.md).
