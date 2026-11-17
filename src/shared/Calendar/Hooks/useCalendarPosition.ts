@@ -38,10 +38,7 @@ export default function useCalendarPosition(
         const viewportGutter = Math.min(8, viewportHeight / 2)
         const anchorGap = 8
         const horizontalGutter = Math.min(16, viewportWidth / 2)
-        const availableWidth = Math.max(
-            0,
-            viewportWidth - horizontalGutter * 2,
-        )
+        const availableWidth = Math.max(0, viewportWidth - horizontalGutter * 2)
         const preferredWidth = matchTriggerWidth
             ? Math.max(minWidth, rect.width)
             : minWidth
@@ -50,10 +47,14 @@ export default function useCalendarPosition(
             viewportLeft + horizontalGutter,
             viewportLeft + viewportWidth - width - horizontalGutter,
         )
-        const preferredLeft = view.getComputedStyle(trigger).direction === 'rtl'
-            ? rect.right - width
-            : rect.left
-        const left = Math.min(Math.max(preferredLeft, viewportLeft + horizontalGutter), maxLeft)
+        const preferredLeft =
+            view.getComputedStyle(trigger).direction === 'rtl'
+                ? rect.right - width
+                : rect.left
+        const left = Math.min(
+            Math.max(preferredLeft, viewportLeft + horizontalGutter),
+            maxLeft,
+        )
         const maxAnchorY = Math.max(
             viewportTop + viewportGutter,
             viewportTop + viewportHeight - viewportGutter,
@@ -64,9 +65,16 @@ export default function useCalendarPosition(
         const anchorBottom = clampAnchorY(rect.bottom)
         const spaceBelow = Math.max(
             0,
-            viewportTop + viewportHeight - anchorBottom - anchorGap - viewportGutter,
+            viewportTop +
+                viewportHeight -
+                anchorBottom -
+                anchorGap -
+                viewportGutter,
         )
-        const spaceAbove = Math.max(0, anchorTop - viewportTop - anchorGap - viewportGutter)
+        const spaceAbove = Math.max(
+            0,
+            anchorTop - viewportTop - anchorGap - viewportGutter,
+        )
         const estimatedCalendarHeight = 450
         const dropdownPosition: CalendarPosition['dropdownPosition'] =
             spaceBelow < estimatedCalendarHeight && spaceAbove > spaceBelow
@@ -78,10 +86,13 @@ export default function useCalendarPosition(
             coords: {
                 left: (left - origin.x) / origin.scaleX,
                 top: (anchorBottom + anchorGap - origin.y) / origin.scaleY,
-                bottom: origin.height - (anchorTop - anchorGap - origin.y) / origin.scaleY,
+                bottom:
+                    origin.height -
+                    (anchorTop - anchorGap - origin.y) / origin.scaleY,
                 width: width / origin.scaleX,
                 maxHeight:
-                    (dropdownPosition === 'bottom' ? spaceBelow : spaceAbove) / origin.scaleY,
+                    (dropdownPosition === 'bottom' ? spaceBelow : spaceAbove) /
+                    origin.scaleY,
             },
         }
         setPosition((previous) =>

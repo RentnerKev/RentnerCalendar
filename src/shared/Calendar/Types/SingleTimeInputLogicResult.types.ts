@@ -1,4 +1,9 @@
-import type { ChangeEvent, ClipboardEvent, KeyboardEvent, MouseEvent } from 'react'
+import type {
+    ChangeEvent,
+    ClipboardEvent,
+    KeyboardEvent,
+    MouseEvent,
+} from 'react'
 
 export type SingleTimeInputLogicResult = {
     state: {

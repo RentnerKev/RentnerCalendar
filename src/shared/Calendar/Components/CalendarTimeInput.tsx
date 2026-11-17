@@ -1,7 +1,5 @@
 import useCalendarTimeInputLogic from '../Hooks/useCalendarTimeInputLogic.ts'
-import type {
-    SingleTimeInputProps,
-} from '../Types/CalendarTimeInput.types.ts'
+import type { SingleTimeInputProps } from '../Types/CalendarTimeInput.types.ts'
 import useSingleTimeInputLogic from '../Hooks/useSingleTimeInputLogic.ts'
 import type { CalendarTimeInputProps } from '../Types/Calendar.types.ts'
 
@@ -64,11 +62,23 @@ function SingleTimeInput({
                     onBlur={handler.handleBlur}
                     className="absolute inset-0 w-full h-full cursor-text bg-transparent text-transparent caret-transparent outline-none rounded-[inherit] focus-visible:ring-2"
                 />
-                <div aria-hidden="true" className={`pointer-events-none flex items-center ${cd.textColor} text-[15px] font-medium gap-0.5`}>
+                <div
+                    aria-hidden="true"
+                    className={`pointer-events-none flex items-center ${cd.textColor} text-[15px] font-medium gap-0.5`}
+                >
                     {[0, 1, 2, 3].map((position) => (
                         <span key={position} className="contents">
-                            {position === 2 && <span className={`mx-0.5 pb-0.5 ${cd.textMutedDark} font-bold`}>:</span>}
-                            <span data-time-digit={position} className={`w-3 text-center border-b-[1.5px] transition-colors ${cursorPos === position ? `${cd.primaryBorder} ${cd.primaryColor}` : cd.borderTransparent}`}>
+                            {position === 2 && (
+                                <span
+                                    className={`mx-0.5 pb-0.5 ${cd.textMutedDark} font-bold`}
+                                >
+                                    :
+                                </span>
+                            )}
+                            <span
+                                data-time-digit={position}
+                                className={`w-3 text-center border-b-[1.5px] transition-colors ${cursorPos === position ? `${cd.primaryBorder} ${cd.primaryColor}` : cd.borderTransparent}`}
+                            >
                                 {timeStr[position]}
                             </span>
                         </span>

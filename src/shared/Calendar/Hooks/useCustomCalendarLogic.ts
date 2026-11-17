@@ -316,7 +316,10 @@ export default function useCustomCalendarLogic({
             for (const reference of [triggerRef.current, popoverRef.current]) {
                 let anchor: Node | null = reference
                 while (anchor) {
-                    if (target !== popoverRef.current && target.contains(anchor)) {
+                    if (
+                        target !== popoverRef.current &&
+                        target.contains(anchor)
+                    ) {
                         updatePosition()
                         return
                     }
@@ -328,7 +331,11 @@ export default function useCustomCalendarLogic({
         }
         // Native element scroll events do not cross shadow boundaries.
         const scrollTargets = new Set<EventTarget>([view])
-        for (const reference of [triggerRef.current, popoverRef.current, portalContainer]) {
+        for (const reference of [
+            triggerRef.current,
+            popoverRef.current,
+            portalContainer,
+        ]) {
             let node: Node | null = reference ?? null
             while (node) {
                 const root = node.getRootNode()

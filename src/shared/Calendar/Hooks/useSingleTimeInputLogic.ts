@@ -1,12 +1,18 @@
 import type { SingleTimeInputLogicResult } from '../Types/SingleTimeInputLogicResult.types.ts'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { ChangeEvent, ClipboardEvent, MouseEvent, KeyboardEvent } from 'react'
+import type {
+    ChangeEvent,
+    ClipboardEvent,
+    MouseEvent,
+    KeyboardEvent,
+} from 'react'
 import { formatTimeToString } from '../../../lib/Calendar/FormatFunctions.ts'
 import { constrainCalendarDateTime } from '../../../lib/Calendar/CalendarDateTime.ts'
 import { updateCalendarTime } from '../../../lib/Calendar/CalendarTime.ts'
 import type { SingleTimeInputProps } from '../Types/CalendarTimeInput.types.ts'
 
-const useBrowserLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
+const useBrowserLayoutEffect =
+    typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 export default function useSingleTimeInputLogic({
     date,
@@ -71,10 +77,16 @@ export default function useSingleTimeInputLogic({
             setCursorPos(Math.min(3, event.currentTarget.selectionStart ?? 0))
         } else if (nativeEvent.inputType?.startsWith('delete')) {
             const position = cursorPos ?? 0
-            updateDate(timeStr.slice(0, position) + '0' + timeStr.slice(position + 1))
+            updateDate(
+                timeStr.slice(0, position) + '0' + timeStr.slice(position + 1),
+            )
         } else if (nativeEvent.data && /^\d$/.test(nativeEvent.data)) {
             const position = cursorPos ?? 0
-            updateDate(timeStr.slice(0, position) + nativeEvent.data + timeStr.slice(position + 1))
+            updateDate(
+                timeStr.slice(0, position) +
+                    nativeEvent.data +
+                    timeStr.slice(position + 1),
+            )
             setCursorPos(Math.min(3, position + 1))
         }
         // Restore the controlled draft even when an unsupported edit made no state change.
@@ -93,12 +105,17 @@ export default function useSingleTimeInputLogic({
 
     function handleClick(event: MouseEvent<HTMLInputElement>) {
         if (disabled || readOnly) return
-        const digits = event.currentTarget.parentElement?.querySelectorAll<HTMLElement>('[data-time-digit]')
+        const digits =
+            event.currentTarget.parentElement?.querySelectorAll<HTMLElement>(
+                '[data-time-digit]',
+            )
         let position = Math.min(3, event.currentTarget.selectionStart ?? 0)
         let distance = Infinity
         for (const digit of digits ?? []) {
             const rect = digit.getBoundingClientRect()
-            const nextDistance = Math.abs(event.clientX - rect.left - rect.width / 2)
+            const nextDistance = Math.abs(
+                event.clientX - rect.left - rect.width / 2,
+            )
             if (nextDistance < distance) {
                 position = Number(digit.dataset.timeDigit)
                 distance = nextDistance
@@ -109,7 +126,16 @@ export default function useSingleTimeInputLogic({
     }
 
     function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-        if (disabled || readOnly || cursorPos === null || e.altKey || e.ctrlKey || e.metaKey || e.nativeEvent.isComposing) return
+        if (
+            disabled ||
+            readOnly ||
+            cursorPos === null ||
+            e.altKey ||
+            e.ctrlKey ||
+            e.metaKey ||
+            e.nativeEvent.isComposing
+        )
+            return
 
         if (e.key === 'ArrowLeft') {
             e.preventDefault()
@@ -159,7 +185,14 @@ export default function useSingleTimeInputLogic({
     }
     return {
         state: { timeStr, cursorPos },
-        handler: { handleKeyDown, handleFocus, handleBlur, handleChange, handlePaste, handleClick },
+        handler: {
+            handleKeyDown,
+            handleFocus,
+            handleBlur,
+            handleChange,
+            handlePaste,
+            handleClick,
+        },
         refs: { inputRef },
     }
 }
