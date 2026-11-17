@@ -10,7 +10,11 @@ import { fixedCalendarOrigin } from '../../../lib/Calendar/CalendarGeometry.ts'
 export default function useCalendarPosition(
     triggerRef: RefObject<HTMLElement | null>,
     popoverRef: RefObject<HTMLElement | null>,
-    { minWidth = 340, matchTriggerWidth = false }: CalendarPositionOptions = {},
+    {
+        minWidth = 340,
+        maxWidth = Number.POSITIVE_INFINITY,
+        matchTriggerWidth = false,
+    }: CalendarPositionOptions = {},
 ): CalendarPositionResult {
     const [position, setPosition] = useState<CalendarPosition>({
         dropdownPosition: 'bottom',
@@ -42,7 +46,7 @@ export default function useCalendarPosition(
         const preferredWidth = matchTriggerWidth
             ? Math.max(minWidth, rect.width)
             : minWidth
-        const width = Math.min(preferredWidth, availableWidth)
+        const width = Math.min(preferredWidth, maxWidth, availableWidth)
         const maxLeft = Math.max(
             viewportLeft + horizontalGutter,
             viewportLeft + viewportWidth - width - horizontalGutter,
@@ -107,7 +111,7 @@ export default function useCalendarPosition(
                 ? previous
                 : nextPosition,
         )
-    }, [triggerRef, popoverRef, minWidth, matchTriggerWidth])
+    }, [triggerRef, popoverRef, minWidth, maxWidth, matchTriggerWidth])
 
     return {
         handler: { updatePosition },

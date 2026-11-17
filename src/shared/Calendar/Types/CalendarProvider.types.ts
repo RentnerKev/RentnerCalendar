@@ -11,6 +11,8 @@ import type {
 export interface CalendarProviderProps extends CalendarAppearance {
     children: ReactNode
     locale?: CalendarLocale
+    /** Caps the calendar dialog width in CSS pixels when positive. */
+    popoverMaxWidth?: number
     messages?: Partial<CalendarMessages>
     customDesign?: CalendarCustomDesign
 }

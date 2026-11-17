@@ -17,6 +17,7 @@ export function useCalendarProviderLogic({
     portalContainer,
     portalClassName,
     portalZIndex,
+    popoverMaxWidth,
     locale,
     messages,
     customDesign,
@@ -32,6 +33,10 @@ export function useCalendarProviderLogic({
                     : portalContainer,
             portalClassName: portalClassName ?? parent.portalClassName,
             portalZIndex: portalZIndex ?? parent.portalZIndex,
+            popoverMaxWidth:
+                popoverMaxWidth !== undefined && popoverMaxWidth > 0
+                    ? popoverMaxWidth
+                    : parent.popoverMaxWidth,
             locale: locale ?? parent.locale,
             messages: {
                 ...parent.messages,
@@ -53,6 +58,7 @@ export function useCalendarProviderLogic({
             portalContainer,
             portalClassName,
             portalZIndex,
+            popoverMaxWidth,
         ],
     )
     return { state: { value } }

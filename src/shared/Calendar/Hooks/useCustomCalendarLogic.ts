@@ -172,6 +172,7 @@ export default function useCustomCalendarLogic({
     const { handler: positionHandler, state: positionState } =
         useCalendarPosition(triggerRef, popoverRef, {
             minWidth: calendarPopoverMinWidth,
+            maxWidth: defaults.popoverMaxWidth,
             matchTriggerWidth: hasWidthUtilityClass(className),
         })
     const { dropdownPosition, coords } = positionState
