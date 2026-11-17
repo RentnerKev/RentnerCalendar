@@ -22,6 +22,7 @@ function ContractPlayground() {
             <CalendarProvider
                 locale="en"
                 controlSize="lg"
+                popoverMaxWidth={340}
                 portalContainer={state.portalContainer}
                 portalZIndex={12000}
                 portalClassName="calendar-owned-portal"
@@ -59,6 +60,7 @@ function ContractPlayground() {
                     value={state.range}
                     onChange={setter.setRange}
                     controlSize="sm"
+                    className="w-full"
                     isDeletable
                 />
                 <RangeCalendar

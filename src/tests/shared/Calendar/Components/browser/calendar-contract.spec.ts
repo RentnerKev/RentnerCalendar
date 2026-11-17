@@ -27,6 +27,22 @@ test('applies provider sizing, semantic custom design, select slots and portal o
     await expect(single).toBeFocused()
 })
 
+test('caps a wide range calendar at the provider limit and viewport', async ({
+    page,
+}) => {
+    await page.setViewportSize({ width: 900, height: 760 })
+    await page.goto('/calendar-contract.html')
+    const range = page.locator('#contract-range')
+    await expect(range).toHaveCSS('width', '868px')
+    await range.click()
+
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toHaveCSS('width', '340px')
+    await expect(range).toHaveCSS('width', '868px')
+    await page.setViewportSize({ width: 320, height: 760 })
+    await expect(dialog).toHaveCSS('width', '288px')
+})
+
 test('intersects instant and daily bounds for selection, time edits and Apply', async ({
     page,
 }) => {

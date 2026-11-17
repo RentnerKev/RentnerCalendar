@@ -11,6 +11,7 @@ export interface CalendarPosition {
 
 export interface CalendarPositionOptions {
     minWidth?: number
+    maxWidth?: number
     matchTriggerWidth?: boolean
 }
 
