@@ -1,8 +1,6 @@
-/* oxlint-disable jsx-a11y/prefer-tag-over-role -- The segmented textbox handles digit navigation in one custom focus target; a native input would change its keyboard contract. */
 import useCalendarTimeInputLogic from '../Hooks/useCalendarTimeInputLogic.ts'
 import type {
     SingleTimeInputProps,
-    CalendarTimeDigitProps,
 } from '../Types/CalendarTimeInput.types.ts'
 import useSingleTimeInputLogic from '../Hooks/useSingleTimeInputLogic.ts'
 import type { CalendarTimeInputProps } from '../Types/Calendar.types.ts'
@@ -21,7 +19,7 @@ function SingleTimeInput({
     disabled = false,
     readOnly = false,
 }: SingleTimeInputProps) {
-    const { state, handler, setter, refs } = useSingleTimeInputLogic({
+    const { state, handler, refs } = useSingleTimeInputLogic({
         date,
         onChangeDate,
         minDateTime,
@@ -33,8 +31,7 @@ function SingleTimeInput({
         cd,
     })
     const { timeStr, cursorPos } = state
-    const { setCursorPos } = setter
-    const { containerRef } = refs
+    const { inputRef } = refs
     const { handleKeyDown } = handler
 
     return (
@@ -47,82 +44,38 @@ function SingleTimeInput({
                 </span>
             )}
             <div
-                ref={containerRef}
-                tabIndex={disabled || readOnly ? -1 : 0}
-                role="textbox"
-                aria-label={`${label ?? 'Time'} ${timeStr.slice(0, 2)}:${timeStr.slice(2)}`}
-                aria-disabled={disabled || undefined}
-                aria-readonly={readOnly || undefined}
-                onKeyDown={handleKeyDown}
-                onFocus={handler.handleFocus}
-                onBlur={handler.handleBlur}
                 className={`relative flex items-center justify-center border px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 ${controlSize ? { sm: 'h-rentner-control-sm', md: 'h-rentner-control-md', lg: 'h-rentner-control-lg' }[controlSize] : ''} ${classNames?.time ?? `bg-transparent ${cd.borderColor} rounded-lg ${cd.primaryFocusBorder} ${cd.primaryRing} shadow-sm`} ${disabled || readOnly ? 'cursor-not-allowed opacity-60' : 'cursor-text'}`}
             >
-                <div
-                    className={`flex items-center ${cd.textColor} text-[15px] font-medium gap-0.5`}
-                >
-                    <Digit
-                        char={timeStr[0]}
-                        isActive={cursorPos === 0}
-                        onClick={() => setCursorPos(0)}
-                        cd={cd}
-                        disabled={disabled}
-                        readOnly={readOnly}
-                    />
-                    <Digit
-                        char={timeStr[1]}
-                        isActive={cursorPos === 1}
-                        onClick={() => setCursorPos(1)}
-                        cd={cd}
-                        disabled={disabled}
-                        readOnly={readOnly}
-                    />
-                    <span
-                        className={`mx-0.5 pb-0.5 ${cd.textMutedDark} font-bold`}
-                    >
-                        :
-                    </span>
-                    <Digit
-                        char={timeStr[2]}
-                        isActive={cursorPos === 2}
-                        onClick={() => setCursorPos(2)}
-                        cd={cd}
-                        disabled={disabled}
-                        readOnly={readOnly}
-                    />
-                    <Digit
-                        char={timeStr[3]}
-                        isActive={cursorPos === 3}
-                        onClick={() => setCursorPos(3)}
-                        cd={cd}
-                        disabled={disabled}
-                        readOnly={readOnly}
-                    />
+                <input
+                    ref={inputRef}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    spellCheck={false}
+                    value={timeStr}
+                    disabled={disabled}
+                    readOnly={readOnly}
+                    aria-label={`${label ?? 'Time'} ${timeStr.slice(0, 2)}:${timeStr.slice(2)}`}
+                    onKeyDown={handleKeyDown}
+                    onChange={handler.handleChange}
+                    onPaste={handler.handlePaste}
+                    onClick={handler.handleClick}
+                    onFocus={handler.handleFocus}
+                    onBlur={handler.handleBlur}
+                    className="absolute inset-0 w-full h-full cursor-text bg-transparent text-transparent caret-transparent outline-none rounded-[inherit] focus-visible:ring-2"
+                />
+                <div aria-hidden="true" className={`pointer-events-none flex items-center ${cd.textColor} text-[15px] font-medium gap-0.5`}>
+                    {[0, 1, 2, 3].map((position) => (
+                        <span key={position} className="contents">
+                            {position === 2 && <span className={`mx-0.5 pb-0.5 ${cd.textMutedDark} font-bold`}>:</span>}
+                            <span data-time-digit={position} className={`w-3 text-center border-b-[1.5px] transition-colors ${cursorPos === position ? `${cd.primaryBorder} ${cd.primaryColor}` : cd.borderTransparent}`}>
+                                {timeStr[position]}
+                            </span>
+                        </span>
+                    ))}
                 </div>
             </div>
         </div>
-    )
-}
-
-function Digit({
-    char,
-    isActive,
-    onClick,
-    cd,
-    disabled = false,
-    readOnly = false,
-}: CalendarTimeDigitProps) {
-    return (
-        <span
-            aria-hidden="true"
-            onClick={(e) => {
-                e.stopPropagation()
-                if (!disabled && !readOnly) onClick()
-            }}
-            className={`w-3 text-center border-b-[1.5px] ${disabled || readOnly ? 'cursor-not-allowed' : 'cursor-pointer'} transition-colors ${isActive ? `${cd.primaryBorder} ${cd.primaryColor}` : cd.borderTransparent}`}
-        >
-            {char}
-        </span>
     )
 }
 
