@@ -1,4 +1,9 @@
-import type { KeyboardEvent } from 'react'
+import type {
+    ChangeEvent,
+    ClipboardEvent,
+    KeyboardEvent,
+    MouseEvent,
+} from 'react'
 
 export type SingleTimeInputLogicResult = {
     state: {
@@ -6,16 +11,14 @@ export type SingleTimeInputLogicResult = {
         cursorPos: number | null
     }
     handler: {
-        handleKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void
+        handleKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void
         handleFocus: () => void
         handleBlur: () => void
-    }
-    setter: {
-        setCursorPos: import('react').Dispatch<
-            import('react').SetStateAction<number | null>
-        >
+        handleClick: (event: MouseEvent<HTMLInputElement>) => void
+        handleChange: (event: ChangeEvent<HTMLInputElement>) => void
+        handlePaste: (event: ClipboardEvent<HTMLInputElement>) => void
     }
     refs: {
-        containerRef: import('react').RefObject<HTMLDivElement | null>
+        inputRef: import('react').RefObject<HTMLInputElement | null>
     }
 }

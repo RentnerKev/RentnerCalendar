@@ -170,7 +170,7 @@ export default function useCustomCalendarLogic({
     const validationInputRef = useRef<HTMLInputElement>(null)
     const cd = { ...defaultCalendarDesign, ...customDesign }
     const { handler: positionHandler, state: positionState } =
-        useCalendarPosition(triggerRef, {
+        useCalendarPosition(triggerRef, popoverRef, {
             minWidth: calendarPopoverMinWidth,
             matchTriggerWidth: hasWidthUtilityClass(className),
         })
@@ -300,34 +300,62 @@ export default function useCustomCalendarLogic({
 
         const updatePosition = positionHandler.updatePosition
         updatePosition()
-        window.addEventListener('resize', updatePosition)
+        const ownerDocument = triggerRef.current?.ownerDocument ?? document
+        const view = ownerDocument.defaultView ?? window
+        view.addEventListener('resize', updatePosition)
+        view.visualViewport?.addEventListener('resize', updatePosition)
+        view.visualViewport?.addEventListener('scroll', updatePosition)
         function handleScroll(event: Event) {
-            const target = event.target
-            // Only viewport or trigger ancestors can move this fixed popup.
-            if (target === window || target === document) {
+            const target = event.composedPath()[0] ?? event.target
+            // Viewport, trigger ancestors and portal ancestors can move this popup.
+            if (target === view || target === ownerDocument) {
                 updatePosition()
                 return
             }
             if (!(target instanceof Element)) return
-            let anchor: Node | null = triggerRef.current
-            while (anchor) {
-                if (target.contains(anchor)) {
-                    updatePosition()
-                    return
+            for (const reference of [triggerRef.current, popoverRef.current]) {
+                let anchor: Node | null = reference
+                while (anchor) {
+                    if (
+                        target !== popoverRef.current &&
+                        target.contains(anchor)
+                    ) {
+                        updatePosition()
+                        return
+                    }
+                    // Node.contains does not cross a shadow boundary.
+                    const root = anchor.getRootNode()
+                    anchor = root instanceof ShadowRoot ? root.host : null
                 }
-                // Node.contains does not cross a shadow boundary. Scrolling a
-                // host (or its ancestors) still moves the trigger inside it.
-                const root = anchor.getRootNode()
-                anchor = root instanceof ShadowRoot ? root.host : null
             }
         }
-        window.addEventListener('scroll', handleScroll, true)
+        // Native element scroll events do not cross shadow boundaries.
+        const scrollTargets = new Set<EventTarget>([view])
+        for (const reference of [
+            triggerRef.current,
+            popoverRef.current,
+            portalContainer,
+        ]) {
+            let node: Node | null = reference ?? null
+            while (node) {
+                const root = node.getRootNode()
+                if (root.nodeType !== 11 || !('host' in root)) break
+                const shadow = root as ShadowRoot
+                scrollTargets.add(shadow)
+                node = shadow.host
+            }
+        }
+        for (const target of scrollTargets)
+            target.addEventListener('scroll', handleScroll, true)
 
         return () => {
-            window.removeEventListener('resize', updatePosition)
-            window.removeEventListener('scroll', handleScroll, true)
+            view.removeEventListener('resize', updatePosition)
+            view.visualViewport?.removeEventListener('resize', updatePosition)
+            view.visualViewport?.removeEventListener('scroll', updatePosition)
+            for (const target of scrollTargets)
+                target.removeEventListener('scroll', handleScroll, true)
         }
-    }, [isOpen, positionHandler.updatePosition])
+    }, [isOpen, portalContainer, positionHandler.updatePosition])
 
     const closeCalendar = useCallback(() => {
         setTempValue(normalizedValue)

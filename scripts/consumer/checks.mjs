@@ -19,9 +19,7 @@ export async function check({ page, expect }) {
 
     await singleTrigger.click()
     const singleDialog = page.getByRole('dialog')
-    const timeInput = singleDialog.locator(
-        '[role="textbox"][aria-label^="Time "]',
-    )
+    const timeInput = singleDialog.getByRole('textbox', { name: /^Time / })
     const selectedDay = singleDialog.locator(
         '[data-calendar-date="2030-12-24"]',
     )
@@ -72,9 +70,7 @@ export async function check({ page, expect }) {
     const rangeTrigger = page.locator('#range-calendar')
     await rangeTrigger.click()
     const rangeDialog = page.getByRole('dialog')
-    const startTime = rangeDialog.locator(
-        '[role="textbox"][aria-label^="From "]',
-    )
+    const startTime = rangeDialog.getByRole('textbox', { name: /^From / })
     await expect(
         rangeDialog.locator('[data-calendar-date="2030-12-24"]'),
     ).toHaveAttribute('aria-pressed', 'true')

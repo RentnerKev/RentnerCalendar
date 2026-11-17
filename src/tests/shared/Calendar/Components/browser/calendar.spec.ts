@@ -149,7 +149,7 @@ test.describe('calendar playground', () => {
         const dialog = page.getByRole('dialog', { name: 'Kalender öffnen' })
         const timeInput = dialog.getByRole('textbox', { name: 'Zeit 00:00' })
 
-        await expect(timeInput).toHaveAttribute('aria-disabled', 'true')
+        await expect(timeInput).toBeDisabled()
         await timeInput.focus()
         await timeInput.pressSequentially('1234')
 

@@ -16,12 +16,3 @@ export interface SingleTimeInputProps extends CalendarAppearance {
     disabled?: boolean
     readOnly?: boolean
 }
-
-export interface CalendarTimeDigitProps {
-    char: string
-    isActive: boolean
-    onClick: () => void
-    cd: Required<CalendarCustomDesign>
-    disabled?: boolean
-    readOnly?: boolean
-}

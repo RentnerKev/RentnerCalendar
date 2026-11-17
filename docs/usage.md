@@ -130,6 +130,10 @@ the range stays chronological: an edit that would move one endpoint past the
 other is clamped to the other endpoint. A time control stays disabled until its
 date endpoint has been selected.
 
+The segmented time field uses a native text input with numeric input mode for
+mobile keyboards. It accepts HHMM or HH:MM typing/paste alongside the existing
+digit navigation, deletion and configured time bounds.
+
 Time input uses local whole minutes. A typed time that falls in the spring
 clock-change gap is rejected, leaving the current selection unchanged. If a
 time bound clamps to a missing minute, the value moves inward to the nearest
@@ -571,6 +575,6 @@ Import `@rentnerkev/calendar/tailwind.css` with Tailwind, or use the separately 
 </CalendarProvider>
 ```
 
-`controlSize` is `sm` / `md` / `lg` (36/44/48 px); omission preserves existing geometry. Local settings override provider defaults. Typed `classNames` slots are `root`, `label`, `description`, `error`, `control`, `leading`, `trailing`, `header`, `selectTrigger`, `selectContent`, `selectSearch`, `selectOption`, `time`, and `portal`. Each replaces its visual defaults while retaining positioning and keyboard-focus mechanics. Legacy `className` styles the field control. Container/class/z-index reach the calendar and header popups; the latter use one level above the calendar. A null container uses the body fallback. Containers should share the trigger document and preserve fixed positioning.
+`controlSize` is `sm` / `md` / `lg` (36/44/48 px); omission preserves existing geometry. Local settings override provider defaults. Typed `classNames` slots are `root`, `label`, `description`, `error`, `control`, `leading`, `trailing`, `header`, `selectTrigger`, `selectContent`, `selectSearch`, `selectOption`, `time`, and `portal`. Each replaces its visual defaults while retaining positioning and keyboard-focus mechanics. Legacy `className` styles the field control. Container/class/z-index reach the calendar and header popups; the latter use one level above the calendar. A null container uses the body fallback. Containers should share the trigger document. Axis-aligned translated/scaled and scrolling portal containers are supported, including native scrolling inside nested ShadowRoots. Rotated, skewed and 3D transforms are not supported geometry.
 
 `getCalendarFieldProps(field, options)` is UI-free with no TanStack runtime dependency. It connects `name`, `state.value`, `state.meta.errors/isTouched`, `handleChange(value)` and `handleBlur()`. Readable strings/message objects appear after touch by default. `showErrors: "always" | "touched" | boolean` and `mapError(error)` configure visibility and mapping. The root entry exports the adapter and its types too.
