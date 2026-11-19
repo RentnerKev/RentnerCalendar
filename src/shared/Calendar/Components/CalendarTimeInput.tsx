@@ -60,7 +60,7 @@ function SingleTimeInput({
                     onClick={handler.handleClick}
                     onFocus={handler.handleFocus}
                     onBlur={handler.handleBlur}
-                    className="absolute inset-0 w-full h-full cursor-text bg-transparent text-transparent caret-transparent outline-none rounded-[inherit] focus-visible:ring-2"
+                    className="absolute inset-0 w-full h-full cursor-text bg-transparent text-transparent caret-transparent selection:bg-transparent selection:text-transparent outline-none rounded-[inherit] focus-visible:ring-2"
                 />
                 <div
                     aria-hidden="true"

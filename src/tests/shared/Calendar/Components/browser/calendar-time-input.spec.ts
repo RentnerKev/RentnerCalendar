@@ -2,6 +2,29 @@ import { expect, test } from '@playwright/test'
 
 test.use({ timezoneId: 'Europe/Berlin', viewport: { width: 390, height: 844 } })
 
+test('keeps the native selection invisible while the end-time digit is selected', async ({
+    page,
+}) => {
+    await page.goto('/calendar-contract.html')
+    await page.locator('#contract-range-instant').click()
+    const dialog = page.getByRole('dialog')
+    await dialog.locator('[data-calendar-date="2026-10-16"]').click()
+    const time = dialog.getByRole('textbox', { name: /^To / })
+    await time.focus()
+    await expect(time).toHaveJSProperty('selectionStart', 0)
+    await expect(time).toHaveJSProperty('selectionEnd', 1)
+
+    const selected = await time.screenshot({ animations: 'disabled' })
+    await time.evaluate((input) => {
+        if (!(input instanceof HTMLInputElement))
+            throw new Error('Expected the native time input')
+        input.setSelectionRange(0, 0)
+    })
+    const collapsed = await time.screenshot({ animations: 'disabled' })
+
+    expect(selected.equals(collapsed)).toBe(true)
+})
+
 test('accepts keydown-free input and paste while preserving bounds, keyboard edits and focus', async ({
     page,
 }) => {
