@@ -310,12 +310,24 @@ export function useInternalSelectOverlay({
             if (content.isConnected && content.matches(':popover-open'))
                 content.hidePopover?.()
         }
-    }, [open, searchInputRef, triggerId, portalContainer])
+    }, [
+        open,
+        searchInputRef,
+        triggerId,
+        portalContainer,
+        defaultPortalContainer,
+    ])
     useBrowserLayoutEffect(() => {
         if (open && popupStyle.visibility === 'visible') {
             searchInputRef.current?.focus({ preventScroll: true })
         }
-    }, [open, popupStyle.visibility, searchInputRef, portalContainer])
+    }, [
+        open,
+        popupStyle.visibility,
+        searchInputRef,
+        portalContainer,
+        defaultPortalContainer,
+    ])
     return {
         state: { popupStyle, defaultPortalContainer },
         refs: { triggerRef, contentRef },
