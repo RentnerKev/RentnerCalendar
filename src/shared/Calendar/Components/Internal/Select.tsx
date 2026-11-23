@@ -6,8 +6,17 @@ import { AlertCircle, Check, ChevronDown } from 'lucide-react'
 import type { CustomSelectProps } from '../../Types/InternalSelect.types.ts'
 import useInternalSelectLogic from '../../Hooks/useInternalSelectLogic.ts'
 
+const CONTROL_SIZE_CLASSES = {
+    sm: 'h-rentner-control-sm',
+    md: 'h-rentner-control-md',
+    lg: 'h-rentner-control-lg',
+} as const
+
 export function CustomSelect(props: CustomSelectProps) {
-    const cd = { ...defaultCalendarDesign, ...props.customDesign }
+    const cd =
+        !props.customDesign || props.customDesign === defaultCalendarDesign
+            ? defaultCalendarDesign
+            : { ...defaultCalendarDesign, ...props.customDesign }
     const {
         classNames,
         controlSize,
@@ -98,7 +107,7 @@ export function CustomSelect(props: CustomSelectProps) {
                     disabled={isInteractionDisabled}
                     aria-readonly={readOnly || undefined}
                     aria-invalid={hasError}
-                    className={`border text-[11px] ${classNames?.selectTrigger ?? `${cd.inputBackground} ${cd.textDay} rounded-lg ${cd.borderColor} ${cd.primaryFocusBorder}`} ${controlSize ? { sm: 'h-rentner-control-sm', md: 'h-rentner-control-md', lg: 'h-rentner-control-lg' }[controlSize] : 'h-9'} ${
+                    className={`border text-[11px] ${classNames?.selectTrigger ?? `${cd.inputBackground} ${cd.textDay} rounded-lg ${cd.borderColor} ${cd.primaryFocusBorder}`} ${controlSize ? CONTROL_SIZE_CLASSES[controlSize] : 'h-9'} ${
                         hasLeftIcon ? 'pl-8' : 'pl-3'
                     } pr-8 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50 w-full uppercase font-bold tracking-wider cursor-pointer flex items-center justify-between transition-colors min-w-45 ${
                         hasError
@@ -185,60 +194,64 @@ export function CustomSelect(props: CustomSelectProps) {
                                 className="p-1"
                             >
                                 {filteredOptions.length > 0 ? (
-                                    filteredOptions.map((option) => (
-                                        <div
-                                            key={option.value}
-                                            role="option"
-                                            tabIndex={-1}
-                                            data-value={option.value}
-                                            aria-selected={selectedValues.includes(
+                                    filteredOptions.map((option) => {
+                                        const isSelected =
+                                            selectedValues.includes(
                                                 option.value,
-                                            )}
-                                            data-state={
-                                                selectedValues.includes(
-                                                    option.value,
-                                                )
-                                                    ? 'checked'
-                                                    : 'unchecked'
-                                            }
-                                            onPointerDown={(event) => {
-                                                if (event.button === 0)
-                                                    event.preventDefault()
-                                            }}
-                                            onClick={() =>
-                                                handleValueChange(option.value)
-                                            }
-                                            onKeyDown={
-                                                handleNativeOptionKeyDown
-                                            }
-                                            className={`relative flex w-full cursor-pointer select-none items-center py-2 pl-8 pr-2 text-[11px] font-bold uppercase tracking-wider focus-visible:outline-none focus-visible:ring-2 transition-colors data-disabled:opacity-50 ${classNames?.selectOption ?? `rounded-md ${cd.textDay} ${cd.hoverBackground} ${cd.hoverText} ${cd.primaryRing}`}`}
-                                        >
-                                            <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                                                {selectedValues.includes(
-                                                    option.value,
-                                                ) && (
-                                                    <Check
-                                                        aria-hidden="true"
-                                                        className="h-4 w-4"
-                                                    />
-                                                )}
-                                            </span>
-                                            <span>
-                                                <span className="flex min-w-0 flex-col gap-0.5">
-                                                    <span className="truncate leading-4">
-                                                        {option.label}
-                                                    </span>
-                                                    {option.subOption && (
-                                                        <span
-                                                            className={`truncate text-[10px] font-semibold leading-3 tracking-normal ${cd.textMuted} normal-case`}
-                                                        >
-                                                            {option.subOption}
-                                                        </span>
+                                            )
+                                        return (
+                                            <div
+                                                key={option.value}
+                                                role="option"
+                                                tabIndex={-1}
+                                                data-value={option.value}
+                                                aria-selected={isSelected}
+                                                data-state={
+                                                    isSelected
+                                                        ? 'checked'
+                                                        : 'unchecked'
+                                                }
+                                                onPointerDown={(event) => {
+                                                    if (event.button === 0)
+                                                        event.preventDefault()
+                                                }}
+                                                onClick={() =>
+                                                    handleValueChange(
+                                                        option.value,
+                                                    )
+                                                }
+                                                onKeyDown={
+                                                    handleNativeOptionKeyDown
+                                                }
+                                                className={`relative flex w-full cursor-pointer select-none items-center py-2 pl-8 pr-2 text-[11px] font-bold uppercase tracking-wider focus-visible:outline-none focus-visible:ring-2 transition-colors data-disabled:opacity-50 ${classNames?.selectOption ?? `rounded-md ${cd.textDay} ${cd.hoverBackground} ${cd.hoverText} ${cd.primaryRing}`}`}
+                                            >
+                                                <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                                                    {isSelected && (
+                                                        <Check
+                                                            aria-hidden="true"
+                                                            className="h-4 w-4"
+                                                        />
                                                     )}
                                                 </span>
-                                            </span>
-                                        </div>
-                                    ))
+                                                <span>
+                                                    <span className="flex min-w-0 flex-col gap-0.5">
+                                                        <span className="truncate leading-4">
+                                                            {option.label}
+                                                        </span>
+                                                        {option.subOption && (
+                                                            <span
+                                                                className={`truncate text-[10px] font-semibold leading-3 tracking-normal ${cd.textMuted} normal-case`}
+                                                            >
+                                                                {
+                                                                    option.subOption
+                                                                }
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        )
+                                    })
                                 ) : (
                                     <div className="relative flex w-full select-none items-center rounded-md py-2 pl-8 pr-2 text-[11px] font-bold uppercase tracking-wider text-rentner-muted opacity-60 outline-none italic cursor-not-allowed">
                                         {searchValue.trim()

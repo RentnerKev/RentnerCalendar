@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react'
 import type { CalendarHeaderLogicResult } from '../Types/CalendarHeaderLogicResult.types.ts'
 import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
 import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
@@ -6,15 +7,15 @@ import type {
     CalendarHeaderInternalProps,
     FastEditOption,
 } from '../Types/CalendarHeader.types.ts'
+
 function getYearOptions(currentYear: number): FastEditOption[] {
     const startYear = currentYear - 50
-    return Array.from({ length: 101 }, (_, index) => {
-        const year = startYear + index
-        return {
-            value: year.toString(),
-            label: year.toString(),
-        }
-    })
+    const options: FastEditOption[] = []
+    for (let index = 0; index < 101; index += 1) {
+        const year = String(startYear + index)
+        options.push({ value: year, label: year })
+    }
+    return options
 }
 
 export default function useCalendarHeaderLogic({
@@ -23,25 +24,42 @@ export default function useCalendarHeaderLogic({
     customDesign = defaultCalendarDesign,
     messages: providedMessages,
 }: CalendarHeaderInternalProps): CalendarHeaderLogicResult {
-    const cd = { ...defaultCalendarDesign, ...customDesign }
+    const cd = useMemo(
+        () =>
+            customDesign === defaultCalendarDesign
+                ? defaultCalendarDesign
+                : { ...defaultCalendarDesign, ...customDesign },
+        [customDesign],
+    )
     const messages = providedMessages ?? resolveCalendarMessages()
     const currentMonth = currentDate.getMonth()
     const currentYear = currentDate.getFullYear()
-    const monthOptions: FastEditOption[] = messages.months.map(
-        (label, month) => ({
-            value: month.toString(),
-            label,
-        }),
+    const monthOptions = useMemo<FastEditOption[]>(
+        () =>
+            messages.months.map((label, month) => ({
+                value: String(month),
+                label,
+            })),
+        [messages.months],
     )
-    const yearOptions = getYearOptions(currentYear)
+    const yearOptions = useMemo(
+        () => getYearOptions(currentYear),
+        [currentYear],
+    )
 
-    function handleMonthChange(value: string) {
-        onViewDateChange(createCalendarDate(currentYear, Number(value), 1))
-    }
+    const handleMonthChange = useCallback(
+        (value: string) => {
+            onViewDateChange(createCalendarDate(currentYear, Number(value), 1))
+        },
+        [currentYear, onViewDateChange],
+    )
 
-    function handleYearChange(value: string) {
-        onViewDateChange(createCalendarDate(Number(value), currentMonth, 1))
-    }
+    const handleYearChange = useCallback(
+        (value: string) => {
+            onViewDateChange(createCalendarDate(Number(value), currentMonth, 1))
+        },
+        [currentMonth, onViewDateChange],
+    )
 
     return {
         state: {

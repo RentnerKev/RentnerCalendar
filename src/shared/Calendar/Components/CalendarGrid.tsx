@@ -1,11 +1,11 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- This ARIA grid uses roving date-button focus and CSS rows; native table tags would change the existing composite widget. */
+import { memo } from 'react'
 import { defaultCalendarDesign } from '../../../config/calendarDesign.config.ts'
 import { CustomTooltip } from '@rentnerkev/tooltips'
-import { getCalendarDateKey } from '../../../lib/Calendar/CalendarDay.ts'
 import useCalendarGridLogic from '../Hooks/useCalendarGridLogic.ts'
 import type { CalendarGridInternalProps } from '../Types/CalendarGrid.types.ts'
 
-export default function CalendarGrid({
+function CalendarGrid({
     handleGetDaysInMonth,
     selectedDate,
     onSelectDate,
@@ -97,7 +97,7 @@ export default function CalendarGrid({
                 <div role="rowgroup" className="grid gap-1">
                     {rows.map((week) => (
                         <div
-                            key={`week-${getCalendarDateKey(week[0].date)}`}
+                            key={`week-${week[0].dateKey}`}
                             role="row"
                             className="grid gap-1"
                             style={{
@@ -189,3 +189,5 @@ export default function CalendarGrid({
         </div>
     )
 }
+
+export default /* @__PURE__ */ memo(CalendarGrid)
