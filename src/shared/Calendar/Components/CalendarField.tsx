@@ -1,11 +1,12 @@
 /* oxlint-disable jsx-a11y/role-supports-aria-props -- Preserve the public error-trigger ARIA contract; the native validation input is hidden and cannot announce these errors. */
+import { memo } from 'react'
 import { createPortal } from 'react-dom'
 import { AlertCircle, CalendarDays, X } from 'lucide-react'
 import { CustomTooltip } from '@rentnerkev/tooltips'
 
 import type { CalendarFieldProps } from '../Types/CalendarField.types.ts'
 
-export default function CalendarField({
+function CalendarField({
     classNames,
     portalContainer,
     ariaLabel,
@@ -174,3 +175,5 @@ export default function CalendarField({
         </div>
     )
 }
+
+export default /* @__PURE__ */ memo(CalendarField)

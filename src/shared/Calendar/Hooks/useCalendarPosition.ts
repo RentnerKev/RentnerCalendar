@@ -7,6 +7,11 @@ import { useCallback, useState } from 'react'
 import type { RefObject } from 'react'
 import { fixedCalendarOrigin } from '../../../lib/Calendar/CalendarGeometry.ts'
 
+const INITIAL_POSITION: CalendarPosition = {
+    dropdownPosition: 'bottom',
+    coords: { top: 0, bottom: 0, left: 0, width: 0, maxHeight: 0 },
+}
+
 export default function useCalendarPosition(
     triggerRef: RefObject<HTMLElement | null>,
     popoverRef: RefObject<HTMLElement | null>,
@@ -16,10 +21,7 @@ export default function useCalendarPosition(
         matchTriggerWidth = false,
     }: CalendarPositionOptions = {},
 ): CalendarPositionResult {
-    const [position, setPosition] = useState<CalendarPosition>({
-        dropdownPosition: 'bottom',
-        coords: { top: 0, bottom: 0, left: 0, width: 0, maxHeight: 0 },
-    })
+    const [position, setPosition] = useState<CalendarPosition>(INITIAL_POSITION)
 
     const updatePosition = useCallback(() => {
         const trigger = triggerRef.current
@@ -101,13 +103,11 @@ export default function useCalendarPosition(
         }
         setPosition((previous) =>
             previous.dropdownPosition === nextPosition.dropdownPosition &&
-            Object.keys(nextPosition.coords).every(
-                (key) =>
-                    previous.coords[key as keyof CalendarPosition['coords']] ===
-                    nextPosition.coords[
-                        key as keyof CalendarPosition['coords']
-                    ],
-            )
+            previous.coords.left === nextPosition.coords.left &&
+            previous.coords.top === nextPosition.coords.top &&
+            previous.coords.bottom === nextPosition.coords.bottom &&
+            previous.coords.width === nextPosition.coords.width &&
+            previous.coords.maxHeight === nextPosition.coords.maxHeight
                 ? previous
                 : nextPosition,
         )

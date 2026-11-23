@@ -5,6 +5,9 @@ import type { CustomSelectProps } from '../Types/InternalSelect.types.ts'
 import { resolveCalendarMessages } from '../../../lib/Calendar/messages.ts'
 import { useInternalSelectOverlay } from './useInternalSelectOverlay.ts'
 
+const EMPTY_STRING_ARRAY: string[] = []
+const EMPTY_OPTIONS: CustomSelectProps['options'] = []
+
 function handleSearchPointerDownCapture(event: PointerEvent<HTMLInputElement>) {
     event.stopPropagation()
 }
@@ -48,7 +51,7 @@ export default function useInternalSelectLogic({
     }
 
     const selectedValues = useMemo(() => {
-        if (!value) return []
+        if (!value) return EMPTY_STRING_ARRAY
         return multiple ? value.split(',') : [value]
     }, [value, multiple])
 
@@ -84,6 +87,7 @@ export default function useInternalSelectLogic({
     const hasLeftIcon = Boolean(icon || hasError)
 
     const filteredOptions = useMemo(() => {
+        if (!open || !searchValue) return options
         const normalizedSearch = searchValue.trim().toLowerCase()
 
         if (!normalizedSearch) {
@@ -101,10 +105,17 @@ export default function useInternalSelectLogic({
                 subOption.includes(normalizedSearch)
             )
         })
-    }, [options, searchValue])
+    }, [open, options, searchValue])
 
     const selectedOptions = useMemo(() => {
-        return options.filter((option) => selectedValues.includes(option.value))
+        if (selectedValues.length === 0) return EMPTY_OPTIONS
+        if (selectedValues.length === 1) {
+            const target = selectedValues[0]
+            const match = options.find((option) => option.value === target)
+            return match ? [match] : EMPTY_OPTIONS
+        }
+        const selectedSet = new Set(selectedValues)
+        return options.filter((option) => selectedSet.has(option.value))
     }, [options, selectedValues])
 
     function handleValueChange(nextValue: string) {

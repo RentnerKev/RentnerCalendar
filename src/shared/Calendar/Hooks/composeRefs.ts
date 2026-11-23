@@ -5,6 +5,14 @@ type MutableRef<T> = { current: T | null }
 export function composeRefs<T>(
     ...refs: Array<Ref<T> | undefined>
 ): RefCallback<T> {
+    if (refs.length === 2 && refs[1] == null) {
+        const only = refs[0]
+        if (only == null) return () => undefined
+        if (typeof only === 'function') return only
+        return (element) => {
+            ;(only as MutableRef<T>).current = element
+        }
+    }
     const uniqueRefs = [
         ...new Set(
             refs.filter((ref): ref is NonNullable<Ref<T>> => ref != null),

@@ -170,6 +170,21 @@ export default function useCalendarGridNavigation({
         setActiveDateKey(dateKey)
     }
 
+    function canFocusCandidate(candidate: Date) {
+        if (!isCalendarDayWithinBounds(candidate, minDate, maxDate))
+            return false
+        if (isDateSelectable && !isDateSelectable(candidate)) return false
+        const button = findDayButton(candidate)
+        if (button) return !button.disabled
+        const isOutsideVisibleMonth =
+            candidate.getFullYear() !== currentDate.getFullYear() ||
+            candidate.getMonth() !== currentDate.getMonth()
+        if (!isOutsideVisibleMonth) return false
+        const isoWeekday = candidate.getDay() === 0 ? 7 : candidate.getDay()
+        const visibleColumn = (isoWeekday - weekStartsOn + 7) % 7
+        return visibleColumn < columnCount
+    }
+
     function handleDayKeyDown(
         event: KeyboardEvent<HTMLButtonElement>,
         date: Date,
@@ -180,32 +195,10 @@ export default function useCalendarGridNavigation({
             let candidate = addCalendarMonths(date, key === 'PageUp' ? -12 : 12)
             const step = key === 'PageUp' ? 1 : -1
             for (let attempt = 0; attempt < 31; attempt += 1) {
-                const button = findDayButton(candidate)
-                const withinBounds = isCalendarDayWithinBounds(
-                    candidate,
-                    minDate,
-                    maxDate,
-                )
-                const isSelectable = isDateSelectable?.(candidate) ?? true
-                const isOutsideVisibleMonth =
-                    candidate.getFullYear() !== currentDate.getFullYear() ||
-                    candidate.getMonth() !== currentDate.getMonth()
-                const isoWeekday =
-                    candidate.getDay() === 0 ? 7 : candidate.getDay()
-                const visibleColumn = (isoWeekday - weekStartsOn + 7) % 7
-
-                if (
-                    withinBounds &&
-                    isSelectable &&
-                    ((button && !button.disabled) ||
-                        (!button &&
-                            isOutsideVisibleMonth &&
-                            visibleColumn < columnCount))
-                ) {
+                if (canFocusCandidate(candidate)) {
                     focusDate(candidate)
                     return
                 }
-
                 candidate = addCalendarDays(candidate, step)
             }
             return
@@ -218,30 +211,10 @@ export default function useCalendarGridNavigation({
 
         let candidate = target.date
         for (let attempt = 0; attempt < target.limit; attempt += 1) {
-            const button = findDayButton(candidate)
-            const withinBounds = isCalendarDayWithinBounds(
-                candidate,
-                minDate,
-                maxDate,
-            )
-            const isSelectable = isDateSelectable?.(candidate) ?? true
-            const isOutsideVisibleMonth =
-                candidate.getFullYear() !== currentDate.getFullYear() ||
-                candidate.getMonth() !== currentDate.getMonth()
-            const isoWeekday = candidate.getDay() === 0 ? 7 : candidate.getDay()
-            const visibleColumn = (isoWeekday - weekStartsOn + 7) % 7
-            if (
-                withinBounds &&
-                isSelectable &&
-                ((button && !button.disabled) ||
-                    (!button &&
-                        isOutsideVisibleMonth &&
-                        visibleColumn < columnCount))
-            ) {
+            if (canFocusCandidate(candidate)) {
                 focusDate(candidate)
                 return
             }
-
             candidate = addCalendarDays(candidate, target.step)
         }
     }

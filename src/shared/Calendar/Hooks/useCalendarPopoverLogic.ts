@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { calendarValueAllowsDates } from '../../../lib/Calendar/CalendarRestrictions.ts'
 import type { CalendarPopoverLogicResult } from '../Types/CalendarPopoverLogicResult.types.ts'
 import type { KeyboardEvent, MouseEvent } from 'react'
@@ -35,22 +36,47 @@ export default function useCalendarPopoverLogic({
     maxTime,
     disabledWeekdays,
     isDateDisabled,
+    button,
+    disabled,
+    readOnly,
 }: CalendarPopoverProps): CalendarPopoverLogicResult {
     const monthHeadingId = `${dialogId}-month-heading`
     const keyboardHelpId = `${dialogId}-keyboard-help`
-    const applyDisabled =
-        !calendarValueAllowsDates(selectedDate, {
-            disabledWeekdays,
-            isDateDisabled,
-        }) ||
-        !calendarValueWithinDateTimeBounds(
-            selectedDate,
-            minDateTime,
-            maxDateTime,
-        ) ||
-        !calendarValueWithinDateBounds(selectedDate, minDate, maxDate) ||
-        (enableTime &&
-            !calendarValueHasTimeWithinBounds(selectedDate, minTime, maxTime))
+    const applyDisabled = useMemo(() => {
+        if (!button || disabled || readOnly) return false
+        return (
+            !calendarValueAllowsDates(selectedDate, {
+                disabledWeekdays,
+                isDateDisabled,
+            }) ||
+            !calendarValueWithinDateTimeBounds(
+                selectedDate,
+                minDateTime,
+                maxDateTime,
+            ) ||
+            !calendarValueWithinDateBounds(selectedDate, minDate, maxDate) ||
+            (Boolean(enableTime) &&
+                !calendarValueHasTimeWithinBounds(
+                    selectedDate,
+                    minTime,
+                    maxTime,
+                ))
+        )
+    }, [
+        button,
+        disabled,
+        readOnly,
+        selectedDate,
+        disabledWeekdays,
+        isDateDisabled,
+        minDateTime,
+        maxDateTime,
+        minDate,
+        maxDate,
+        enableTime,
+        minTime,
+        maxTime,
+    ])
 
     function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
         if (!backdrop || event.key !== 'Tab') {
@@ -68,9 +94,11 @@ export default function useCalendarPopoverLogic({
                 element.getClientRects().length > 0,
         )
         const focusableElements = getFocusableElements(dialog)
+        const portalStopsByRoot = new Map<HTMLElement, HTMLElement[]>()
 
         for (const portalRoot of portalRoots) {
             const portalStops = getFocusableElements(portalRoot)
+            portalStopsByRoot.set(portalRoot, portalStops)
             const openerId = portalRoot.dataset.calendarPortalOpener
             const openerIndex = focusableElements.findIndex(
                 (element) => element.id === openerId,
@@ -102,7 +130,9 @@ export default function useCalendarPopoverLogic({
                     element === activeElement ||
                     element.contains(activeElement),
             )
-            const portalStops = getFocusableElements(activePortal)
+            const portalStops =
+                portalStopsByRoot.get(activePortal) ??
+                getFocusableElements(activePortal)
             const firstPortalIndex = focusableElements.indexOf(portalStops[0])
             const lastPortalIndex = focusableElements.indexOf(
                 portalStops.at(-1)!,

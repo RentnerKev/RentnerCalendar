@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import useCalendarHeaderLogic from '../Hooks/useCalendarHeaderLogic.ts'
 import type {
     CalendarHeaderInternalProps,
@@ -47,7 +48,7 @@ function FastEditSelect({
     )
 }
 
-export default function CalendarHeader({
+function CalendarHeader({
     classNames,
     controlSize,
     portalContainer,
@@ -172,3 +173,5 @@ export default function CalendarHeader({
         </div>
     )
 }
+
+export default /* @__PURE__ */ memo(CalendarHeader)

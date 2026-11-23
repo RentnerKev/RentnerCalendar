@@ -40,6 +40,13 @@ import { useCalendarDefaults } from './useCalendarDefaults.ts'
 import { composeRefs } from './composeRefs.ts'
 
 const calendarPopoverMinWidth = 340
+const INPUT_STYLE: CSSProperties = { borderWidth: '1px' }
+const EMPTY_STYLE: CSSProperties = {}
+const CONTROL_SIZE_CLASSES = {
+    sm: 'h-rentner-control-sm',
+    md: 'h-rentner-control-md',
+    lg: 'h-rentner-control-lg',
+} as const
 
 export default function useCustomCalendarLogic({
     controlSize: providedControlSize,
@@ -95,7 +102,13 @@ export default function useCustomCalendarLogic({
 }: CalendarInternalProps): CustomCalendarLogicResult {
     const defaults = useCalendarDefaults()
     const controlSize = providedControlSize ?? defaults.controlSize
-    const classNames = { ...defaults.classNames, ...providedClassNames }
+    const classNames = useMemo(
+        () =>
+            defaults.classNames || providedClassNames
+                ? { ...defaults.classNames, ...providedClassNames }
+                : undefined,
+        [defaults.classNames, providedClassNames],
+    )
     const portalContainer =
         providedPortalContainer === undefined
             ? defaults.portalContainer
@@ -103,21 +116,37 @@ export default function useCustomCalendarLogic({
     const portalClassName = providedPortalClassName ?? defaults.portalClassName
     const portalZIndex = providedPortalZIndex ?? defaults.portalZIndex
     const locale = providedLocale ?? defaults.locale ?? 'de'
-    const messageOverrides = useMemo(
-        () => ({
-            ...defaults.messages,
-            ...providedMessages,
-            holidayNames: {
-                ...defaults.messages?.holidayNames,
-                ...providedMessages?.holidayNames,
-            },
-        }),
-        [defaults.messages, providedMessages],
+    const messageOverrides = useMemo(() => {
+        if (!defaults.messages && !providedMessages) return undefined
+        const holidayNames =
+            defaults.messages?.holidayNames || providedMessages?.holidayNames
+                ? {
+                      ...defaults.messages?.holidayNames,
+                      ...providedMessages?.holidayNames,
+                  }
+                : undefined
+        return holidayNames
+            ? {
+                  ...defaults.messages,
+                  ...providedMessages,
+                  holidayNames,
+              }
+            : {
+                  ...defaults.messages,
+                  ...providedMessages,
+              }
+    }, [defaults.messages, providedMessages])
+    const cd = useMemo(
+        () =>
+            !defaults.customDesign && !providedCustomDesign
+                ? defaultCalendarDesign
+                : {
+                      ...defaultCalendarDesign,
+                      ...defaults.customDesign,
+                      ...providedCustomDesign,
+                  },
+        [defaults.customDesign, providedCustomDesign],
     )
-    const customDesign = {
-        ...defaults.customDesign,
-        ...providedCustomDesign,
-    }
     const [isOpen, setIsOpen] = useState(false)
     const [isRangeMode, setIsRangeMode] = useState(enableRange)
     const [isTouched, setIsTouched] = useState(false)
@@ -168,16 +197,23 @@ export default function useCustomCalendarLogic({
     const popoverRef = useRef<HTMLDivElement>(null)
     const wasOpenRef = useRef(false)
     const validationInputRef = useRef<HTMLInputElement>(null)
-    const cd = { ...defaultCalendarDesign, ...customDesign }
+    const blurTimeoutRef = useRef<number | undefined>(undefined)
+    const matchTriggerWidth = useMemo(
+        () => hasWidthUtilityClass(className),
+        [className],
+    )
     const { handler: positionHandler, state: positionState } =
         useCalendarPosition(triggerRef, popoverRef, {
             minWidth: calendarPopoverMinWidth,
             maxWidth: defaults.popoverMaxWidth,
-            matchTriggerWidth: hasWidthUtilityClass(className),
+            matchTriggerWidth,
         })
     const { dropdownPosition, coords } = positionState
 
-    const resolvedRadius = extractRadius(className) ?? '0.75rem'
+    const resolvedRadius = useMemo(
+        () => extractRadius(className) ?? '0.75rem',
+        [className],
+    )
     const internalError =
         required && !hasCalendarValue(normalizedValue)
             ? messages.required
@@ -197,48 +233,41 @@ export default function useCustomCalendarLogic({
         hasError ? errorId : undefined,
     )
 
-    const inputStyle: CSSProperties = {
-        borderWidth: '1px',
-    }
+    const inputStyle = INPUT_STYLE
 
-    const popoverStyle: CSSProperties = {
-        position: 'fixed',
-        top: dropdownPosition === 'bottom' ? `${coords.top}px` : 'auto',
-        bottom: dropdownPosition === 'top' ? `${coords.bottom}px` : 'auto',
-        left: `${coords.left}px`,
-        width: `${coords.width}px`,
-        minWidth: `${coords.width}px`,
-        maxHeight: `${coords.maxHeight}px`,
-        borderRadius: resolvedRadius,
-        borderWidth: '1px',
-        zIndex: portalZIndex,
-    }
+    const popoverStyle: CSSProperties = isOpen
+        ? {
+              position: 'fixed',
+              top: dropdownPosition === 'bottom' ? `${coords.top}px` : 'auto',
+              bottom:
+                  dropdownPosition === 'top' ? `${coords.bottom}px` : 'auto',
+              left: `${coords.left}px`,
+              width: `${coords.width}px`,
+              minWidth: `${coords.width}px`,
+              maxHeight: `${coords.maxHeight}px`,
+              borderRadius: resolvedRadius,
+              borderWidth: '1px',
+              zIndex: portalZIndex,
+          }
+        : EMPTY_STYLE
 
+    const sizeClass = controlSize
+        ? CONTROL_SIZE_CLASSES[controlSize]
+        : !className.includes('h-')
+          ? 'h-[2.75rem]'
+          : ''
+    const controlClass =
+        classNames?.control ??
+        (hasError
+            ? `shadow-sm border-rentner-danger focus:ring-rentner-danger ${cd.inputBackground}`
+            : `shadow-sm ${cd.borderColor} ${cd.inputBackground} ${cd.primaryColorFocusWithin} ${cd.primaryFocusBorder} ${cd.primaryRing}`)
     const inputClasses = [
         'relative flex items-center px-4 gap-3 transition-colors cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-rentner-accent/50',
-        classNames.control ??
-            [
-                'shadow-sm',
-                hasError
-                    ? 'border-rentner-danger focus:ring-rentner-danger'
-                    : cd.borderColor,
-                cd.inputBackground,
-                hasError ? '' : cd.primaryColorFocusWithin,
-                hasError ? '' : cd.primaryFocusBorder,
-                hasError ? '' : cd.primaryRing,
-            ].join(' '),
+        controlClass,
         disabled ? 'cursor-not-allowed opacity-60' : '',
         readOnly ? 'cursor-default' : '',
-        controlSize
-            ? {
-                  sm: 'h-rentner-control-sm',
-                  md: 'h-rentner-control-md',
-                  lg: 'h-rentner-control-lg',
-              }[controlSize]
-            : !className.includes('h-')
-              ? 'h-[2.75rem]'
-              : '',
-        !classNames.control && !className.includes('rounded')
+        sizeClass,
+        !classNames?.control && !className.includes('rounded')
             ? 'rounded-rentner-control'
             : '',
         className,
@@ -246,17 +275,19 @@ export default function useCustomCalendarLogic({
         .filter(Boolean)
         .join(' ')
 
-    const popoverClasses = [
-        'z-[var(--rentner-overlay-z,9000)] p-4 overflow-y-auto',
-        classNames.portal ??
-            `shadow-xl ${cd.surfaceBackground} ${cd.borderColor}`,
-        portalClassName,
-        dropdownPosition === 'top'
-            ? 'slide-in-from-bottom-2 origin-bottom'
-            : 'slide-in-from-top-2 origin-top',
-    ]
-        .filter(Boolean)
-        .join(' ')
+    const popoverClasses = isOpen
+        ? [
+              'z-[var(--rentner-overlay-z,9000)] p-4 overflow-y-auto',
+              classNames?.portal ??
+                  `shadow-xl ${cd.surfaceBackground} ${cd.borderColor}`,
+              portalClassName,
+              dropdownPosition === 'top'
+                  ? 'slide-in-from-bottom-2 origin-bottom'
+                  : 'slide-in-from-top-2 origin-top',
+          ]
+              .filter(Boolean)
+              .join(' ')
+        : ''
 
     useEffect(() => {
         validationInputRef.current?.setCustomValidity(error || '')
@@ -266,22 +297,23 @@ export default function useCustomCalendarLogic({
         const input = validationInputRef.current
         const form = input?.form
 
-        if (!input || !form) {
-            return
-        }
-
-        const currentInput = input
-
         function handleFormSubmit() {
-            if (currentInput.validity.valid) {
+            if (input?.validity.valid) {
                 setIsTouched(false)
             }
         }
 
-        form.addEventListener('submit', handleFormSubmit)
+        if (input && form) {
+            form.addEventListener('submit', handleFormSubmit)
+        }
 
         return () => {
-            form.removeEventListener('submit', handleFormSubmit)
+            if (input && form) {
+                form.removeEventListener('submit', handleFormSubmit)
+            }
+            if (blurTimeoutRef.current !== undefined) {
+                window.clearTimeout(blurTimeoutRef.current)
+            }
         }
     }, [])
 
@@ -413,7 +445,10 @@ export default function useCustomCalendarLogic({
         setIsOpen(true)
     }
 
-    const restrictions = { disabledWeekdays, isDateDisabled }
+    const restrictions = useMemo(
+        () => ({ disabledWeekdays, isDateDisabled }),
+        [disabledWeekdays, isDateDisabled],
+    )
     function isAllowedSelection(value: CalendarValue) {
         return (
             calendarValueAllowsDates(value, restrictions) &&
@@ -483,6 +518,7 @@ export default function useCustomCalendarLogic({
         minDateTime,
         maxDateTime,
         restrictions,
+        isOpen,
     )
 
     function handleApply() {
@@ -535,7 +571,11 @@ export default function useCustomCalendarLogic({
         if (nextTarget === null || isRadixFocusGuard) {
             const currentTarget = event.currentTarget
 
-            window.setTimeout(() => {
+            if (blurTimeoutRef.current !== undefined) {
+                window.clearTimeout(blurTimeoutRef.current)
+            }
+            blurTimeoutRef.current = window.setTimeout(() => {
+                blurTimeoutRef.current = undefined
                 const activeTarget = document.activeElement
                 const activeTargetPortal =
                     activeTarget instanceof Element
@@ -565,34 +605,40 @@ export default function useCustomCalendarLogic({
         onBlur?.(event)
     }
 
-    const setTriggerRef: RefCallback<HTMLButtonElement> = useCallback(
-        (element: HTMLButtonElement | null) =>
-            composeRefs(triggerRef, forwardedTriggerRef)(element),
+    const setTriggerRef: RefCallback<HTMLButtonElement> = useMemo(
+        () =>
+            forwardedTriggerRef == null
+                ? (element: HTMLButtonElement | null) => {
+                      triggerRef.current = element
+                  }
+                : composeRefs(triggerRef, forwardedTriggerRef),
         [forwardedTriggerRef],
     )
 
-    const displayValue = normalizedValue
-        ? formatCalendarValue(normalizedValue, locale)
-        : ''
+    const displayValue = useMemo(
+        () =>
+            normalizedValue ? formatCalendarValue(normalizedValue, locale) : '',
+        [normalizedValue, locale],
+    )
     const triggerLabelledBy = labelledBy
         ? mergeAriaIds(labelledBy, displayValueId)
         : undefined
     const triggerLabel = triggerLabelledBy
         ? undefined
         : `${ariaLabel ?? (isOpen ? messages.closeCalendar : messages.openCalendar)}: ${displayValue || resolvedPlaceholder}`
-    let formValue = displayValue
-    if (displayValue && normalizedValue) {
-        if (getFormValue) {
-            formValue = getFormValue(normalizedValue)
-        } else if (formValueFormat !== 'display') {
+    const formValue = useMemo(() => {
+        if (!displayValue || !normalizedValue) return displayValue
+        if (getFormValue) return getFormValue(normalizedValue)
+        if (formValueFormat !== 'display') {
             const serialized = serializeCalendarValue(normalizedValue, {
                 format: formValueFormat === 'iso-date' ? 'date' : 'datetime',
             })
-            formValue = Array.isArray(serialized)
+            return Array.isArray(serialized)
                 ? JSON.stringify(serialized)
                 : (serialized ?? '')
         }
-    }
+        return displayValue
+    }, [displayValue, normalizedValue, getFormValue, formValueFormat])
 
     return {
         state: {

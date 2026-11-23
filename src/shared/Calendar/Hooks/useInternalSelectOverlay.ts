@@ -7,7 +7,11 @@ import type {
 
 const useBrowserLayoutEffect =
     typeof window === 'undefined' ? useEffect : useLayoutEffect
-const activeOverlays = new WeakMap<Document, () => void>()
+const activeOverlays = /* @__PURE__ */ new WeakMap<Document, () => void>()
+const INITIAL_POPUP_STYLE: CSSProperties = {
+    position: 'fixed',
+    visibility: 'hidden',
+}
 
 export function useInternalSelectOverlay({
     open,
@@ -21,20 +25,18 @@ export function useInternalSelectOverlay({
     const triggerRef = useRef<HTMLButtonElement>(null)
     const contentRef = useRef<HTMLDivElement>(null)
     const callbacks = useRef({ onOpenChange, onSelect, onSearch })
-    const [popupStyle, setPopupStyle] = useState<CSSProperties>({
-        position: 'fixed',
-        visibility: 'hidden',
-    })
+    const [popupStyle, setPopupStyle] =
+        useState<CSSProperties>(INITIAL_POPUP_STYLE)
     useBrowserLayoutEffect(() => {
         callbacks.current = { onOpenChange, onSelect, onSearch }
     })
     const [defaultPortalContainer, setDefaultPortalContainer] =
         useState<HTMLElement | null>(null)
     useBrowserLayoutEffect(() => {
-        setDefaultPortalContainer(
-            triggerRef.current?.ownerDocument.body ?? null,
-        )
-    }, [])
+        if (!open) return
+        const body = triggerRef.current?.ownerDocument.body ?? null
+        setDefaultPortalContainer((prev) => (prev === body ? prev : body))
+    }, [open])
 
     function close(restoreFocus = false) {
         callbacks.current.onOpenChange(false)
@@ -186,14 +188,13 @@ export function useInternalSelectOverlay({
             )
             const above = Math.max(0, rect.top - viewportTop - gutter - 4)
             const height = Math.min(320, Math.max(below, above))
+            const contentScrollHeight = content!.scrollHeight
             const top =
-                below >= Math.min(320, content!.scrollHeight) || below >= above
+                below >= Math.min(320, contentScrollHeight) || below >= above
                     ? rect.bottom + 4
                     : Math.max(
                           viewportTop + gutter,
-                          rect.top -
-                              Math.min(content!.scrollHeight, height) -
-                              4,
+                          rect.top - Math.min(contentScrollHeight, height) - 4,
                       )
             const next: CSSProperties = {
                 position: 'fixed',
@@ -212,11 +213,13 @@ export function useInternalSelectOverlay({
                 visibility: 'visible',
             }
             setPopupStyle((previous) =>
-                Object.keys(next).every(
-                    (key) =>
-                        previous[key as keyof CSSProperties] ===
-                        next[key as keyof CSSProperties],
-                )
+                previous.top === next.top &&
+                previous.left === next.left &&
+                previous.width === next.width &&
+                previous.maxHeight === next.maxHeight &&
+                previous.visibility === next.visibility &&
+                previous.margin === next.margin &&
+                previous.inset === next.inset
                     ? previous
                     : next,
             )
@@ -238,14 +241,7 @@ export function useInternalSelectOverlay({
                                 schedulePosition()
                         },
                         {
-                            rootMargin: [
-                                -Math.floor(rect.top),
-                                -Math.floor(root.clientWidth - rect.right),
-                                -Math.floor(root.clientHeight - rect.bottom),
-                                -Math.floor(rect.left),
-                            ]
-                                .map((margin) => `${margin}px`)
-                                .join(' '),
+                            rootMargin: `${-Math.floor(rect.top)}px ${-Math.floor(root.clientWidth - rect.right)}px ${-Math.floor(root.clientHeight - rect.bottom)}px ${-Math.floor(rect.left)}px`,
                             threshold: 1,
                         },
                     )

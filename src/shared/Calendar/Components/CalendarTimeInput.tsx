@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import useCalendarTimeInputLogic from '../Hooks/useCalendarTimeInputLogic.ts'
 import type { SingleTimeInputProps } from '../Types/CalendarTimeInput.types.ts'
 import useSingleTimeInputLogic from '../Hooks/useSingleTimeInputLogic.ts'
@@ -89,7 +90,7 @@ function SingleTimeInput({
     )
 }
 
-export default function CalendarTimeInput(props: CalendarTimeInputProps) {
+function CalendarTimeInput(props: CalendarTimeInputProps) {
     const { state, handler } = useCalendarTimeInputLogic(props)
     const {
         cd,
@@ -158,3 +159,5 @@ export default function CalendarTimeInput(props: CalendarTimeInputProps) {
         </div>
     )
 }
+
+export default /* @__PURE__ */ memo(CalendarTimeInput)

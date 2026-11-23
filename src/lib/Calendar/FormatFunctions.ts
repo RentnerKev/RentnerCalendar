@@ -1,46 +1,44 @@
 import { getCalendarDateFormatters } from './CalendarDateFormat.ts'
-import { toSafeDate } from './date.ts'
+import { asValidDate } from './date.ts'
 import type { CalendarLocale } from './Types/Messages.types.ts'
 
 function formatSingle(
     dateInput: unknown,
-    locale: CalendarLocale,
+    formatters: ReturnType<typeof getCalendarDateFormatters>,
     ignoreEndOfDay = false,
 ) {
-    const date = toSafeDate(dateInput)
+    const date = asValidDate(dateInput)
     if (!date) return '?'
 
-    const formatters = getCalendarDateFormatters(locale)
     const dateStr = formatters.date.format(date)
-
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
     const isEndOfDay =
-        date.getHours() === 23 &&
-        date.getMinutes() === 59 &&
+        hours === 23 &&
+        minutes === 59 &&
         date.getSeconds() === 59 &&
         date.getMilliseconds() === 999
     const hasExplicitTime =
-        (date.getHours() !== 0 || date.getMinutes() !== 0) &&
-        !(ignoreEndOfDay && isEndOfDay)
+        (hours !== 0 || minutes !== 0) && !(ignoreEndOfDay && isEndOfDay)
 
     if (hasExplicitTime) {
-        const timeStr = formatters.time.format(date)
-        return `${dateStr} ${timeStr}`
+        return `${dateStr} ${formatters.time.format(date)}`
     }
     return dateStr
 }
 
 export function formatMonthName(date: unknown, locale: CalendarLocale = 'de') {
-    const safeDate = toSafeDate(date) || new Date()
+    const safeDate = asValidDate(date) ?? new Date()
     return getCalendarDateFormatters(locale).month.format(safeDate)
 }
 
 export function formatTimeToString(date: unknown) {
-    const safeDate = toSafeDate(date)
+    const safeDate = asValidDate(date)
     if (!safeDate) return '0000'
 
-    const h = safeDate.getHours().toString().padStart(2, '0')
-    const m = safeDate.getMinutes().toString().padStart(2, '0')
-    return `${h}${m}`
+    const h = safeDate.getHours()
+    const m = safeDate.getMinutes()
+    return `${h < 10 ? '0' : ''}${h}${m < 10 ? '0' : ''}${m}`
 }
 
 export function formatCalendarValue(
@@ -49,12 +47,13 @@ export function formatCalendarValue(
 ): string {
     if (value === undefined || value === null || value === '') return ''
 
+    const formatters = getCalendarDateFormatters(locale)
     if (Array.isArray(value)) {
-        const start = formatSingle(value[0], locale)
-        const end = formatSingle(value[1], locale, true)
+        const start = formatSingle(value[0], formatters)
+        const end = formatSingle(value[1], formatters, true)
         if (start === '?' && end === '?') return ''
         return `${start} - ${end}`
     }
 
-    return formatSingle(value, locale)
+    return formatSingle(value, formatters)
 }

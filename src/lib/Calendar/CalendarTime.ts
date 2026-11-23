@@ -4,10 +4,25 @@ export interface CalendarTimeUpdate {
 }
 
 function parseCalendarTimeMinutes(value: string) {
-    if (!/^\d{4}$/.test(value)) return undefined
-
-    const hours = Number(value.slice(0, 2))
-    const minutes = Number(value.slice(2, 4))
+    if (value.length !== 4) return undefined
+    const d0 = value.charCodeAt(0) - 48
+    const d1 = value.charCodeAt(1) - 48
+    const d2 = value.charCodeAt(2) - 48
+    const d3 = value.charCodeAt(3) - 48
+    if (
+        d0 < 0 ||
+        d0 > 9 ||
+        d1 < 0 ||
+        d1 > 9 ||
+        d2 < 0 ||
+        d2 > 9 ||
+        d3 < 0 ||
+        d3 > 9
+    ) {
+        return undefined
+    }
+    const hours = d0 * 10 + d1
+    const minutes = d2 * 10 + d3
     if (hours > 23 || minutes > 59) return undefined
 
     return hours * 60 + minutes
@@ -15,7 +30,28 @@ function parseCalendarTimeMinutes(value: string) {
 
 function parseTimeBound(value?: string) {
     if (!value) return undefined
-    return parseCalendarTimeMinutes(value.replace(':', ''))
+    if (value.length === 5 && value.charCodeAt(2) === 58) {
+        const d0 = value.charCodeAt(0) - 48
+        const d1 = value.charCodeAt(1) - 48
+        const d2 = value.charCodeAt(3) - 48
+        const d3 = value.charCodeAt(4) - 48
+        if (
+            d0 < 0 ||
+            d0 > 9 ||
+            d1 < 0 ||
+            d1 > 9 ||
+            d2 < 0 ||
+            d2 > 9 ||
+            d3 < 0 ||
+            d3 > 9
+        ) {
+            return undefined
+        }
+        const hours = d0 * 10 + d1
+        const minutes = d2 * 10 + d3
+        return hours <= 23 && minutes <= 59 ? hours * 60 + minutes : undefined
+    }
+    return parseCalendarTimeMinutes(value)
 }
 
 function getTimeBounds(minTime?: string, maxTime?: string) {
@@ -35,12 +71,32 @@ function getTimeBounds(minTime?: string, maxTime?: string) {
 }
 
 function formatCalendarTime(date: Date) {
-    return `${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}`
+    const h = date.getHours()
+    const m = date.getMinutes()
+    return `${h < 10 ? '0' : ''}${h}${m < 10 ? '0' : ''}${m}`
+}
+
+function matchesCalendarMinute(
+    probe: Date,
+    year: number,
+    month: number,
+    day: number,
+    minutesOfDay: number,
+) {
+    probe.setFullYear(year, month, day)
+    probe.setHours((minutesOfDay / 60) | 0, minutesOfDay % 60, 0, 0)
+    return (
+        !Number.isNaN(probe.getTime()) &&
+        probe.getFullYear() === year &&
+        probe.getMonth() === month &&
+        probe.getDate() === day &&
+        probe.getHours() * 60 + probe.getMinutes() === minutesOfDay
+    )
 }
 
 function createCalendarDateAtMinute(date: Date, minutesOfDay: number) {
-    const result = new Date(date)
-    result.setHours(Math.floor(minutesOfDay / 60), minutesOfDay % 60, 0, 0)
+    const result = new Date(date.getTime())
+    result.setHours((minutesOfDay / 60) | 0, minutesOfDay % 60, 0, 0)
 
     if (
         Number.isNaN(result.getTime()) ||
@@ -66,12 +122,17 @@ export function hasCalendarTimeWithinBounds(
     const bounds = getTimeBounds(minTime, maxTime)
     if (!bounds) return false
 
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const day = date.getDate()
+    const probe = new Date(date.getTime())
+
     for (
         let minutes = bounds.firstAllowedMinute;
         minutes <= bounds.lastAllowedMinute;
         minutes += 1
     ) {
-        if (createCalendarDateAtMinute(date, minutes)) return true
+        if (matchesCalendarMinute(probe, year, month, day, minutes)) return true
     }
 
     return false
@@ -86,20 +147,23 @@ export function calendarValueHasTimeWithinBounds(
     if (!bounds) return false
 
     const { firstAllowedMinute, lastAllowedMinute } = bounds
-    function selectedTimeIsAllowed(date: Date) {
-        if (Number.isNaN(date.getTime())) return false
-        const minutes = date.getHours() * 60 + date.getMinutes()
+    if (value instanceof Date) {
+        if (Number.isNaN(value.getTime())) return false
+        const minutes = value.getHours() * 60 + value.getMinutes()
         return minutes >= firstAllowedMinute && minutes <= lastAllowedMinute
     }
 
-    if (value instanceof Date) {
-        return selectedTimeIsAllowed(value)
-    }
-
     if (Array.isArray(value)) {
-        return value.every(
-            (date) => date === null || selectedTimeIsAllowed(date),
-        )
+        for (let i = 0; i < value.length; i += 1) {
+            const date = value[i]
+            if (date === null) continue
+            if (Number.isNaN(date.getTime())) return false
+            const minutes = date.getHours() * 60 + date.getMinutes()
+            if (minutes < firstAllowedMinute || minutes > lastAllowedMinute) {
+                return false
+            }
+        }
+        return true
     }
 
     return true
@@ -209,6 +273,18 @@ export function constrainCalendarTime(
     maxTime?: string,
 ): Date | undefined {
     if (!minTime && !maxTime) return date
+
+    if (Number.isNaN(date.getTime())) return undefined
+    const bounds = getTimeBounds(minTime, maxTime)
+    if (!bounds) return undefined
+
+    const minutes = date.getHours() * 60 + date.getMinutes()
+    if (
+        minutes >= bounds.firstAllowedMinute &&
+        minutes <= bounds.lastAllowedMinute
+    ) {
+        return date
+    }
 
     const requestedTime = formatCalendarTime(date)
     const update = updateCalendarTime(date, requestedTime, minTime, maxTime)

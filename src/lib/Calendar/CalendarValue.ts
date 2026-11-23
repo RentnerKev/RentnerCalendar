@@ -32,33 +32,24 @@ const zonedIsoDateTimePattern =
 const germanDatePattern =
     /^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)?$/
 
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
 function isLeapYear(year: number) {
     return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
 }
 
 function isValidDateParts(year: number, month: number, day: number) {
-    const daysByMonth = [
-        31,
-        isLeapYear(year) ? 29 : 28,
-        31,
-        30,
-        31,
-        30,
-        31,
-        31,
-        30,
-        31,
-        30,
-        31,
-    ]
-
-    return (
-        month >= 1 && month <= 12 && day >= 1 && day <= daysByMonth[month - 1]
-    )
+    if (month < 1 || month > 12 || day < 1) return false
+    const maxDay =
+        month === 2 && isLeapYear(year) ? 29 : DAYS_IN_MONTH[month - 1]!
+    return day <= maxDay
 }
 
 function parseMilliseconds(value: string | undefined) {
-    return value ? Number(value.padEnd(3, '0')) : 0
+    if (!value) return 0
+    const len = value.length
+    if (len === 3) return Number(value)
+    return len === 2 ? Number(value) * 10 : Number(value) * 100
 }
 
 function createLocalDate(
@@ -84,9 +75,14 @@ function createLocalDate(
         return undefined
     }
 
-    const date = new Date(0)
-    date.setFullYear(year, month - 1, day)
-    date.setHours(hour, minute, second, millisecond)
+    let date: Date
+    if (year >= 100 || year < 0) {
+        date = new Date(year, month - 1, day, hour, minute, second, millisecond)
+    } else {
+        date = new Date(0)
+        date.setFullYear(year, month - 1, day)
+        date.setHours(hour, minute, second, millisecond)
+    }
 
     if (
         date.getFullYear() !== year ||
@@ -184,36 +180,6 @@ export function serializeCalendarISOString(
     return isValidDate(value) ? value.toISOString() : undefined
 }
 
-function parseLocalISODateTime(value: string) {
-    const match = localIsoDateTimePattern.exec(value)
-    if (!match) return undefined
-
-    return createLocalDate(
-        Number(match[1]),
-        Number(match[2]),
-        Number(match[3]),
-        Number(match[4]),
-        Number(match[5]),
-        Number(match[6] ?? 0),
-        parseMilliseconds(match[7]),
-    )
-}
-
-function parseGermanDate(value: string) {
-    const match = germanDatePattern.exec(value)
-    if (!match) return undefined
-
-    return createLocalDate(
-        Number(match[3]),
-        Number(match[2]),
-        Number(match[1]),
-        Number(match[4] ?? 0),
-        Number(match[5] ?? 0),
-        Number(match[6] ?? 0),
-        parseMilliseconds(match[7]),
-    )
-}
-
 export function parseCalendarDate(value: unknown): Date | undefined {
     if (value === null || value === undefined) return undefined
     if (value instanceof Date) {
@@ -230,17 +196,62 @@ export function parseCalendarDate(value: unknown): Date | undefined {
     const trimmedValue = value.trim()
     if (!trimmedValue) return undefined
 
-    if (isoDatePattern.test(trimmedValue)) {
-        return parseCalendarISODate(trimmedValue)
+    let match = isoDatePattern.exec(trimmedValue)
+    if (match) {
+        return createLocalDateOnly(
+            Number(match[1]),
+            Number(match[2]),
+            Number(match[3]),
+        )
     }
-    if (zonedIsoDateTimePattern.test(trimmedValue)) {
-        return parseCalendarISOString(trimmedValue)
+    match = zonedIsoDateTimePattern.exec(trimmedValue)
+    if (match) {
+        const year = Number(match[1])
+        const month = Number(match[2])
+        const day = Number(match[3])
+        const hour = Number(match[4])
+        const minute = Number(match[5])
+        const second = Number(match[6] ?? 0)
+        const millisecond = parseMilliseconds(match[7])
+        const offsetHour = Number(match[10] ?? 0)
+        const offsetMinute = Number(match[11] ?? 0)
+        if (
+            !isValidDateParts(year, month, day) ||
+            hour > 23 ||
+            minute > 59 ||
+            second > 59 ||
+            millisecond > 999 ||
+            offsetHour > 23 ||
+            offsetMinute > 59
+        ) {
+            return undefined
+        }
+        const date = new Date(trimmedValue)
+        return isValidDate(date) ? date : undefined
     }
-    if (localIsoDateTimePattern.test(trimmedValue)) {
-        return parseLocalISODateTime(trimmedValue)
+    match = localIsoDateTimePattern.exec(trimmedValue)
+    if (match) {
+        return createLocalDate(
+            Number(match[1]),
+            Number(match[2]),
+            Number(match[3]),
+            Number(match[4]),
+            Number(match[5]),
+            Number(match[6] ?? 0),
+            parseMilliseconds(match[7]),
+        )
     }
-    if (germanDatePattern.test(trimmedValue)) {
-        return parseGermanDate(trimmedValue)
+    match = germanDatePattern.exec(trimmedValue)
+    if (match) {
+        return createLocalDate(
+            Number(match[3]),
+            Number(match[2]),
+            Number(match[1]),
+            Number(match[4] ?? 0),
+            Number(match[5] ?? 0),
+            Number(match[6] ?? 0),
+            parseMilliseconds(match[7]),
+        )
     }
 
     return undefined
@@ -279,7 +290,8 @@ export function isCalendarRange(value: unknown): value is CalendarRange {
     return (
         Array.isArray(value) &&
         value.length === 2 &&
-        value.every((boundary) => boundary === null || isValidDate(boundary))
+        (value[0] === null || isValidDate(value[0])) &&
+        (value[1] === null || isValidDate(value[1]))
     )
 }
 

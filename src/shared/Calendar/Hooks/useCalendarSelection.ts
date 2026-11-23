@@ -7,7 +7,7 @@ import {
     isCalendarDateDisabled,
 } from '../../../lib/Calendar/CalendarRestrictions.ts'
 import type { CalendarDateRestrictions } from '../Types/Calendar.types.ts'
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { CalendarValue } from '../Types/Calendar.types.ts'
 import {
     createCalendarDate,
@@ -31,6 +31,7 @@ export default function useCalendarSelection(
     minDateTime?: Date,
     maxDateTime?: Date,
     restrictions: CalendarDateRestrictions = {},
+    isOpen: boolean = true,
 ) {
     const [viewDate, setViewDate] = useState(() =>
         Array.isArray(value) && value[0]
@@ -66,38 +67,48 @@ export default function useCalendarSelection(
         }
     }
 
-    function handlePrevMonth() {
-        setViewDate(
-            createCalendarDate(
-                viewDate.getFullYear(),
-                viewDate.getMonth() - 1,
-                1,
-            ),
+    const handlePrevMonth = useCallback(() => {
+        setViewDate((prev) =>
+            createCalendarDate(prev.getFullYear(), prev.getMonth() - 1, 1),
         )
-    }
+    }, [])
 
-    function handleNextMonth() {
-        setViewDate(
-            createCalendarDate(
-                viewDate.getFullYear(),
-                viewDate.getMonth() + 1,
-                1,
-            ),
+    const handleNextMonth = useCallback(() => {
+        setViewDate((prev) =>
+            createCalendarDate(prev.getFullYear(), prev.getMonth() + 1, 1),
         )
-    }
+    }, [])
 
-    function handleViewDateChange(date: Date) {
+    const handleViewDateChange = useCallback((date: Date) => {
         setViewDate(createCalendarDate(date.getFullYear(), date.getMonth(), 1))
-    }
+    }, [])
 
-    function handleGetDaysInMonth() {
-        return getCalendarMonthDays(
-            viewDate.getFullYear(),
-            viewDate.getMonth(),
-            weekStartsOn,
-            visibleDays,
-        )
-    }
+    const viewYear = viewDate.getFullYear()
+    const viewMonth = viewDate.getMonth()
+    const monthDays = useMemo(
+        () =>
+            isOpen
+                ? getCalendarMonthDays(
+                      viewYear,
+                      viewMonth,
+                      weekStartsOn,
+                      visibleDays,
+                  )
+                : null,
+        [isOpen, viewYear, viewMonth, weekStartsOn, visibleDays],
+    )
+
+    const handleGetDaysInMonth = useCallback(
+        () =>
+            monthDays ??
+            getCalendarMonthDays(
+                viewYear,
+                viewMonth,
+                weekStartsOn,
+                visibleDays,
+            ),
+        [monthDays, viewYear, viewMonth, weekStartsOn, visibleDays],
+    )
 
     function handleDateSelect(date: Date) {
         if (isCalendarDateDisabled(date, restrictions)) return

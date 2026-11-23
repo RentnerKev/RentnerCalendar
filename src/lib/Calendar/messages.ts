@@ -137,15 +137,18 @@ export function resolveCalendarMessages(
     overrides?: Partial<CalendarMessages>,
 ): CalendarMessages {
     const defaults = calendarMessageCatalog[locale]
+    if (!overrides) return defaults
 
     return {
         ...defaults,
         ...overrides,
-        weekdays: overrides?.weekdays ?? defaults.weekdays,
-        months: overrides?.months ?? defaults.months,
-        holidayNames: {
-            ...defaults.holidayNames,
-            ...overrides?.holidayNames,
-        },
+        weekdays: overrides.weekdays ?? defaults.weekdays,
+        months: overrides.months ?? defaults.months,
+        holidayNames: overrides.holidayNames
+            ? {
+                  ...defaults.holidayNames,
+                  ...overrides.holidayNames,
+              }
+            : defaults.holidayNames,
     }
 }

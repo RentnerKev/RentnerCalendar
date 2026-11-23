@@ -1,5 +1,18 @@
 import type { CalendarValue } from '../../shared/Calendar/Types/Calendar.types.ts'
 
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+function getDaysInCalendarMonth(year: number, month: number) {
+    if (
+        month === 1 &&
+        year % 4 === 0 &&
+        (year % 100 !== 0 || year % 400 === 0)
+    ) {
+        return 29
+    }
+    return DAYS_IN_MONTH[month]!
+}
+
 export function compareCalendarDays(first: Date, second: Date) {
     const yearDifference = first.getFullYear() - second.getFullYear()
     if (yearDifference !== 0) return yearDifference
@@ -11,25 +24,32 @@ export function compareCalendarDays(first: Date, second: Date) {
 }
 
 export function getCalendarDateKey(date: Date) {
-    const year = String(date.getFullYear()).padStart(4, '0')
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const yearStr =
+        year >= 1000 && year <= 9999
+            ? String(year)
+            : String(year).padStart(4, '0')
+    return `${yearStr}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`
 }
 
 export function startOfCalendarDay(date: Date) {
-    const result = new Date(date)
+    const result = new Date(date.getTime())
     result.setHours(0, 0, 0, 0)
     return result
 }
 
 export function endOfCalendarDay(date: Date) {
-    const result = new Date(date)
+    const result = new Date(date.getTime())
     result.setHours(23, 59, 59, 999)
     return result
 }
 
 export function createCalendarDate(year: number, month: number, day: number) {
+    if (year >= 101 || year < 0) {
+        return new Date(year, month, day)
+    }
     const result = new Date(0)
     result.setFullYear(year, month, day)
     result.setHours(0, 0, 0, 0)
@@ -43,42 +63,56 @@ export function getCalendarMonthDays(
     visibleDays: number,
 ) {
     const firstDayOfMonth = createCalendarDate(year, month, 1)
+    const normYear = firstDayOfMonth.getFullYear()
+    const normMonth = firstDayOfMonth.getMonth()
     const jsFirstDay = firstDayOfMonth.getDay()
     const isoFirstDay = jsFirstDay === 0 ? 7 : jsFirstDay
     const startingDayIndex = (isoFirstDay - weekStartsOn + 7) % 7
-    const daysInMonth = createCalendarDate(year, month + 1, 0).getDate()
+    const daysInMonth = getDaysInCalendarMonth(normYear, normMonth)
+    const prevMonth = normMonth === 0 ? 11 : normMonth - 1
+    const prevYear = normMonth === 0 ? normYear - 1 : normYear
+    const prevMonthDays = getDaysInCalendarMonth(prevYear, prevMonth)
+    const nextMonth = normMonth === 11 ? 0 : normMonth + 1
+    const nextYear = normMonth === 11 ? normYear + 1 : normYear
     const days: { date: Date; isCurrentMonth: boolean }[] = []
-    const prevMonthDays = createCalendarDate(year, month, 0).getDate()
+    let col = 0
 
     for (let index = startingDayIndex - 1; index >= 0; index -= 1) {
-        days.push({
-            date: createCalendarDate(year, month - 1, prevMonthDays - index),
-            isCurrentMonth: false,
-        })
+        if (col < visibleDays) {
+            days.push({
+                date: createCalendarDate(
+                    prevYear,
+                    prevMonth,
+                    prevMonthDays - index,
+                ),
+                isCurrentMonth: false,
+            })
+        }
+        col = col === 6 ? 0 : col + 1
     }
 
     for (let day = 1; day <= daysInMonth; day += 1) {
-        days.push({
-            date: createCalendarDate(year, month, day),
-            isCurrentMonth: true,
-        })
+        if (col < visibleDays) {
+            days.push({
+                date:
+                    day === 1
+                        ? firstDayOfMonth
+                        : createCalendarDate(normYear, normMonth, day),
+                isCurrentMonth: true,
+            })
+        }
+        col = col === 6 ? 0 : col + 1
     }
 
-    const remainingDays = 42 - days.length
+    const remainingDays = 42 - startingDayIndex - daysInMonth
     for (let day = 1; day <= remainingDays; day += 1) {
-        days.push({
-            date: createCalendarDate(year, month + 1, day),
-            isCurrentMonth: false,
-        })
-    }
-
-    if (visibleDays < 7) {
-        return days.filter(({ date }) => {
-            const jsDay = date.getDay()
-            const isoDay = jsDay === 0 ? 7 : jsDay
-            const relativeDay = (isoDay - weekStartsOn + 7) % 7
-            return relativeDay < visibleDays
-        })
+        if (col < visibleDays) {
+            days.push({
+                date: createCalendarDate(nextYear, nextMonth, day),
+                isCurrentMonth: false,
+            })
+        }
+        col = col === 6 ? 0 : col + 1
     }
 
     return days
@@ -100,16 +134,22 @@ export function calendarValueWithinDateBounds(
     minDate?: Date,
     maxDate?: Date,
 ) {
-    const dates =
-        value instanceof Date
-            ? [value]
-            : Array.isArray(value)
-              ? value.filter((date): date is Date => date instanceof Date)
-              : []
-
-    return dates.every((date) =>
-        isCalendarDayWithinBounds(date, minDate, maxDate),
-    )
+    if (!minDate && !maxDate) return true
+    if (value instanceof Date) {
+        return isCalendarDayWithinBounds(value, minDate, maxDate)
+    }
+    if (Array.isArray(value)) {
+        for (let i = 0; i < value.length; i += 1) {
+            const date = value[i]
+            if (
+                date instanceof Date &&
+                !isCalendarDayWithinBounds(date, minDate, maxDate)
+            ) {
+                return false
+            }
+        }
+    }
+    return true
 }
 
 export function addCalendarDays(date: Date, days: number) {
@@ -126,15 +166,13 @@ export function addCalendarMonths(date: Date, months: number) {
         date.getMonth() + months,
         1,
     )
-    const lastDayOfTargetMonth = createCalendarDate(
-        firstOfTargetMonth.getFullYear(),
-        firstOfTargetMonth.getMonth() + 1,
-        0,
-    ).getDate()
+    const targetYear = firstOfTargetMonth.getFullYear()
+    const targetMonth = firstOfTargetMonth.getMonth()
+    const lastDayOfTargetMonth = getDaysInCalendarMonth(targetYear, targetMonth)
 
     return createCalendarDate(
-        firstOfTargetMonth.getFullYear(),
-        firstOfTargetMonth.getMonth(),
+        targetYear,
+        targetMonth,
         Math.min(date.getDate(), lastDayOfTargetMonth),
     )
 }
